@@ -67,6 +67,11 @@
             gap: 10px;
             border-bottom: 2px solid #f5c542;
             font-size: 1rem;
+            transition: all 0.2s ease;
+        }
+        .guide-toggle:hover {
+            background: #469657;
+            transform: translateY(-2px);
         }
         .guide-panel {
             background: #f4fbe7;
@@ -85,6 +90,10 @@
             padding: 1.2rem;
             border-radius: 20px;
             border-left: 8px solid #3c8d4a;
+            transition: transform 0.2s ease;
+        }
+        .guide-step:hover {
+            transform: translateX(4px);
         }
         .guide-step h3 { color: #1e621e; margin-bottom: 0.8rem; }
         .guide-step ul { padding-left: 1.2rem; color: #2f4d2f; }
@@ -120,6 +129,14 @@
             font-weight: 600;
             min-width: 260px;
             border: 3px solid #fdcd5a;
+            transition: all 0.2s ease;
+        }
+        .selector-group select:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 0 #b58f3a;
+        }
+        .selector-group select option i {
+            font-style: italic;
         }
         .location-options {
             display: flex;
@@ -152,6 +169,10 @@
             min-width: 200px;
             transition: all 0.3s ease;
         }
+        #regionSelect:hover:not(.map-active) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 0 #b58f3a;
+        }
         #regionSelect.map-active {
             background: #e0e0e0;
             border-color: #999;
@@ -181,6 +202,7 @@
             font-weight: 600;
             display: inline-block;
             white-space: nowrap;
+            transition: all 0.2s ease;
         }
         .reset-map-mode-btn {
             background: #edb84a;
@@ -194,6 +216,12 @@
             display: inline-flex;
             align-items: center;
             gap: 5px;
+            transition: all 0.2s ease;
+        }
+        .reset-map-mode-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 0 #7b5f2b;
+            background: #f5c55a;
         }
         .content { padding: 1.5rem 1.5rem; }
         .current-conditions {
@@ -252,9 +280,18 @@
             font-weight: 600;
             color: #265226;
             font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+        .map-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 0 #3b683b;
         }
         .map-btn.active { background: #3d973d; border-color: #f5bc3c; color: white; }
         .map-btn.location-btn { background: #4a90e2; border-color: #2a5080; color: white; }
+        .map-btn.location-btn:hover {
+            background: #5fa0f0;
+            box-shadow: 0 4px 0 #1e3c60;
+        }
         #map { height: 250px; border-radius: 24px; border: 3px solid #a5b87a; margin-bottom: 1rem; display: none; }
         #map.show { display: block; }
         .coord-display {
@@ -275,6 +312,10 @@
             padding: 6px 12px;
             width: 110px;
             font-weight: 600;
+            transition: all 0.2s ease;
+        }
+        .coord-item input:hover:not(:read-only) {
+            border-color: #8ba34a;
         }
         .coord-item input:read-only { background: #f0f0f0; border-color: #ccc; }
         .location-note {
@@ -286,6 +327,11 @@
             text-align: center;
             margin-top: 1rem;
             font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+        .location-note:hover {
+            transform: scale(1.02);
+            background: #ffe6a3;
         }
         .split-panel { display: flex; gap: 2rem; flex-wrap: wrap; }
         .split-panel > div { flex: 1 1 300px; }
@@ -296,6 +342,11 @@
             margin-bottom: 2rem;
             border: 3px solid #c7d392;
             box-shadow: 0 8px 0 #7a9865;
+            transition: all 0.2s ease;
+        }
+        .data-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 0 #7a9865;
         }
         .data-card h2 { color: #1f6b1f; font-size: 1.6rem; border-bottom: 4px dotted #c2d17e; padding-bottom: 0.6rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 10px; }
         .field-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; }
@@ -307,6 +358,21 @@
             padding: 10px 14px;
             font-size: 1rem;
             background: white;
+            transition: all 0.2s ease;
+        }
+        .field input:hover, .field select:hover, .field textarea:hover {
+            border-color: #6f9a3a;
+            transform: translateY(-1px);
+        }
+        .field input:focus, .field select:focus, .field textarea:focus {
+            border-color: #3d973d;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(61, 151, 61, 0.2);
+        }
+        .field input::placeholder {
+            color: #999;
+            font-style: italic;
+            font-weight: 300;
         }
         .checkbox-cluster {
             display: flex;
@@ -314,8 +380,24 @@
             gap: 1rem 1.8rem;
             margin: 1.2rem 0;
         }
-        .checkbox-cluster div { display: flex; align-items: center; gap: 6px; }
-        .checkbox-cluster input[type="checkbox"] { width: 22px; height: 22px; accent-color: #3f9643; }
+        .checkbox-cluster div { 
+            display: flex; 
+            align-items: center; 
+            gap: 6px;
+            transition: transform 0.2s ease;
+        }
+        .checkbox-cluster div:hover {
+            transform: translateX(2px);
+        }
+        .checkbox-cluster input[type="checkbox"] { 
+            width: 22px; 
+            height: 22px; 
+            accent-color: #3f9643;
+            transition: all 0.2s ease;
+        }
+        .checkbox-cluster input[type="checkbox"]:hover {
+            transform: scale(1.1);
+        }
         .weather-panel {
             background: #e3f0cf;
             border-radius: 28px;
@@ -361,6 +443,10 @@
             position: relative;
             width: 70px;
             text-align: center;
+            transition: transform 0.2s ease;
+        }
+        .photo-preview-item:hover {
+            transform: scale(1.05);
         }
         .photo-preview-item img {
             width: 70px;
@@ -384,6 +470,11 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            transition: all 0.2s ease;
+        }
+        .photo-remove:hover {
+            background: #b84f2f;
+            transform: scale(1.1);
         }
         .photo-size { font-size: 0.7rem; color: #555; }
         .action-row {
@@ -403,13 +494,26 @@
             cursor: pointer;
             font-size: 0.9rem;
             flex: 1 0 auto;
-            transition: all 0.2s;
+            transition: all 0.2s ease;
+            max-width: 200px;
+        }
+        .btn:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 6px 0 #2f5e2f;
+            background: #f0ffe0;
         }
         .btn-primary { background: #32853a; border-color: #f5bc3c; color: white; box-shadow: 0 6px 0 #1f591f; }
+        .btn-primary:hover { background: #3f9f4a; }
         .btn-save { background: #c47e2e; border-color: #f5bc3c; color: white; box-shadow: 0 6px 0 #7b4d1a; }
+        .btn-save:hover { background: #d88f3f; }
         .btn-excel { background: #1f7c3c; border-color: #f5bc3c; color: white; }
+        .btn-excel:hover { background: #269b4a; }
         .btn-csv { background: #4a6b8a; border-color: #f5bc3c; color: white; }
-        .btn-primary:hover, .btn-save:hover, .btn-excel:hover, .btn-csv:hover { transform: translateY(-4px); box-shadow: 0 10px 0 #1f591f; }
+        .btn-csv:hover { background: #5a80a5; }
+        .btn-small {
+            max-width: 120px;
+            padding: 8px 12px;
+        }
         .records-section {
             background: #e3d8b0;
             border-radius: 28px;
@@ -417,7 +521,14 @@
             margin-top: 2rem;
             border: 3px solid #b7973a;
         }
-        .records-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; }
+        .records-header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 1.5rem; 
+            flex-wrap: wrap; 
+            gap: 1rem; 
+        }
         .records-header h3 { color: #2d571d; font-size: 1.6rem; }
         .record-count { background: #528a44; color: white; padding: 0.4rem 1.5rem; border-radius: 50px; }
         .records-grid {
@@ -435,6 +546,11 @@
             border-left: 8px solid #4f8a4f;
             box-shadow: 0 4px 0 #af9f5a;
             cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .record-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 #af9f5a;
         }
         .record-card.selected { border-left: 8px solid #e5a526; background: #fff7df; }
         .record-date { font-weight: 700; color: #2d741d; }
@@ -449,6 +565,11 @@
             font-weight: 600;
             font-size: 0.75rem;
             cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .record-btn:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.1);
         }
         .record-btn.edit { background: #edb84a; }
         .record-btn.delete { background: #d16b4b; color: white; }
@@ -488,13 +609,32 @@
                 width: 100%;
                 justify-content: center;
             }
+            .btn {
+                max-width: none;
+            }
+        }
+
+        /* Placeholder styling for empty inputs */
+        input::placeholder, textarea::placeholder {
+            color: #aaa;
+            font-style: italic;
+            font-weight: 300;
+            opacity: 0.7;
+        }
+
+        /* Species dropdown option styling */
+        select option {
+            font-style: normal;
+        }
+        select option i {
+            font-style: italic;
         }
     </style>
 </head>
 <body>
 <div class="card">
     <div class="header">
-        <h1>🌱 FUTURE SEEDS PROGRAM <span>DATA COLLECTOR v5.4</span></h1>
+        <h1>🌱 FUTURE SEEDS PROGRAM <span>DATA COLLECTOR v5.5</span></h1>
     </div>
 
     <!-- User Guide Toggle -->
@@ -506,7 +646,7 @@
             <div class="guide-step"><h3>📍 1. Choose Location</h3><ul><li>Quick Region: broad area (faster)</li><li>Precise Map: click or "My Location"</li><li>Use "↩️ Use quick region" to switch back</li></ul></div>
             <div class="guide-step"><h3>📝 2. Field Data</h3><ul><li>Flowering stage, pollinators</li><li>Site notes</li></ul></div>
             <div class="guide-step"><h3>📸 3. Photos</h3><ul><li>Take Photo Now (camera)</li><li>Choose from Gallery</li><li>Max 10 photos</li></ul></div>
-            <div class="guide-step"><h3>🌡️ 4. Weather (manual)</h3><ul><li>Enter actual BOM min/max</li><li>Station name & ID</li></ul></div>
+            <div class="guide-step"><h3>🌡️ 4. Weather (manual)</h3><ul><li>Enter actual BOM min/max (optional)</li><li>Station name & ID (optional)</li></ul></div>
             <div class="guide-step"><h3>💾 5. Save & Export</h3><ul><li>Save to browser storage</li><li>Export JSON / Excel / CSV</li><li>Edit or delete records</li></ul></div>
         </div>
     </div>
@@ -627,20 +767,20 @@
             <div>
                 <div class="data-card">
                     <h2>🌡️ MANUAL weather entry</h2>
-                    <div class="weather-note">🔍 Look up BOM data and enter actual monthly values</div>
+                    <div class="weather-note">🔍 Look up BOM data and enter actual monthly values (optional)</div>
                     <div class="field-grid">
-                        <div class="field"><label>🌡️ Actual min temp (°C)</label><input type="number" id="actualMinTemp" step="0.1" value="14.2" oninput="updateTempDisplay()"></div>
-                        <div class="field"><label>🌡️ Actual max temp (°C)</label><input type="number" id="actualMaxTemp" step="0.1" value="23.1" oninput="updateTempDisplay()"></div>
-                        <div class="field"><label>📍 BOM station name</label><input type="text" id="bomStation" value="Hobart (Ellerslie Road)"></div>
-                        <div class="field"><label>🆔 Station ID</label><input type="text" id="stationId" value="094029"></div>
+                        <div class="field"><label>🌡️ Actual min temp (°C)</label><input type="number" id="actualMinTemp" step="0.1" placeholder="e.g. 14.2" oninput="updateTempDisplay()"></div>
+                        <div class="field"><label>🌡️ Actual max temp (°C)</label><input type="number" id="actualMaxTemp" step="0.1" placeholder="e.g. 23.1" oninput="updateTempDisplay()"></div>
+                        <div class="field"><label>📍 BOM station name</label><input type="text" id="bomStation" placeholder="e.g. Hobart (Ellerslie Road)"></div>
+                        <div class="field"><label>🆔 Station ID</label><input type="text" id="stationId" placeholder="e.g. 094029"></div>
                     </div>
                     
                     <div class="manual-temp-card">
-                        <div class="temp-item"><span class="label">entered min</span><div class="value" id="displayMin">14.2°C</div></div>
-                        <div class="temp-item"><span class="label">entered max</span><div class="value" id="displayMax">23.1°C</div></div>
+                        <div class="temp-item"><span class="label">entered min</span><div class="value" id="displayMin">—°C</div></div>
+                        <div class="temp-item"><span class="label">entered max</span><div class="value" id="displayMax">—°C</div></div>
                     </div>
                     
-                    <div class="temp-note">⏱️ Enter ACTUAL recorded min/max for this month</div>
+                    <div class="temp-note">⏱️ Enter ACTUAL recorded min/max for this month (optional)</div>
                     
                     <div style="margin-top: 2rem;">
                         <div class="field">
@@ -679,12 +819,12 @@
             <div class="records-header">
                 <h3>📋 Saved Records</h3>
                 <div class="record-count" id="recordCount">0 records</div>
-                <button class="btn" onclick="clearAllRecords()" style="padding:8px 20px;">🗑️ Clear All</button>
+                <button class="btn btn-small" onclick="clearAllRecords()">🗑️ Clear All</button>
             </div>
             <div class="records-grid" id="recordsGrid"></div>
         </div>
 
-        <div class="weather-credit">Enter actual BOM observations for correlation analysis</div>
+        <div class="weather-credit">Enter actual BOM observations for correlation analysis (optional)</div>
     </div>
 </div>
 
@@ -850,10 +990,10 @@
         document.getElementById('currentMonthDisplay').innerHTML = `📆 ${monthDisplayNames[m]} 2026 · manual weather entry`;
     }
     function updateTempDisplay() {
-        let min = document.getElementById('actualMinTemp').value || '14.2';
-        let max = document.getElementById('actualMaxTemp').value || '23.1';
-        document.getElementById('displayMin').innerText = min + '°C';
-        document.getElementById('displayMax').innerText = max + '°C';
+        let min = document.getElementById('actualMinTemp').value;
+        let max = document.getElementById('actualMaxTemp').value;
+        document.getElementById('displayMin').innerText = min ? min + '°C' : '—°C';
+        document.getElementById('displayMax').innerText = max ? max + '°C' : '—°C';
     }
 
     // Photo functions
@@ -923,10 +1063,10 @@
         let lat = parseFloat(document.getElementById('lat').value);
         let lon = parseFloat(document.getElementById('lon').value);
         if (lat < -43.7 || lat > -40.4 || lon < 144.5 || lon > 148.5) w.push('⚠️ Coordinates outside Tasmania');
-        let min = parseFloat(document.getElementById('actualMinTemp').value);
-        let max = parseFloat(document.getElementById('actualMaxTemp').value);
-        if (min < -10 || min > 30) w.push('⚠️ Min temperature unusual');
-        if (max < 0 || max > 45) w.push('⚠️ Max temperature unusual');
+        let min = document.getElementById('actualMinTemp').value;
+        let max = document.getElementById('actualMaxTemp').value;
+        if (min && (parseFloat(min) < -10 || parseFloat(min) > 30)) w.push('⚠️ Min temperature unusual');
+        if (max && (parseFloat(max) < 0 || parseFloat(max) > 45)) w.push('⚠️ Max temperature unusual');
         if (new Date(document.getElementById('obsDate').value).getFullYear() !== 2026) w.push('⚠️ Date not 2026');
         if (!['bud','earlyFlower','fullFlower','petalFall','seedPod'].some(id => document.getElementById(id).checked)) w.push('⚠️ No flowering stage');
         return w;
@@ -939,6 +1079,9 @@
 
     function collectFormData() {
         let region = document.getElementById('regionSelect').value;
+        let minTemp = document.getElementById('actualMinTemp').value;
+        let maxTemp = document.getElementById('actualMaxTemp').value;
+        
         return {
             id: Date.now(), timestamp: new Date().toISOString(), program: "Future Seeds Program",
             locationMode: usingMapMode ? "precise_map" : "quick_region",
@@ -976,10 +1119,10 @@
             },
             weather: {
                 month: monthDisplayNames[getCurrentMonthIndex()], year: 2026,
-                minTemp: parseFloat(document.getElementById('actualMinTemp').value) || null,
-                maxTemp: parseFloat(document.getElementById('actualMaxTemp').value) || null,
-                station: document.getElementById('bomStation').value,
-                stationId: document.getElementById('stationId').value,
+                minTemp: minTemp ? parseFloat(minTemp) : null,
+                maxTemp: maxTemp ? parseFloat(maxTemp) : null,
+                station: document.getElementById('bomStation').value || null,
+                stationId: document.getElementById('stationId').value || null,
                 dataType: "Manual BOM entry"
             },
             photos: [] // placeholder
@@ -1020,7 +1163,7 @@
                 <div class="record-date">📅 ${r.collectionDate}</div>
                 <div class="record-species">🌿 ${r.species.split(' ')[0]}</div>
                 <div class="record-location">📍 ${r.location.region}</div>
-                <div class="record-weather">🌡️ ${r.weather.minTemp}/${r.weather.maxTemp}°C</div>
+                <div class="record-weather">🌡️ ${r.weather.minTemp ? r.weather.minTemp : '—'}/${r.weather.maxTemp ? r.weather.maxTemp : '—'}°C</div>
                 ${r.photos?.length ? `<div class="record-photo-indicator">📸 ${r.photos.length}</div>` : ''}
                 <div class="record-actions">
                     <button class="record-btn edit" onclick="event.stopPropagation(); editRecord(${i})">✏️ Edit</button>
@@ -1030,7 +1173,7 @@
     }
     window.selectRecord = (i) => {
         let r = savedRecords[i];
-        alert(`Record: ${r.collectionDate} - ${r.species}\nLocation: ${r.location.siteName}\nTemp: ${r.weather.minTemp}/${r.weather.maxTemp}°C`);
+        alert(`Record: ${r.collectionDate} - ${r.species}\nLocation: ${r.location.siteName}\nTemp: ${r.weather.minTemp ? r.weather.minTemp : '—'}/${r.weather.maxTemp ? r.weather.maxTemp : '—'}°C`);
         document.querySelectorAll('.record-card').forEach(c => c.classList.remove('selected'));
         document.querySelectorAll('.record-card')[i]?.classList.add('selected');
     };
@@ -1058,8 +1201,8 @@
         document.getElementById('wasp').checked = r.phenology.pollinators.wasp;
         document.getElementById('butterfly').checked = r.phenology.pollinators.butterfly;
         document.getElementById('otherInsects').value = r.phenology.pollinators.other;
-        document.getElementById('actualMinTemp').value = r.weather.minTemp;
-        document.getElementById('actualMaxTemp').value = r.weather.maxTemp;
+        document.getElementById('actualMinTemp').value = r.weather.minTemp || '';
+        document.getElementById('actualMaxTemp').value = r.weather.maxTemp || '';
         document.getElementById('bomStation').value = r.weather.station || '';
         document.getElementById('stationId').value = r.weather.stationId || '';
         document.getElementById('seedMaturity').value = r.phenology.seedMaturity;
@@ -1077,9 +1220,14 @@
     function updateStats() {
         document.getElementById('totalRecordsStat').innerText = savedRecords.length;
         if (savedRecords.length) {
-            let avgMin = savedRecords.reduce((s,r)=>s+(r.weather.minTemp||0),0)/savedRecords.length;
-            let avgMax = savedRecords.reduce((s,r)=>s+(r.weather.maxTemp||0),0)/savedRecords.length;
-            document.getElementById('avgTempStat').innerHTML = `${avgMin.toFixed(1)}/${avgMax.toFixed(1)}°C`;
+            let temps = savedRecords.filter(r => r.weather.minTemp && r.weather.maxTemp);
+            if (temps.length) {
+                let avgMin = temps.reduce((s,r)=>s+(r.weather.minTemp||0),0)/temps.length;
+                let avgMax = temps.reduce((s,r)=>s+(r.weather.maxTemp||0),0)/temps.length;
+                document.getElementById('avgTempStat').innerHTML = `${avgMin.toFixed(1)}/${avgMax.toFixed(1)}°C`;
+            } else {
+                document.getElementById('avgTempStat').innerHTML = '—/—°C';
+            }
         } else document.getElementById('avgTempStat').innerText = '-';
     }
 
@@ -1089,7 +1237,9 @@
         let flat = {
             'Program':d.program,'Mode':d.locationMode,'Observer':d.observer,'Date':d.collectionDate,'Species':d.species,
             'Region':d.location.region,'Site':d.location.siteName,'Lat':d.location.latitude,'Lon':d.location.longitude,
-            'MinTemp':d.weather.minTemp,'MaxTemp':d.weather.maxTemp,'Notes':d.siteHistory.notes,
+            'MinTemp':d.weather.minTemp !== null ? d.weather.minTemp : '', 'MaxTemp':d.weather.maxTemp !== null ? d.weather.maxTemp : '',
+            'Station':d.weather.station || '', 'StationID':d.weather.stationId || '',
+            'Notes':d.siteHistory.notes,
             'PhotoCount':selectedPhotos.length
         };
         let wb = XLSX.utils.book_new();
@@ -1100,7 +1250,8 @@
     function exportToCSV() {
         let d = collectFormData();
         let row = [`"Program"`,`"Observer"`,`"Date"`,`"Species"`,`"Region"`,`"Lat"`,`"Lon"`,`"Min"`,`"Max"`,`"Notes"`];
-        let vals = [d.program, d.observer, d.collectionDate, d.species, d.location.region, d.location.latitude, d.location.longitude, d.weather.minTemp, d.weather.maxTemp, d.siteHistory.notes];
+        let vals = [d.program, d.observer, d.collectionDate, d.species, d.location.region, d.location.latitude, d.location.longitude, 
+                   d.weather.minTemp !== null ? d.weather.minTemp : '', d.weather.maxTemp !== null ? d.weather.maxTemp : '', d.siteHistory.notes];
         let csv = row.join(',') + '\n' + vals.map(v => typeof v === 'string' ? `"${v.replace(/"/g,'""')}"` : v).join(',');
         let blob = new Blob([csv], {type:'text/csv'});
         let a = document.createElement('a');
@@ -1126,10 +1277,10 @@
         document.getElementById('wasp').checked = false;
         document.getElementById('butterfly').checked = false;
         document.getElementById('otherInsects').value = '';
-        document.getElementById('actualMinTemp').value = '14.2';
-        document.getElementById('actualMaxTemp').value = '23.1';
-        document.getElementById('bomStation').value = 'Hobart (Ellerslie Road)';
-        document.getElementById('stationId').value = '094029';
+        document.getElementById('actualMinTemp').value = '';
+        document.getElementById('actualMaxTemp').value = '';
+        document.getElementById('bomStation').value = '';
+        document.getElementById('stationId').value = '';
         document.getElementById('seedMaturity').value = 'early';
         document.getElementById('notes').value = '';
         document.getElementById('speciesSelect').value = 'Acacia verticillata';
@@ -1142,6 +1293,7 @@
         updateFromRegion();
         if (marker) marker.setLatLng([-42.88, 147.33]);
         map.setView([-42.88, 147.33], 7);
+        alert('✅ Form has been reset');
     }
 
     window.onload = function() {
