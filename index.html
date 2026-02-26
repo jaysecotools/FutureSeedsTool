@@ -425,11 +425,11 @@
         .photo-preview-item {
             position: relative;
             width: 80px;
-            height: 80px;
+            text-align: center;
         }
         .photo-preview-item img {
-            width: 100%;
-            height: 100%;
+            width: 80px;
+            height: 80px;
             object-fit: cover;
             border-radius: 10px;
             border: 2px solid #8ba35e;
@@ -449,6 +449,11 @@
             display: flex;
             align-items: center;
             justify-content: center;
+        }
+        .photo-size {
+            font-size: 0.7rem;
+            color: #555;
+            margin-top: 2px;
         }
         .template-buttons {
             display: flex;
@@ -666,6 +671,15 @@
             color: #b26500;
             font-weight: 600;
         }
+        .camera-note {
+            font-size: 0.85rem;
+            color: #3a6b3a;
+            margin: 5px 0;
+            padding: 5px;
+            background: #e8f5e8;
+            border-radius: 20px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -675,7 +689,7 @@
             🌱 FUTURE SEEDS PROGRAM 
             <span>DATA COLLECTOR v5.0</span>
         </h1>
-        <div class="program-badge">⚡ interactive map · region selector · manual weather · photo capture</div>
+        <div class="program-badge">⚡ interactive map · region selector · manual weather · camera ready</div>
     </div>
 
     <!-- User Guide Toggle -->
@@ -703,11 +717,12 @@
                 </ul>
             </div>
             <div class="guide-step">
-                <h3>📸 3. Photo Documentation</h3>
+                <h3>📸 3. Take Photos</h3>
                 <ul>
-                    <li>Take or select photos</li>
-                    <li>Photos are embedded in exports</li>
-                    <li>Previews show selected images</li>
+                    <li><strong>Take Photo Now:</strong> Opens camera for new photos</li>
+                    <li><strong>Choose from Gallery:</strong> Select existing photos</li>
+                    <li>Photos are embedded in saved records</li>
+                    <li>Large photos can be compressed</li>
                 </ul>
             </div>
             <div class="guide-step">
@@ -847,17 +862,37 @@
                         </div>
                     </div>
 
-                    <!-- PHOTO SECTION -->
+                    <!-- PHOTO SECTION with Camera Support -->
                     <div class="photo-section">
                         <label style="font-weight:800; color:#1f681f;">📸 Photo Documentation</label>
                         <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px;">
-                            <input type="file" id="photoInput" accept="image/*" multiple style="display: none;">
-                            <button class="btn" onclick="document.getElementById('photoInput').click()" style="background: #8a6e4b; color: white; padding: 10px 20px;">
-                                📷 Select Photos
+                            <!-- Camera button - opens camera directly -->
+                            <button class="btn" onclick="openCamera()" style="background: #4a90e2; color: white; padding: 10px 20px; border-color: #2a5080;">
+                                📷 Take Photo Now
                             </button>
+                            
+                            <!-- Hidden camera input -->
+                            <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display: none;">
+                            
+                            <!-- Gallery button - select existing photos -->
+                            <button class="btn" onclick="document.getElementById('photoInput').click()" style="background: #8a6e4b; color: white; padding: 10px 20px;">
+                                🖼️ Choose from Gallery
+                            </button>
+                            
+                            <!-- Hidden gallery input -->
+                            <input type="file" id="photoInput" accept="image/*" multiple style="display: none;">
+                            
                             <span id="photoCount" style="align-self: center;">0 photos selected</span>
                         </div>
+                        
+                        <!-- Quick capture note -->
+                        <div class="camera-note">
+                            📱 On mobile: Camera opens automatically • On desktop: Select files
+                        </div>
+                        
+                        <!-- Photo preview area -->
                         <div class="photo-preview" id="photoPreview"></div>
+                        
                         <div style="font-size: 0.8rem; color: #5a7344; margin-top: 5px;">
                             ⚠️ Photos are stored as data URLs - large images may affect performance
                         </div>
@@ -986,7 +1021,6 @@
             fireHistory: 'recent',
             notes: 'Post-fire regeneration monitoring',
             seedMaturity: 'early',
-            // Don't override other fields
         },
         peakFlower: {
             fullFlower: true,
@@ -1000,7 +1034,6 @@
         },
         pollinatorSurvey: {
             notes: 'Pollinator survey location',
-            // Pollinator checkboxes will be manually set
         }
     };
 
@@ -1219,51 +1252,144 @@
         document.getElementById('speciesDisplay').innerHTML = displayName;
     }
 
-    // Photo handling
-    document.getElementById('photoInput').addEventListener('change', function(e) {
-        const files = Array.from(e.target.files);
-        selectedPhotos = files;
+    // Open camera for taking new photos
+    function openCamera() {
+        const cameraInput = document.getElementById('cameraInput');
         
-        document.getElementById('photoCount').innerText = `${files.length} photo(s) selected`;
+        // Set attributes for better camera handling
+        cameraInput.setAttribute('capture', 'environment');
+        cameraInput.setAttribute('accept', 'image/*');
         
-        const previewDiv = document.getElementById('photoPreview');
-        previewDiv.innerHTML = '';
+        // Clear previous value to ensure change event fires
+        cameraInput.value = '';
         
-        files.forEach((file, index) => {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const preview = document.createElement('div');
-                preview.className = 'photo-preview-item';
-                preview.innerHTML = `
-                    <img src="${e.target.result}">
-                    <button class="photo-remove" onclick="removePhoto(${index})">×</button>
-                `;
-                previewDiv.appendChild(preview);
-            };
-            reader.readAsDataURL(file);
-        });
-    });
+        // Trigger camera
+        cameraInput.click();
+        
+        // Handle the captured photo
+        cameraInput.onchange = function(e) {
+            if (e.target.files && e.target.files[0]) {
+                handleNewPhotos(Array.from(e.target.files));
+            }
+        };
+    }
 
-    function removePhoto(index) {
-        selectedPhotos.splice(index, 1);
-        document.getElementById('photoCount').innerText = `${selectedPhotos.length} photo(s) selected`;
+    // Handle new photos (from camera or gallery)
+    function handleNewPhotos(newFiles) {
+        // Add new files to existing selection
+        const allFiles = [...selectedPhotos, ...newFiles];
         
+        // Limit total photos to prevent storage issues
+        const MAX_PHOTOS = 10;
+        if (allFiles.length > MAX_PHOTOS) {
+            alert(`Maximum ${MAX_PHOTOS} photos allowed. Only the first ${MAX_PHOTOS} will be kept.`);
+            selectedPhotos = allFiles.slice(0, MAX_PHOTOS);
+        } else {
+            selectedPhotos = allFiles;
+        }
+        
+        // Update UI
+        document.getElementById('photoCount').innerText = `${selectedPhotos.length} photo(s) selected`;
+        updatePhotoPreviews();
+        
+        // Check for large files and offer compression
+        const largeFiles = selectedPhotos.filter(f => f.size > 5 * 1024 * 1024); // >5MB
+        if (largeFiles.length > 0) {
+            if (confirm('Some photos are large (>5MB). Would you like to compress them for better storage?')) {
+                compressPhotos(largeFiles);
+            }
+        }
+    }
+
+    // Update photo previews
+    function updatePhotoPreviews() {
         const previewDiv = document.getElementById('photoPreview');
         previewDiv.innerHTML = '';
-        selectedPhotos.forEach((file, i) => {
+        
+        selectedPhotos.forEach((file, index) => {
             const reader = new FileReader();
             reader.onload = function(e) {
                 const preview = document.createElement('div');
                 preview.className = 'photo-preview-item';
                 preview.innerHTML = `
-                    <img src="${e.target.result}">
-                    <button class="photo-remove" onclick="removePhoto(${i})">×</button>
+                    <img src="${e.target.result}" alt="Preview">
+                    <button class="photo-remove" onclick="removePhoto(${index})">×</button>
+                    <div class="photo-size">${(file.size / 1024).toFixed(0)}KB</div>
                 `;
                 previewDiv.appendChild(preview);
             };
             reader.readAsDataURL(file);
         });
     }
+
+    // Remove photo
+    function removePhoto(index) {
+        selectedPhotos.splice(index, 1);
+        document.getElementById('photoCount').innerText = `${selectedPhotos.length} photo(s) selected`;
+        updatePhotoPreviews();
+    }
+
+    // Compress large photos
+    function compressPhotos(files) {
+        files.forEach((file, idx) => {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    // Create canvas for compression
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+                    
+                    // Max dimensions
+                    const MAX_WIDTH = 1200;
+                    const MAX_HEIGHT = 1200;
+                    
+                    if (width > height) {
+                        if (width > MAX_WIDTH) {
+                            height *= MAX_WIDTH / width;
+                            width = MAX_WIDTH;
+                        }
+                    } else {
+                        if (height > MAX_HEIGHT) {
+                            width *= MAX_HEIGHT / height;
+                            height = MAX_HEIGHT;
+                        }
+                    }
+                    
+                    canvas.width = width;
+                    canvas.height = height;
+                    
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    // Convert to compressed JPEG
+                    canvas.toBlob((blob) => {
+                        const compressedFile = new File([blob], file.name, {
+                            type: 'image/jpeg',
+                            lastModified: Date.now()
+                        });
+                        
+                        // Replace the original file with compressed version
+                        const fileIndex = selectedPhotos.indexOf(file);
+                        if (fileIndex !== -1) {
+                            selectedPhotos[fileIndex] = compressedFile;
+                            updatePhotoPreviews();
+                        }
+                    }, 'image/jpeg', 0.8); // 80% quality
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    // Gallery photo selection
+    document.getElementById('photoInput').addEventListener('change', function(e) {
+        if (e.target.files && e.target.files.length > 0) {
+            handleNewPhotos(Array.from(e.target.files));
+        }
+    });
 
     // Apply template
     function applyTemplate(templateName) {
@@ -1340,24 +1466,6 @@
         const monthIndex = getCurrentMonthIndex();
         const monthName = monthDisplayNames[monthIndex];
 
-        // Convert photos to base64
-        const photoPromises = selectedPhotos.map(file => {
-            return new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    resolve({
-                        name: file.name,
-                        type: file.type,
-                        size: file.size,
-                        data: e.target.result
-                    });
-                };
-                reader.readAsDataURL(file);
-            });
-        });
-
-        // For synchronous return, we'll handle photos in save function
-        // This function returns data without photos for immediate preview
         return {
             id: Date.now(),
             timestamp: new Date().toISOString(),
