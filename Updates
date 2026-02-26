@@ -555,6 +555,16 @@
         .record-card.selected { border-left: 8px solid #e5a526; background: #fff7df; }
         .record-date { font-weight: 700; color: #2d741d; }
         .record-species { color: #3f4f2b; margin: 0.3rem 0; }
+        .record-location { font-size: 0.9rem; color: #4f6b3a; }
+        .record-fire { 
+            display: inline-block; 
+            background: #d96c2b; 
+            color: white; 
+            padding: 0.2rem 0.8rem; 
+            border-radius: 30px; 
+            font-size: 0.7rem;
+            margin-top: 0.3rem;
+        }
         .record-weather { background: #e5f0ce; border-radius: 30px; padding: 0.2rem 0.8rem; display: inline-block; margin-top: 0.5rem; }
         .record-photo-indicator { color: #b35e1a; font-size: 0.9rem; }
         .record-actions { display: flex; gap: 0.5rem; margin-top: 0.8rem; }
@@ -634,7 +644,7 @@
 <body>
 <div class="card">
     <div class="header">
-        <h1>🌱 FUTURE SEEDS PROGRAM <span>DATA COLLECTOR v5.5</span></h1>
+        <h1>🌱 FUTURE SEEDS PROGRAM <span>DATA COLLECTOR v5.6</span></h1>
     </div>
 
     <!-- User Guide Toggle -->
@@ -644,7 +654,7 @@
     <div class="guide-panel" id="guidePanel">
         <div class="guide-grid">
             <div class="guide-step"><h3>📍 1. Choose Location</h3><ul><li>Quick Region: broad area (faster)</li><li>Precise Map: click or "My Location"</li><li>Use "↩️ Use quick region" to switch back</li></ul></div>
-            <div class="guide-step"><h3>📝 2. Field Data</h3><ul><li>Flowering stage, pollinators</li><li>Site notes</li></ul></div>
+            <div class="guide-step"><h3>📝 2. Field Data</h3><ul><li>Flowering stage, pollinators</li><li>Fire history (optional)</li><li>Site notes</li></ul></div>
             <div class="guide-step"><h3>📸 3. Photos</h3><ul><li>Take Photo Now (camera)</li><li>Choose from Gallery</li><li>Max 10 photos</li></ul></div>
             <div class="guide-step"><h3>🌡️ 4. Weather (manual)</h3><ul><li>Enter actual BOM min/max (optional)</li><li>Station name & ID (optional)</li></ul></div>
             <div class="guide-step"><h3>💾 5. Save & Export</h3><ul><li>Save to browser storage</li><li>Export JSON / Excel / CSV</li><li>Edit or delete records</li></ul></div>
@@ -763,7 +773,7 @@
                 </div>
             </div>
 
-            <!-- RIGHT: SEED + WEATHER -->
+            <!-- RIGHT: SEED + FIRE + WEATHER -->
             <div>
                 <div class="data-card">
                     <h2>🌡️ MANUAL weather entry</h2>
@@ -792,10 +802,23 @@
                                 <option value="dispersed">Already dispersed</option>
                             </select>
                         </div>
+
+                        <div class="field" style="margin-top:15px;">
+                            <label>🔥 Fire history</label>
+                            <select id="fireHistory">
+                                <option value="unknown" selected>Unknown</option>
+                                <option value="less1">< 1 year</option>
+                                <option value="1-2">1-2 years</option>
+                                <option value="3-5">3-5 years</option>
+                                <option value="6-10">6-10 years</option>
+                                <option value="more10">> 10 years</option>
+                                <option value="none">No known fire</option>
+                            </select>
+                        </div>
                         
                         <div class="field" style="margin-top:15px;">
                             <label>📝 Site notes</label>
-                            <textarea id="notes" rows="2" placeholder="plant health, flowering density..."></textarea>
+                            <textarea id="notes" rows="2" placeholder="plant health, fire damage, flowering density..."></textarea>
                         </div>
                     </div>
                 </div>
@@ -843,6 +866,17 @@
     let usingMapMode = false;
     let selectedPhotos = [];
     let map, marker;
+
+    // Fire history display mapping
+    const fireHistoryLabels = {
+        'unknown': 'Unknown',
+        'less1': '< 1 year',
+        '1-2': '1-2 years',
+        '3-5': '3-5 years',
+        '6-10': '6-10 years',
+        'more10': '> 10 years',
+        'none': 'No known fire'
+    };
 
     // Guide toggle
     function toggleGuide() {
@@ -1115,6 +1149,7 @@
                 seedMaturity: document.getElementById('seedMaturity').value
             },
             siteHistory: {
+                fire: document.getElementById('fireHistory').value,
                 notes: document.getElementById('notes').value
             },
             weather: {
@@ -1163,6 +1198,8 @@
                 <div class="record-date">📅 ${r.collectionDate}</div>
                 <div class="record-species">🌿 ${r.species.split(' ')[0]}</div>
                 <div class="record-location">📍 ${r.location.region}</div>
+                ${r.siteHistory.fire && r.siteHistory.fire !== 'unknown' ? 
+                    `<div class="record-fire">🔥 ${fireHistoryLabels[r.siteHistory.fire] || r.siteHistory.fire}</div>` : ''}
                 <div class="record-weather">🌡️ ${r.weather.minTemp ? r.weather.minTemp : '—'}/${r.weather.maxTemp ? r.weather.maxTemp : '—'}°C</div>
                 ${r.photos?.length ? `<div class="record-photo-indicator">📸 ${r.photos.length}</div>` : ''}
                 <div class="record-actions">
@@ -1173,7 +1210,8 @@
     }
     window.selectRecord = (i) => {
         let r = savedRecords[i];
-        alert(`Record: ${r.collectionDate} - ${r.species}\nLocation: ${r.location.siteName}\nTemp: ${r.weather.minTemp ? r.weather.minTemp : '—'}/${r.weather.maxTemp ? r.weather.maxTemp : '—'}°C`);
+        let fireText = r.siteHistory.fire ? `\nFire: ${fireHistoryLabels[r.siteHistory.fire] || r.siteHistory.fire}` : '';
+        alert(`Record: ${r.collectionDate} - ${r.species}${fireText}\nLocation: ${r.location.siteName}\nTemp: ${r.weather.minTemp ? r.weather.minTemp : '—'}/${r.weather.maxTemp ? r.weather.maxTemp : '—'}°C`);
         document.querySelectorAll('.record-card').forEach(c => c.classList.remove('selected'));
         document.querySelectorAll('.record-card')[i]?.classList.add('selected');
     };
@@ -1206,6 +1244,7 @@
         document.getElementById('bomStation').value = r.weather.station || '';
         document.getElementById('stationId').value = r.weather.stationId || '';
         document.getElementById('seedMaturity').value = r.phenology.seedMaturity;
+        document.getElementById('fireHistory').value = r.siteHistory.fire || 'unknown';
         document.getElementById('notes').value = r.siteHistory.notes;
         selectedPhotos = []; document.getElementById('photoPreview').innerHTML = ''; document.getElementById('photoCount').innerText = '0 photos';
         updateMonthDisplay(); updateTempDisplay();
@@ -1239,6 +1278,7 @@
             'Region':d.location.region,'Site':d.location.siteName,'Lat':d.location.latitude,'Lon':d.location.longitude,
             'MinTemp':d.weather.minTemp !== null ? d.weather.minTemp : '', 'MaxTemp':d.weather.maxTemp !== null ? d.weather.maxTemp : '',
             'Station':d.weather.station || '', 'StationID':d.weather.stationId || '',
+            'FireHistory':fireHistoryLabels[d.siteHistory.fire] || d.siteHistory.fire,
             'Notes':d.siteHistory.notes,
             'PhotoCount':selectedPhotos.length
         };
@@ -1249,9 +1289,10 @@
     }
     function exportToCSV() {
         let d = collectFormData();
-        let row = [`"Program"`,`"Observer"`,`"Date"`,`"Species"`,`"Region"`,`"Lat"`,`"Lon"`,`"Min"`,`"Max"`,`"Notes"`];
+        let row = [`"Program"`,`"Observer"`,`"Date"`,`"Species"`,`"Region"`,`"Lat"`,`"Lon"`,`"Min"`,`"Max"`,`"Fire"`,`"Notes"`];
         let vals = [d.program, d.observer, d.collectionDate, d.species, d.location.region, d.location.latitude, d.location.longitude, 
-                   d.weather.minTemp !== null ? d.weather.minTemp : '', d.weather.maxTemp !== null ? d.weather.maxTemp : '', d.siteHistory.notes];
+                   d.weather.minTemp !== null ? d.weather.minTemp : '', d.weather.maxTemp !== null ? d.weather.maxTemp : '',
+                   fireHistoryLabels[d.siteHistory.fire] || d.siteHistory.fire, d.siteHistory.notes];
         let csv = row.join(',') + '\n' + vals.map(v => typeof v === 'string' ? `"${v.replace(/"/g,'""')}"` : v).join(',');
         let blob = new Blob([csv], {type:'text/csv'});
         let a = document.createElement('a');
@@ -1282,6 +1323,7 @@
         document.getElementById('bomStation').value = '';
         document.getElementById('stationId').value = '';
         document.getElementById('seedMaturity').value = 'early';
+        document.getElementById('fireHistory').value = 'unknown';
         document.getElementById('notes').value = '';
         document.getElementById('speciesSelect').value = 'Acacia verticillata';
         document.getElementById('regionSelect').value = 'south';
