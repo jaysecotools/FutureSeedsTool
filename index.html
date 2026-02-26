@@ -139,6 +139,7 @@
             padding: 0.6rem 1.8rem;
             border-radius: 60px;
             align-items: center;
+            position: relative;
         }
         .location-options label {
             color: #fcf1b5;
@@ -150,6 +151,42 @@
             padding: 8px 28px 8px 16px;
             border: 2px solid #eeb844;
             font-weight: 600;
+            transition: all 0.3s ease;
+            min-width: 200px;
+        }
+        .location-options select.map-active {
+            background: #e0e0e0;
+            border-color: #999999;
+            color: #666666;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        .map-in-use-badge {
+            position: absolute;
+            right: 30px;
+            background: #d16b4b;
+            color: white;
+            padding: 2px 10px;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .map-in-use-badge.show {
+            opacity: 1;
+        }
+        .location-mode-indicator {
+            font-size: 0.8rem;
+            padding: 4px 10px;
+            border-radius: 30px;
+            background: #4a90e2;
+            color: white;
+            font-weight: 600;
+            display: inline-block;
         }
         .content {
             padding: 2.5rem;
@@ -219,6 +256,9 @@
             color: #1e611e;
             font-size: 1.5rem;
             font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
         .map-toggle {
             display: flex;
@@ -283,6 +323,20 @@
             padding: 8px 16px;
             width: 120px;
             font-weight: 600;
+        }
+        .coord-item input:read-only {
+            background: #f0f0f0;
+            border-color: #cccccc;
+        }
+        .location-note {
+            background: #fdebb3;
+            padding: 0.5rem 1.5rem;
+            border-radius: 60px;
+            color: #1f4f1f;
+            font-weight: 600;
+            text-align: center;
+            margin-top: 1rem;
+            font-size: 0.9rem;
         }
         .split-panel {
             display: flex;
@@ -680,6 +734,15 @@
             border-radius: 20px;
             text-align: center;
         }
+        .info-badge {
+            background: #4a90e2;
+            color: white;
+            padding: 0.2rem 0.8rem;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-left: 10px;
+        }
     </style>
 </head>
 <body>
@@ -689,7 +752,7 @@
             🌱 FUTURE SEEDS PROGRAM 
             <span>DATA COLLECTOR v5.0</span>
         </h1>
-        <div class="program-badge">⚡ interactive map · region selector · manual weather · camera ready</div>
+        <div class="program-badge">⚡ interactive map · quick region · camera ready</div>
     </div>
 
     <!-- User Guide Toggle -->
@@ -699,12 +762,12 @@
     <div class="guide-panel" id="guidePanel">
         <div class="guide-grid">
             <div class="guide-step">
-                <h3>📍 1. Choose Location</h3>
+                <h3>📍 1. Choose Location Method</h3>
                 <ul>
-                    <li><strong>Quick region:</strong> Use dropdown for broad area</li>
-                    <li><strong>Your location:</strong> Click "Use My Location" button</li>
-                    <li><strong>Precise:</strong> Click map or enter coordinates</li>
-                    <li>Map automatically updates region</li>
+                    <li><strong>Quick Region:</strong> Use dropdown for broad area (faster)</li>
+                    <li><strong>Precise Map:</strong> Click map or use "My Location" for exact coordinates</li>
+                    <li>When using map, dropdown shows "📍 Map in use"</li>
+                    <li>Both methods store region + coordinates in your data</li>
                 </ul>
             </div>
             <div class="guide-step">
@@ -722,7 +785,6 @@
                     <li><strong>Take Photo Now:</strong> Opens camera for new photos</li>
                     <li><strong>Choose from Gallery:</strong> Select existing photos</li>
                     <li>Photos are embedded in saved records</li>
-                    <li>Large photos can be compressed</li>
                 </ul>
             </div>
             <div class="guide-step">
@@ -739,7 +801,6 @@
                     <li>Save to local storage for later editing</li>
                     <li>Export as JSON, Excel, or CSV</li>
                     <li>Edit or delete existing records</li>
-                    <li>View field statistics</li>
                 </ul>
             </div>
         </div>
@@ -757,13 +818,16 @@
             </select>
         </div>
         <div class="location-options">
-            <label>📍 Quick region:</label>
+            <label>📍 Quick Region:</label>
             <select id="regionSelect" onchange="updateFromRegion()">
-                <option value="northWest">🌊 North West (Burnie)</option>
+                <option value="northWest">🌊 North West (Burnie/Devonport)</option>
                 <option value="north">🌲 North (Launceston)</option>
                 <option value="south" selected>🏔️ South (Hobart)</option>
-                <option value="westCoast">🌧️ West Coast (Strahan)</option>
+                <option value="westCoast">🌧️ West Coast (Strahan/Queenstown)</option>
+                <option value="eastCoast">🏖️ East Coast (St Helens/Bicheno)</option>
             </select>
+            <span class="map-in-use-badge" id="mapInUseBadge">📍 Map in use</span>
+            <span class="info-badge" id="locationMode">Quick Region Mode</span>
         </div>
     </div>
 
@@ -773,7 +837,6 @@
             <div class="stats-panel" id="statsPanel">
                 <div class="stat-item">📊 Total: <span class="stat-value" id="totalRecordsStat">0</span></div>
                 <div class="stat-item">🌡️ Avg: <span class="stat-value" id="avgTempStat">-</span></div>
-                <div class="stat-item" onclick="showFieldStats()" style="cursor: pointer;">📈 More Stats →</div>
             </div>
             <div class="month-indicator" id="currentMonthDisplay">📆 February 2026 · manual weather entry</div>
         </div>
@@ -781,7 +844,10 @@
         <!-- MAP SECTION -->
         <div class="map-section">
             <div class="map-header">
-                <h3>🗺️ Click map for precise location (or use location button)</h3>
+                <h3>
+                    🗺️ Precise Location Map
+                    <span class="info-badge" id="mapModeIndicator">Click map to activate</span>
+                </h3>
                 <div class="map-toggle">
                     <button class="map-btn location-btn" onclick="getUserLocation()">
                         📱 Use My Location
@@ -801,9 +867,12 @@
                     <input type="text" id="lon" value="147.33" readonly>
                 </div>
                 <div class="coord-item">
-                    <label>Detected region:</label>
-                    <input type="text" id="detectedRegion" value="South (Hobart)" readonly>
+                    <label>Source:</label>
+                    <input type="text" id="coordSource" value="Quick Region (Hobart)" readonly>
                 </div>
+            </div>
+            <div class="location-note" id="locationNote">
+                ⚡ Using Quick Region mode. Click map or use "My Location" for precise coordinates.
             </div>
         </div>
 
@@ -1007,51 +1076,17 @@
     // Load records from localStorage
     let savedRecords = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
 
-    // Region boundaries (accurate for Tasmania based on real geographic data)
-    const regionBoundaries = {
-        northWest: { 
-            minLat: -41.6,    // Southern boundary (just south of Burnie)
-            maxLat: -40.6,    // Northern boundary (tips of NW Tasmania)
-            minLon: 144.6,    // Western boundary (west coast)
-            maxLon: 146.0,    // Eastern boundary (just east of Burnie)
-            name: "North West (Burnie)",
-            center: { lat: -41.05, lon: 145.90 } // Burnie
-        },
-        north: { 
-            minLat: -41.9,    // Southern boundary (just south of Launceston)
-            maxLat: -41.0,    // Northern boundary (Bass Strait coast)
-            minLon: 146.0,    // Western boundary (overlaps slightly with NW)
-            maxLon: 148.0,    // Eastern boundary (east coast)
-            name: "North (Launceston)",
-            center: { lat: -41.43, lon: 147.14 } // Launceston
-        },
-        south: { 
-            minLat: -43.7,    // Southern boundary (South East Cape)
-            maxLat: -42.0,    // Northern boundary (just north of Hobart)
-            minLon: 146.0,    // Western boundary (Mt Field area)
-            maxLon: 148.3,    // Eastern boundary (east coast, Freycinet)
-            name: "South (Hobart)",
-            center: { lat: -42.88, lon: 147.33 } // Hobart
-        },
-        westCoast: { 
-            minLat: -43.6,    // Southern boundary (South West Cape)
-            maxLat: -41.5,    // Northern boundary (Pieman River area)
-            minLon: 144.5,    // Western boundary (west coast)
-            maxLon: 146.0,    // Eastern boundary (Lake St Clair area)
-            name: "West Coast (Strahan)",
-            center: { lat: -42.15, lon: 145.32 } // Strahan
-        }
+    // Region presets (approximate centers for quick selection)
+    const regionPresets = {
+        northWest: { lat: -41.05, lon: 145.90, name: "North West (Burnie/Devonport)" },
+        north: { lat: -41.43, lon: 147.14, name: "North (Launceston)" },
+        south: { lat: -42.88, lon: 147.33, name: "South (Hobart)" },
+        westCoast: { lat: -42.15, lon: 145.32, name: "West Coast (Strahan/Queenstown)" },
+        eastCoast: { lat: -41.73, lon: 148.25, name: "East Coast (St Helens/Bicheno)" }
     };
 
-    // Major city coordinates for fallback (more accurate)
-    const majorCities = [
-        { name: "North West (Burnie)", lat: -41.05, lon: 145.90, key: 'northWest' },
-        { name: "North (Launceston)", lat: -41.43, lon: 147.14, key: 'north' },
-        { name: "South (Hobart)", lat: -42.88, lon: 147.33, key: 'south' },
-        { name: "West Coast (Strahan)", lat: -42.15, lon: 145.32, key: 'westCoast' },
-        { name: "North West (Devonport)", lat: -41.18, lon: 146.36, key: 'northWest' }, // Additional NW city
-        { name: "North (George Town)", lat: -41.10, lon: 146.82, key: 'north' } // Additional North city
-    ];
+    // Track location mode
+    let usingMapMode = false;
 
     // Templates for quick entry
     const templates = {
@@ -1082,19 +1117,6 @@
     let map;
     let marker;
 
-    // Calculate distance between two points using Haversine formula
-    function calculateDistance(lat1, lon1, lat2, lon2) {
-        const R = 6371; // Earth's radius in km
-        const dLat = (lat2 - lat1) * Math.PI / 180;
-        const dLon = (lon2 - lon1) * Math.PI / 180;
-        const a = 
-            Math.sin(dLat/2) * Math.sin(dLat/2) +
-            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
-            Math.sin(dLon/2) * Math.sin(dLon/2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-        return R * c;
-    }
-
     // Toggle guide
     function toggleGuide() {
         document.getElementById('guidePanel').classList.toggle('show');
@@ -1118,6 +1140,32 @@
         }
     }
 
+    // Switch to map mode
+    function enableMapMode() {
+        usingMapMode = true;
+        document.getElementById('locationMode').innerText = '📍 Map Mode';
+        document.getElementById('locationMode').style.background = '#d16b4b';
+        document.getElementById('mapModeIndicator').innerText = '✅ Map active';
+        document.getElementById('mapModeIndicator').style.background = '#d16b4b';
+        document.getElementById('regionSelect').classList.add('map-active');
+        document.getElementById('regionSelect').disabled = true;
+        document.getElementById('mapInUseBadge').classList.add('show');
+        document.getElementById('locationNote').innerHTML = '📍 Using precise map coordinates. Region dropdown shows "📍 Map in use".';
+    }
+
+    // Switch to quick region mode
+    function enableQuickRegionMode() {
+        usingMapMode = false;
+        document.getElementById('locationMode').innerText = '⚡ Quick Region';
+        document.getElementById('locationMode').style.background = '#4a90e2';
+        document.getElementById('mapModeIndicator').innerText = 'Click map to activate';
+        document.getElementById('mapModeIndicator').style.background = '#4a90e2';
+        document.getElementById('regionSelect').classList.remove('map-active');
+        document.getElementById('regionSelect').disabled = false;
+        document.getElementById('mapInUseBadge').classList.remove('show');
+        document.getElementById('locationNote').innerHTML = '⚡ Using Quick Region mode. Click map or use "My Location" for precise coordinates.';
+    }
+
     // Get user location
     function getUserLocation() {
         if (!navigator.geolocation) {
@@ -1138,8 +1186,9 @@
                     map.setView([lat, lng], 12);
                 }
                 
-                updateCoordinates(lat, lng);
+                updateCoordinates(lat, lng, true);
                 reverseGeocode(lat, lng);
+                enableMapMode();
                 
                 outputBox.innerText = `📍 Location captured: ${lat.toFixed(4)}, ${lng.toFixed(4)}`;
             },
@@ -1203,92 +1252,52 @@
 
         marker.on('dragend', function(e) {
             const latlng = marker.getLatLng();
-            updateCoordinates(latlng.lat, latlng.lng);
+            updateCoordinates(latlng.lat, latlng.lng, true);
+            enableMapMode();
         });
 
         map.on('click', function(e) {
             marker.setLatLng(e.latlng);
-            updateCoordinates(e.latlng.lat, e.latlng.lng);
-        });
-
-        // Add region boundary overlays (optional - commented out)
-        // addRegionBoundaries();
-    }
-
-    // Optional: Add visual region boundaries to map
-    function addRegionBoundaries() {
-        const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4'];
-        Object.values(regionBoundaries).forEach((bounds, index) => {
-            const rectangle = L.rectangle([
-                [bounds.minLat, bounds.minLon],
-                [bounds.maxLat, bounds.maxLon]
-            ], {
-                color: colors[index % colors.length],
-                weight: 2,
-                opacity: 0.5,
-                fillOpacity: 0.1
-            }).addTo(map);
-            
-            // Add label at center
-            L.marker([bounds.center.lat, bounds.center.lon], {
-                icon: L.divIcon({ className: 'region-label', html: bounds.name.split(' ')[0] })
-            }).addTo(map);
+            updateCoordinates(e.latlng.lat, e.latlng.lng, true);
+            enableMapMode();
         });
     }
 
-    // Update coordinates and region from map click with improved detection
-    function updateCoordinates(lat, lng) {
+    // Update coordinates
+    function updateCoordinates(lat, lng, fromMap = false) {
         document.getElementById('lat').value = lat.toFixed(4);
         document.getElementById('lon').value = lng.toFixed(4);
         
-        // First try exact boundary matching
-        let detectedRegion = "Unknown";
-        let matchedRegion = null;
-        let matchedDistance = Infinity;
-        
-        for (const [key, bounds] of Object.entries(regionBoundaries)) {
-            if (lat >= bounds.minLat && lat <= bounds.maxLat && 
-                lng >= bounds.minLon && lng <= bounds.maxLon) {
-                detectedRegion = bounds.name;
-                matchedRegion = key;
-                break;
-            }
-        }
-        
-        // If no exact match, find closest region based on distance to centers
-        if (detectedRegion === "Unknown") {
-            let closestDistance = Infinity;
-            
-            for (const [key, bounds] of Object.entries(regionBoundaries)) {
-                const distance = calculateDistance(lat, lng, bounds.center.lat, bounds.center.lon);
-                if (distance < closestDistance) {
-                    closestDistance = distance;
-                    detectedRegion = bounds.name;
-                    matchedRegion = key;
-                }
-            }
-        }
-        
-        document.getElementById('detectedRegion').value = detectedRegion;
-        if (matchedRegion) {
-            document.getElementById('regionSelect').value = matchedRegion;
+        if (fromMap) {
+            document.getElementById('coordSource').value = 'Map selection';
+        } else {
+            const region = document.getElementById('regionSelect').value;
+            document.getElementById('coordSource').value = `Quick Region (${regionPresets[region].name})`;
         }
     }
 
-    // Update from region dropdown with improved coordinates
+    // Update from region dropdown
     function updateFromRegion() {
+        if (usingMapMode) {
+            // Don't update coordinates if in map mode
+            return;
+        }
+        
         const region = document.getElementById('regionSelect').value;
+        const preset = regionPresets[region];
         
-        // Get the center coordinates for selected region
-        const bounds = regionBoundaries[region];
-        
-        document.getElementById('lat').value = bounds.center.lat.toFixed(4);
-        document.getElementById('lon').value = bounds.center.lon.toFixed(4);
-        document.getElementById('detectedRegion').value = bounds.name;
+        document.getElementById('lat').value = preset.lat.toFixed(4);
+        document.getElementById('lon').value = preset.lon.toFixed(4);
+        document.getElementById('coordSource').value = `Quick Region (${preset.name})`;
         
         if (marker) {
-            marker.setLatLng([bounds.center.lat, bounds.center.lon]);
-            map.setView([bounds.center.lat, bounds.center.lon], 9);
+            marker.setLatLng([preset.lat, preset.lon]);
+            map.setView([preset.lat, preset.lon], 8);
+        }
+        
+        // Ensure we're in quick region mode
+        if (usingMapMode) {
+            enableQuickRegionMode();
         }
     }
 
@@ -1332,18 +1341,11 @@
     // Open camera for taking new photos
     function openCamera() {
         const cameraInput = document.getElementById('cameraInput');
-        
-        // Set attributes for better camera handling
         cameraInput.setAttribute('capture', 'environment');
         cameraInput.setAttribute('accept', 'image/*');
-        
-        // Clear previous value to ensure change event fires
         cameraInput.value = '';
-        
-        // Trigger camera
         cameraInput.click();
         
-        // Handle the captured photo
         cameraInput.onchange = function(e) {
             if (e.target.files && e.target.files[0]) {
                 handleNewPhotos(Array.from(e.target.files));
@@ -1351,13 +1353,11 @@
         };
     }
 
-    // Handle new photos (from camera or gallery)
+    // Handle new photos
     function handleNewPhotos(newFiles) {
-        // Add new files to existing selection
         const allFiles = [...selectedPhotos, ...newFiles];
-        
-        // Limit total photos to prevent storage issues
         const MAX_PHOTOS = 10;
+        
         if (allFiles.length > MAX_PHOTOS) {
             alert(`Maximum ${MAX_PHOTOS} photos allowed. Only the first ${MAX_PHOTOS} will be kept.`);
             selectedPhotos = allFiles.slice(0, MAX_PHOTOS);
@@ -1365,12 +1365,10 @@
             selectedPhotos = allFiles;
         }
         
-        // Update UI
         document.getElementById('photoCount').innerText = `${selectedPhotos.length} photo(s) selected`;
         updatePhotoPreviews();
         
-        // Check for large files and offer compression
-        const largeFiles = selectedPhotos.filter(f => f.size > 5 * 1024 * 1024); // >5MB
+        const largeFiles = selectedPhotos.filter(f => f.size > 5 * 1024 * 1024);
         if (largeFiles.length > 0) {
             if (confirm('Some photos are large (>5MB). Would you like to compress them for better storage?')) {
                 compressPhotos(largeFiles);
@@ -1406,19 +1404,17 @@
         updatePhotoPreviews();
     }
 
-    // Compress large photos
+    // Compress photos
     function compressPhotos(files) {
-        files.forEach((file, idx) => {
+        files.forEach((file) => {
             const reader = new FileReader();
             reader.onload = function(e) {
                 const img = new Image();
                 img.onload = function() {
-                    // Create canvas for compression
                     const canvas = document.createElement('canvas');
                     let width = img.width;
                     let height = img.height;
                     
-                    // Max dimensions
                     const MAX_WIDTH = 1200;
                     const MAX_HEIGHT = 1200;
                     
@@ -1440,20 +1436,18 @@
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, width, height);
                     
-                    // Convert to compressed JPEG
                     canvas.toBlob((blob) => {
                         const compressedFile = new File([blob], file.name, {
                             type: 'image/jpeg',
                             lastModified: Date.now()
                         });
                         
-                        // Replace the original file with compressed version
                         const fileIndex = selectedPhotos.indexOf(file);
                         if (fileIndex !== -1) {
                             selectedPhotos[fileIndex] = compressedFile;
                             updatePhotoPreviews();
                         }
-                    }, 'image/jpeg', 0.8); // 80% quality
+                    }, 'image/jpeg', 0.8);
                 };
                 img.src = e.target.result;
             };
@@ -1476,7 +1470,6 @@
         if (template.notes) document.getElementById('notes').value = template.notes;
         if (template.seedMaturity) document.getElementById('seedMaturity').value = template.seedMaturity;
         
-        // Flowering checkboxes
         if (template.fullFlower) document.getElementById('fullFlower').checked = true;
         if (template.seedPod) document.getElementById('seedPod').checked = true;
         
@@ -1489,12 +1482,14 @@
         
         const lat = parseFloat(document.getElementById('lat').value);
         const lon = parseFloat(document.getElementById('lon').value);
+        
         if (lat < -43.7 || lat > -40.4 || lon < 144.5 || lon > 148.5) {
             warnings.push('⚠️ Coordinates appear outside Tasmania');
         }
         
         const minTemp = parseFloat(document.getElementById('actualMinTemp').value);
         const maxTemp = parseFloat(document.getElementById('actualMaxTemp').value);
+        
         if (minTemp < -10 || minTemp > 30) {
             warnings.push('⚠️ Min temperature seems unusual for Tasmania');
         }
@@ -1504,10 +1499,9 @@
         
         const obsDate = new Date(document.getElementById('obsDate').value);
         if (obsDate.getFullYear() !== 2026) {
-            warnings.push('⚠️ Collection date is not in 2026');
+            warnings.push('⚠️ Collection date is not in 2026 (current focus year)');
         }
         
-        // Check if any flowering stage is selected
         const floweringSelected = [
             'bud', 'earlyFlower', 'fullFlower', 'petalFall', 'seedPod'
         ].some(id => document.getElementById(id).checked);
@@ -1533,12 +1527,6 @@
     // Collect form data
     function collectFormData() {
         const region = document.getElementById('regionSelect').value;
-        const regionNames = {
-            northWest: "North West (Burnie)",
-            north: "North (Launceston)",
-            south: "South (Hobart)",
-            westCoast: "West Coast (Strahan)"
-        };
         
         const monthIndex = getCurrentMonthIndex();
         const monthName = monthDisplayNames[monthIndex];
@@ -1547,16 +1535,17 @@
             id: Date.now(),
             timestamp: new Date().toISOString(),
             program: "Future Seeds Program",
+            locationMode: usingMapMode ? "precise_map" : "quick_region",
             observer: document.getElementById('observer').value,
             collectionDate: document.getElementById('obsDate').value,
             species: document.getElementById('speciesSelect').value,
             location: {
-                region: regionNames[region],
-                detectedRegion: document.getElementById('detectedRegion').value,
+                region: regionPresets[region].name,
+                regionCode: region,
                 siteName: document.getElementById('siteName').value,
                 latitude: parseFloat(document.getElementById('lat').value),
                 longitude: parseFloat(document.getElementById('lon').value),
-                coordinateSource: "Map click / manual"
+                coordinateSource: document.getElementById('coordSource').value
             },
             phenology: {
                 flowering: {
@@ -1588,14 +1577,12 @@
                 maxTemp: parseFloat(document.getElementById('actualMaxTemp').value) || null,
                 station: document.getElementById('bomStation').value,
                 stationId: document.getElementById('stationId').value,
-                dataType: "Manual BOM entry",
-                notes: "User-entered actual observations"
+                dataType: "Manual BOM entry"
             },
             photos: selectedPhotos.map(file => ({
                 name: file.name,
                 type: file.type,
                 size: file.size
-                // Note: actual photo data not included in JSON preview to keep it clean
             }))
         };
     }
@@ -1615,7 +1602,6 @@
         
         const data = collectFormData();
         
-        // Add photos as base64 for storage
         const photoPromises = selectedPhotos.map(file => {
             return new Promise((resolve) => {
                 const reader = new FileReader();
@@ -1685,7 +1671,7 @@
         cards[index]?.classList.add('selected');
     }
 
-    // Edit record - load into form
+    // Edit record
     function editRecord(index) {
         const record = savedRecords[index];
         
@@ -1694,18 +1680,20 @@
         document.getElementById('siteName').value = record.location.siteName;
         document.getElementById('lat').value = record.location.latitude;
         document.getElementById('lon').value = record.location.longitude;
+        document.getElementById('coordSource').value = record.location.coordinateSource;
         
         document.getElementById('speciesSelect').value = record.species;
         updateSpeciesInfo();
         
-        const regionMap = {
-            'North West (Burnie)': 'northWest',
-            'North (Launceston)': 'north',
-            'South (Hobart)': 'south',
-            'West Coast (Strahan)': 'westCoast'
-        };
-        document.getElementById('regionSelect').value = regionMap[record.location.region] || 'south';
-        document.getElementById('detectedRegion').value = record.location.region;
+        // Find region code from name
+        let regionCode = 'south';
+        for (const [code, preset] of Object.entries(regionPresets)) {
+            if (preset.name === record.location.region) {
+                regionCode = code;
+                break;
+            }
+        }
+        document.getElementById('regionSelect').value = regionCode;
         
         document.getElementById('bud').checked = record.phenology.flowering.bud;
         document.getElementById('earlyFlower').checked = record.phenology.flowering.earlyFlower;
@@ -1730,7 +1718,6 @@
         document.getElementById('fireHistory').value = record.siteHistory.fire;
         document.getElementById('notes').value = record.siteHistory.notes;
         
-        // Clear photos (can't easily restore from base64)
         selectedPhotos = [];
         document.getElementById('photoPreview').innerHTML = '';
         document.getElementById('photoCount').innerText = '0 photos selected';
@@ -1743,7 +1730,14 @@
             map.setView([record.location.latitude, record.location.longitude], 8);
         }
         
-        document.getElementById('outputBox').innerText = `✏️ Editing record from ${record.collectionDate}\n\nMake changes and click "Save to Local Storage" to update.`;
+        // Set mode based on how the record was created
+        if (record.locationMode === 'precise_map') {
+            enableMapMode();
+        } else {
+            enableQuickRegionMode();
+        }
+        
+        document.getElementById('outputBox').innerText = `✏️ Editing record from ${record.collectionDate}`;
         
         deleteRecord(index, true);
     }
@@ -1789,6 +1783,10 @@
             speciesCount: new Set(savedRecords.map(r => r.species)).size,
             regions: {},
             fireHistory: {},
+            locationModes: {
+                precise: savedRecords.filter(r => r.locationMode === 'precise_map').length,
+                quick: savedRecords.filter(r => r.locationMode === 'quick_region').length
+            },
             totalPhotos: savedRecords.reduce((sum, r) => sum + (r.photos?.length || 0), 0)
         };
         
@@ -1801,7 +1799,9 @@
             `Total Records: ${stats.totalRecords}\n` +
             `Unique Sites: ${stats.uniqueSites}\n` +
             `Species Count: ${stats.speciesCount}\n` +
-            `Total Photos: ${stats.totalPhotos}\n\n` +
+            `Total Photos: ${stats.totalPhotos}\n` +
+            `📍 Precise Map Records: ${stats.locationModes.precise}\n` +
+            `⚡ Quick Region Records: ${stats.locationModes.quick}\n\n` +
             `Records by Region:\n${Object.entries(stats.regions).map(([r, c]) => `  ${r}: ${c}`).join('\n')}\n\n` +
             `Fire History:\n${Object.entries(stats.fireHistory).map(([f, c]) => `  ${f}: ${c}`).join('\n')}`;
     }
@@ -1820,14 +1820,15 @@
         
         const flatData = {
             'Program': data.program,
+            'Location Mode': data.locationMode,
             'Observer': data.observer,
             'Collection Date': data.collectionDate,
             'Species': data.species,
             'Region': data.location.region,
-            'Detected Region': data.location.detectedRegion,
             'Site': data.location.siteName,
             'Latitude': data.location.latitude,
             'Longitude': data.location.longitude,
+            'Coordinate Source': data.location.coordinateSource,
             'Flowering - Bud': data.phenology.flowering.bud,
             'Flowering - Early': data.phenology.flowering.earlyFlower,
             'Flowering - Full': data.phenology.flowering.fullFlower,
@@ -1909,7 +1910,7 @@
         document.getElementById('siteName').value = 'Hobart Rivulet';
         document.getElementById('lat').value = '-42.88';
         document.getElementById('lon').value = '147.33';
-        document.getElementById('detectedRegion').value = 'South (Hobart)';
+        document.getElementById('coordSource').value = 'Quick Region (South (Hobart))';
         document.getElementById('bud').checked = false;
         document.getElementById('earlyFlower').checked = false;
         document.getElementById('fullFlower').checked = false;
@@ -1932,7 +1933,6 @@
         document.getElementById('speciesSelect').value = 'Acacia verticillata';
         document.getElementById('regionSelect').value = 'south';
         
-        // Clear photos
         selectedPhotos = [];
         document.getElementById('photoPreview').innerHTML = '';
         document.getElementById('photoCount').innerText = '0 photos selected';
@@ -1941,6 +1941,7 @@
         updateMonthDisplay();
         updateTempDisplay();
         showWarnings([]);
+        enableQuickRegionMode();
         
         if (marker) {
             marker.setLatLng([-42.88, 147.33]);
@@ -1959,6 +1960,8 @@
         updateTempDisplay();
         displayRecords();
         updateStats();
+        enableQuickRegionMode();
+        updateFromRegion(); // Set initial coordinates
     };
 </script>
 </body>
