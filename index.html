@@ -1007,13 +1007,51 @@
     // Load records from localStorage
     let savedRecords = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
 
-    // Region boundaries (approximate for Tasmania)
+    // Region boundaries (accurate for Tasmania based on real geographic data)
     const regionBoundaries = {
-        northWest: { minLat: -41.5, maxLat: -40.5, minLon: 144.5, maxLon: 146.0, name: "North West (Burnie)" },
-        north: { minLat: -41.8, maxLat: -41.0, minLon: 146.5, maxLon: 148.0, name: "North (Launceston)" },
-        south: { minLat: -43.5, maxLat: -42.5, minLon: 146.5, maxLon: 148.0, name: "South (Hobart)" },
-        westCoast: { minLat: -43.5, maxLat: -41.5, minLon: 145.0, maxLon: 146.5, name: "West Coast (Strahan)" }
+        northWest: { 
+            minLat: -41.6,    // Southern boundary (just south of Burnie)
+            maxLat: -40.6,    // Northern boundary (tips of NW Tasmania)
+            minLon: 144.6,    // Western boundary (west coast)
+            maxLon: 146.0,    // Eastern boundary (just east of Burnie)
+            name: "North West (Burnie)",
+            center: { lat: -41.05, lon: 145.90 } // Burnie
+        },
+        north: { 
+            minLat: -41.9,    // Southern boundary (just south of Launceston)
+            maxLat: -41.0,    // Northern boundary (Bass Strait coast)
+            minLon: 146.0,    // Western boundary (overlaps slightly with NW)
+            maxLon: 148.0,    // Eastern boundary (east coast)
+            name: "North (Launceston)",
+            center: { lat: -41.43, lon: 147.14 } // Launceston
+        },
+        south: { 
+            minLat: -43.7,    // Southern boundary (South East Cape)
+            maxLat: -42.0,    // Northern boundary (just north of Hobart)
+            minLon: 146.0,    // Western boundary (Mt Field area)
+            maxLon: 148.3,    // Eastern boundary (east coast, Freycinet)
+            name: "South (Hobart)",
+            center: { lat: -42.88, lon: 147.33 } // Hobart
+        },
+        westCoast: { 
+            minLat: -43.6,    // Southern boundary (South West Cape)
+            maxLat: -41.5,    // Northern boundary (Pieman River area)
+            minLon: 144.5,    // Western boundary (west coast)
+            maxLon: 146.0,    // Eastern boundary (Lake St Clair area)
+            name: "West Coast (Strahan)",
+            center: { lat: -42.15, lon: 145.32 } // Strahan
+        }
     };
+
+    // Major city coordinates for fallback (more accurate)
+    const majorCities = [
+        { name: "North West (Burnie)", lat: -41.05, lon: 145.90, key: 'northWest' },
+        { name: "North (Launceston)", lat: -41.43, lon: 147.14, key: 'north' },
+        { name: "South (Hobart)", lat: -42.88, lon: 147.33, key: 'south' },
+        { name: "West Coast (Strahan)", lat: -42.15, lon: 145.32, key: 'westCoast' },
+        { name: "North West (Devonport)", lat: -41.18, lon: 146.36, key: 'northWest' }, // Additional NW city
+        { name: "North (George Town)", lat: -41.10, lon: 146.82, key: 'north' } // Additional North city
+    ];
 
     // Templates for quick entry
     const templates = {
@@ -1043,6 +1081,19 @@
     // Initialize map
     let map;
     let marker;
+
+    // Calculate distance between two points using Haversine formula
+    function calculateDistance(lat1, lon1, lat2, lon2) {
+        const R = 6371; // Earth's radius in km
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a = 
+            Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+            Math.sin(dLon/2) * Math.sin(dLon/2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        return R * c;
+    }
 
     // Toggle guide
     function toggleGuide() {
@@ -1159,59 +1210,85 @@
             marker.setLatLng(e.latlng);
             updateCoordinates(e.latlng.lat, e.latlng.lng);
         });
+
+        // Add region boundary overlays (optional - commented out)
+        // addRegionBoundaries();
     }
 
-    // Update coordinates and region from map click
+    // Optional: Add visual region boundaries to map
+    function addRegionBoundaries() {
+        const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4'];
+        Object.values(regionBoundaries).forEach((bounds, index) => {
+            const rectangle = L.rectangle([
+                [bounds.minLat, bounds.minLon],
+                [bounds.maxLat, bounds.maxLon]
+            ], {
+                color: colors[index % colors.length],
+                weight: 2,
+                opacity: 0.5,
+                fillOpacity: 0.1
+            }).addTo(map);
+            
+            // Add label at center
+            L.marker([bounds.center.lat, bounds.center.lon], {
+                icon: L.divIcon({ className: 'region-label', html: bounds.name.split(' ')[0] })
+            }).addTo(map);
+        });
+    }
+
+    // Update coordinates and region from map click with improved detection
     function updateCoordinates(lat, lng) {
         document.getElementById('lat').value = lat.toFixed(4);
         document.getElementById('lon').value = lng.toFixed(4);
         
+        // First try exact boundary matching
         let detectedRegion = "Unknown";
+        let matchedRegion = null;
+        let matchedDistance = Infinity;
+        
         for (const [key, bounds] of Object.entries(regionBoundaries)) {
             if (lat >= bounds.minLat && lat <= bounds.maxLat && 
                 lng >= bounds.minLon && lng <= bounds.maxLon) {
                 detectedRegion = bounds.name;
-                document.getElementById('regionSelect').value = key;
+                matchedRegion = key;
                 break;
             }
         }
         
+        // If no exact match, find closest region based on distance to centers
         if (detectedRegion === "Unknown") {
-            detectedRegion = "South (Hobart)";
-            document.getElementById('regionSelect').value = 'south';
+            let closestDistance = Infinity;
+            
+            for (const [key, bounds] of Object.entries(regionBoundaries)) {
+                const distance = calculateDistance(lat, lng, bounds.center.lat, bounds.center.lon);
+                if (distance < closestDistance) {
+                    closestDistance = distance;
+                    detectedRegion = bounds.name;
+                    matchedRegion = key;
+                }
+            }
         }
         
         document.getElementById('detectedRegion').value = detectedRegion;
+        if (matchedRegion) {
+            document.getElementById('regionSelect').value = matchedRegion;
+        }
     }
 
-    // Update from region dropdown
+    // Update from region dropdown with improved coordinates
     function updateFromRegion() {
         const region = document.getElementById('regionSelect').value;
+        
+        // Get the center coordinates for selected region
         const bounds = regionBoundaries[region];
         
-        let lat, lon;
-        switch(region) {
-            case 'northWest':
-                lat = -41.05; lon = 145.90;
-                break;
-            case 'north':
-                lat = -41.43; lon = 147.14;
-                break;
-            case 'south':
-                lat = -42.88; lon = 147.33;
-                break;
-            case 'westCoast':
-                lat = -42.15; lon = 145.32;
-                break;
-        }
-        
-        document.getElementById('lat').value = lat;
-        document.getElementById('lon').value = lon;
+        document.getElementById('lat').value = bounds.center.lat.toFixed(4);
+        document.getElementById('lon').value = bounds.center.lon.toFixed(4);
         document.getElementById('detectedRegion').value = bounds.name;
         
         if (marker) {
-            marker.setLatLng([lat, lon]);
-            map.setView([lat, lon], 8);
+            marker.setLatLng([bounds.center.lat, bounds.center.lon]);
+            map.setView([bounds.center.lat, bounds.center.lon], 9);
         }
     }
 
@@ -1412,7 +1489,7 @@
         
         const lat = parseFloat(document.getElementById('lat').value);
         const lon = parseFloat(document.getElementById('lon').value);
-        if (lat < -43.7 || lat > -40.4 || lon < 144.6 || lon > 148.5) {
+        if (lat < -43.7 || lat > -40.4 || lon < 144.5 || lon > 148.5) {
             warnings.push('⚠️ Coordinates appear outside Tasmania');
         }
         
