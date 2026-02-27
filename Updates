@@ -1991,21 +1991,26 @@
 
         countEl.innerText = `${savedRecords.length} record${savedRecords.length !== 1 ? 's' : ''}`;
         
-        grid.innerHTML = savedRecords.map((record, index) => `
-            <div class="record-card" onclick="selectRecord(${index})">
-                <div class="record-date">📅 ${record.collectionDate}</div>
-                <div class="record-species">🌿 <i>${record.species.split(' ')[0]} ${record.species.split(' ')[1] || ''}</i></div>
-                <div class="record-location">📍 ${record.location.region}</div>
-                ${record.weather.minTemp && record.weather.maxTemp ? 
-                    `<div class="record-weather">🌡️ ${record.weather.minTemp}°C / ${record.weather.maxTemp}°C</div>` : ''}
-                ${record.photos && record.photos.length > 0 ? 
-                    `<div class="record-photo-indicator">📸 ${record.photos.length} photo(s)</div>` : ''}
-                <div class="record-actions">
-                    <button class="record-btn edit" onclick="event.stopPropagation(); editRecord(${index})">✏️ Edit</button>
-                    <button class="record-btn delete" onclick="event.stopPropagation(); deleteRecord(${index})">🗑️ Delete</button>
+        grid.innerHTML = savedRecords.map((record, index) => {
+            // Check if record has photos and display indicator
+            const hasPhotos = record.photos && record.photos.length > 0;
+            
+            return `
+                <div class="record-card" onclick="selectRecord(${index})">
+                    <div class="record-date">📅 ${record.collectionDate}</div>
+                    <div class="record-species">🌿 <i>${record.species ? record.species.split(' ')[0] : ''} ${record.species ? record.species.split(' ')[1] || '' : ''}</i></div>
+                    <div class="record-location">📍 ${record.location ? record.location.region : 'Unknown'}</div>
+                    ${record.weather && record.weather.minTemp && record.weather.maxTemp ? 
+                        `<div class="record-weather">🌡️ ${record.weather.minTemp}°C / ${record.weather.maxTemp}°C</div>` : ''}
+                    ${hasPhotos ? 
+                        `<div class="record-photo-indicator">📸 ${record.photos.length} photo(s)</div>` : ''}
+                    <div class="record-actions">
+                        <button class="record-btn edit" onclick="event.stopPropagation(); editRecord(${index})">✏️ Edit</button>
+                        <button class="record-btn delete" onclick="event.stopPropagation(); deleteRecord(${index})">🗑️ Delete</button>
+                    </div>
                 </div>
-            </div>
-        `).join('');
+            `;
+        }).join('');
     }
 
     // Select record
@@ -2072,6 +2077,7 @@
         if (record.photos && record.photos.length > 0) {
             // Convert stored photo data back to File objects
             const photoFiles = record.photos.map(photo => {
+                // Extract the base64 data
                 const byteString = atob(photo.data.split(',')[1]);
                 const mimeString = photo.data.split(',')[0].split(':')[1].split(';')[0];
                 const ab = new ArrayBuffer(byteString.length);
@@ -2079,10 +2085,27 @@
                 for (let i = 0; i < byteString.length; i++) {
                     ia[i] = byteString.charCodeAt(i);
                 }
-                return new File([ab], photo.name, { type: mimeString });
+                const file = new File([ab], photo.name, { type: mimeString });
+                // Add a custom property to store the data URL for preview
+                file.preview = photo.data;
+                return file;
             });
             selectedPhotos = photoFiles;
-            updatePhotoPreviews();
+            
+            // Update photo previews using stored data URLs
+            const previewDiv = document.getElementById('photoPreview');
+            previewDiv.innerHTML = '';
+            selectedPhotos.forEach((file, idx) => {
+                const preview = document.createElement('div');
+                preview.className = 'photo-preview-item';
+                preview.innerHTML = `
+                    <img src="${file.preview || URL.createObjectURL(file)}" alt="Preview">
+                    <button class="photo-remove" onclick="removePhoto(${idx})">×</button>
+                    <div class="photo-size">${(file.size / 1024).toFixed(0)}KB</div>
+                `;
+                previewDiv.appendChild(preview);
+            });
+            
             document.getElementById('photoCount').innerText = `${selectedPhotos.length} photo(s) selected`;
         } else {
             selectedPhotos = [];
@@ -2136,7 +2159,7 @@
         document.getElementById('totalRecordsStat').innerText = savedRecords.length;
         
         if (savedRecords.length > 0) {
-            const temps = savedRecords.filter(r => r.weather.minTemp && r.weather.maxTemp);
+            const temps = savedRecords.filter(r => r.weather && r.weather.minTemp && r.weather.maxTemp);
             if (temps.length > 0) {
                 const avgMin = temps.reduce((sum, r) => sum + r.weather.minTemp, 0) / temps.length;
                 const avgMax = temps.reduce((sum, r) => sum + r.weather.maxTemp, 0) / temps.length;
@@ -2151,7 +2174,7 @@
     function showFieldStats() {
         const stats = {
             totalRecords: savedRecords.length,
-            uniqueSites: new Set(savedRecords.map(r => r.location.siteName).filter(Boolean)).size,
+            uniqueSites: new Set(savedRecords.map(r => r.location ? r.location.siteName : '').filter(Boolean)).size,
             speciesCount: new Set(savedRecords.map(r => r.species)).size,
             regions: {},
             fireHistory: {},
@@ -2160,12 +2183,14 @@
                 quick: savedRecords.filter(r => r.locationMode === 'quick_region').length
             },
             totalPhotos: savedRecords.reduce((sum, r) => sum + (r.photos?.length || 0), 0),
-            weatherRecords: savedRecords.filter(r => r.weather.minTemp).length
+            weatherRecords: savedRecords.filter(r => r.weather && r.weather.minTemp).length
         };
         
         savedRecords.forEach(r => {
-            stats.regions[r.location.region] = (stats.regions[r.location.region] || 0) + 1;
-            if (r.siteHistory.fire) {
+            if (r.location && r.location.region) {
+                stats.regions[r.location.region] = (stats.regions[r.location.region] || 0) + 1;
+            }
+            if (r.siteHistory && r.siteHistory.fire) {
                 stats.fireHistory[r.siteHistory.fire] = (stats.fireHistory[r.siteHistory.fire] || 0) + 1;
             }
         });
@@ -2223,32 +2248,32 @@
             'Observer': record.observer,
             'Collection Date': record.collectionDate,
             'Species': record.species,
-            'Region': record.location.region,
-            'Site Name': record.location.siteName || '',
-            'Latitude': record.location.latitude,
-            'Longitude': record.location.longitude,
-            'Coordinate Source': record.location.coordinateSource,
-            'Flowering - Bud': record.phenology.flowering.bud,
-            'Flowering - Early': record.phenology.flowering.earlyFlower,
-            'Flowering - Full': record.phenology.flowering.fullFlower,
-            'Flowering - Petal Fall': record.phenology.flowering.petalFall,
-            'Flowering - Seed Pod': record.phenology.flowering.seedPod,
-            'Pollinators - Honeybee': record.phenology.pollinators.honeybee,
-            'Pollinators - Native Bee': record.phenology.pollinators.nativeBee,
-            'Pollinators - Fly': record.phenology.pollinators.fly,
-            'Pollinators - Beetle': record.phenology.pollinators.beetle,
-            'Pollinators - Wasp': record.phenology.pollinators.wasp,
-            'Pollinators - Butterfly/Moth': record.phenology.pollinators.butterfly,
-            'Pollinators - Other': record.phenology.pollinators.other || '',
-            'Seed Maturity': record.phenology.seedMaturity || '',
-            'Fire History': record.siteHistory.fire || '',
-            'Site Notes': record.siteHistory.notes || '',
-            'Weather Month': record.weather.month,
-            'Weather Year': record.weather.year,
-            'Actual Min Temp (°C)': record.weather.minTemp || '',
-            'Actual Max Temp (°C)': record.weather.maxTemp || '',
-            'BOM Station': record.weather.station || '',
-            'Station ID': record.weather.stationId || '',
+            'Region': record.location ? record.location.region : '',
+            'Site Name': record.location ? record.location.siteName || '' : '',
+            'Latitude': record.location ? record.location.latitude : '',
+            'Longitude': record.location ? record.location.longitude : '',
+            'Coordinate Source': record.location ? record.location.coordinateSource : '',
+            'Flowering - Bud': record.phenology ? record.phenology.flowering.bud : '',
+            'Flowering - Early': record.phenology ? record.phenology.flowering.earlyFlower : '',
+            'Flowering - Full': record.phenology ? record.phenology.flowering.fullFlower : '',
+            'Flowering - Petal Fall': record.phenology ? record.phenology.flowering.petalFall : '',
+            'Flowering - Seed Pod': record.phenology ? record.phenology.flowering.seedPod : '',
+            'Pollinators - Honeybee': record.phenology ? record.phenology.pollinators.honeybee : '',
+            'Pollinators - Native Bee': record.phenology ? record.phenology.pollinators.nativeBee : '',
+            'Pollinators - Fly': record.phenology ? record.phenology.pollinators.fly : '',
+            'Pollinators - Beetle': record.phenology ? record.phenology.pollinators.beetle : '',
+            'Pollinators - Wasp': record.phenology ? record.phenology.pollinators.wasp : '',
+            'Pollinators - Butterfly/Moth': record.phenology ? record.phenology.pollinators.butterfly : '',
+            'Pollinators - Other': record.phenology ? record.phenology.pollinators.other || '' : '',
+            'Seed Maturity': record.phenology ? record.phenology.seedMaturity || '' : '',
+            'Fire History': record.siteHistory ? record.siteHistory.fire || '' : '',
+            'Site Notes': record.siteHistory ? record.siteHistory.notes || '' : '',
+            'Weather Month': record.weather ? record.weather.month : '',
+            'Weather Year': record.weather ? record.weather.year : '',
+            'Actual Min Temp (°C)': record.weather ? record.weather.minTemp || '' : '',
+            'Actual Max Temp (°C)': record.weather ? record.weather.maxTemp || '' : '',
+            'BOM Station': record.weather ? record.weather.station || '' : '',
+            'Station ID': record.weather ? record.weather.stationId || '' : '',
             'Photo Count': record.photos ? record.photos.length : 0,
             'Record Timestamp': record.timestamp
         }));
@@ -2277,14 +2302,14 @@
             'Observer': record.observer,
             'Collection Date': record.collectionDate,
             'Species': record.species,
-            'Region': record.location.region,
-            'Site': record.location.siteName || '',
-            'Latitude': record.location.latitude,
-            'Longitude': record.location.longitude,
-            'Min Temp': record.weather.minTemp || '',
-            'Max Temp': record.weather.maxTemp || '',
-            'Fire History': record.siteHistory.fire || '',
-            'Notes': record.siteHistory.notes || ''
+            'Region': record.location ? record.location.region : '',
+            'Site': record.location ? record.location.siteName || '' : '',
+            'Latitude': record.location ? record.location.latitude : '',
+            'Longitude': record.location ? record.location.longitude : '',
+            'Min Temp': record.weather ? record.weather.minTemp || '' : '',
+            'Max Temp': record.weather ? record.weather.maxTemp || '' : '',
+            'Fire History': record.siteHistory ? record.siteHistory.fire || '' : '',
+            'Notes': record.siteHistory ? record.siteHistory.notes || '' : ''
         }));
         
         // Create CSV headers
