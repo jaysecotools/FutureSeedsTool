@@ -187,6 +187,7 @@
             border-radius: 60px;
             align-items: center;
             position: relative;
+            flex-wrap: wrap;
         }
         .location-options label {
             color: #fcf1b5;
@@ -211,6 +212,25 @@
             color: #666666;
             cursor: not-allowed;
             opacity: 0.7;
+        }
+        .location-mode-toggle {
+            background: #4a90e2;
+            color: white;
+            border: 2px solid #f5c542;
+            border-radius: 30px;
+            padding: 5px 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            white-space: nowrap;
+        }
+        .location-mode-toggle:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 0 #2a5080;
+        }
+        .location-mode-toggle:active {
+            transform: translateY(0);
         }
         .map-in-use-badge {
             position: absolute;
@@ -1024,6 +1044,7 @@
                 <ul>
                     <li><strong>Quick Region:</strong> Use dropdown for broad area</li>
                     <li><strong>Precise Map:</strong> Click map or use "My Location" for exact coordinates</li>
+                    <li><strong>Toggle Switch:</strong> Use "Switch to Map/Quick" button to change modes</li>
                     <li>When using map, dropdown shows "📍 Map in use"</li>
                     <li>Both methods store region + coordinates</li>
                 </ul>
@@ -1115,6 +1136,9 @@
             </select>
             <span class="map-in-use-badge" id="mapInUseBadge">📍 Map in use</span>
             <span class="location-mode-indicator" id="locationMode">Quick Region</span>
+            <button class="location-mode-toggle" id="toggleLocationMode" onclick="toggleLocationMode()">
+                🔄 Switch to Map Mode
+            </button>
         </div>
     </div>
 
@@ -1440,6 +1464,18 @@
         }
     }
 
+    // Toggle between Quick Region and Map Mode
+    function toggleLocationMode() {
+        if (usingMapMode) {
+            enableQuickRegionMode();
+            updateFromRegion(); // Reset to current region coordinates
+            document.getElementById('toggleLocationMode').innerHTML = '🔄 Switch to Map Mode';
+        } else {
+            enableMapMode();
+            document.getElementById('toggleLocationMode').innerHTML = '🔄 Switch to Quick Region';
+        }
+    }
+
     // Switch to map mode
     function enableMapMode() {
         usingMapMode = true;
@@ -1451,6 +1487,7 @@
         document.getElementById('regionSelect').disabled = true;
         document.getElementById('mapInUseBadge').classList.add('show');
         document.getElementById('locationNote').innerHTML = '📍 Using precise map coordinates. Region dropdown shows "📍 Map in use".';
+        document.getElementById('toggleLocationMode').innerHTML = '🔄 Switch to Quick Region';
     }
 
     // Switch to quick region mode
@@ -1464,6 +1501,7 @@
         document.getElementById('regionSelect').disabled = false;
         document.getElementById('mapInUseBadge').classList.remove('show');
         document.getElementById('locationNote').innerHTML = '⚡ Using Quick Region mode. Click map or use "My Location" for precise coordinates.';
+        document.getElementById('toggleLocationMode').innerHTML = '🔄 Switch to Map Mode';
     }
 
     // Get user location
