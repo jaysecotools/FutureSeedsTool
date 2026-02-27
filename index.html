@@ -2,56 +2,53 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-    <title>Future Seeds Program · Field Data Collector</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Future Seeds Program Data Collector</title>
     <!-- SheetJS for Excel export -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <!-- Leaflet CSS and JS for mapping -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
-        /* All styles from previous version - keeping them concise but complete */
         * {
             box-sizing: border-box;
             margin: 0;
-            font-family: 'Segoe UI', Roboto, system-ui, -apple-system, sans-serif;
+            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
         }
         body {
             background: #174532;
-            padding: 1rem 0.5rem;
+            padding: 2rem 1rem;
             display: flex;
             justify-content: center;
-            min-height: 100vh;
         }
         .card {
             max-width: 1600px;
             width: 100%;
             background: #f6f9ed;
-            border-radius: 28px 28px 24px 24px;
+            border-radius: 36px;
             box-shadow: 0 25px 50px -12px #0b2f1a;
             border: 3px solid #dbb15a;
         }
         .header {
             background: #1a5830;
             color: white;
-            padding: 1.5rem 1.5rem;
+            padding: 2rem 2.5rem;
             background: linear-gradient(145deg, #1f5c33, #124325);
             border-bottom: 5px solid #f5c542;
-            border-radius: 24px 24px 0 0;
         }
         .header h1 {
             font-weight: 700;
-            font-size: 1.9rem;
+            font-size: 2.6rem;
             letter-spacing: -0.5px;
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 20px;
             flex-wrap: wrap;
         }
         .header h1 span {
             background: #f0c34a;
-            font-size: 1rem;
-            padding: 0.3rem 1.4rem;
+            font-size: 1.2rem;
+            padding: 0.4rem 1.8rem;
             border-radius: 60px;
             color: #1f4a1f;
             font-weight: 700;
@@ -59,369 +56,443 @@
         .guide-toggle {
             background: #3a7b4a;
             color: white;
-            padding: 0.8rem 1.5rem;
+            padding: 0.8rem 2.5rem;
             cursor: pointer;
             font-weight: 600;
             display: flex;
             align-items: center;
             gap: 10px;
             border-bottom: 2px solid #f5c542;
-            font-size: 1rem;
-            transition: all 0.2s ease;
         }
         .guide-toggle:hover {
             background: #469657;
-            transform: translateY(-2px);
         }
         .guide-panel {
             background: #f4fbe7;
-            padding: 1.5rem 1.5rem;
+            padding: 2rem 2.5rem;
             border-bottom: 3px solid #c5aa5a;
             display: none;
         }
-        .guide-panel.show { display: block; }
+        .guide-panel.show {
+            display: block;
+        }
         .guide-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 1.2rem;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
         }
         .guide-step {
             background: white;
-            padding: 1.2rem;
-            border-radius: 20px;
+            padding: 1.5rem;
+            border-radius: 24px;
             border-left: 8px solid #3c8d4a;
-            transition: transform 0.2s ease;
+            box-shadow: 0 4px 0 #a1b473;
         }
-        .guide-step:hover {
-            transform: translateX(4px);
+        .guide-step h3 {
+            color: #1e621e;
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
         }
-        .guide-step h3 { color: #1e621e; margin-bottom: 0.8rem; }
-        .guide-step ul { padding-left: 1.2rem; color: #2f4d2f; }
+        .guide-step ul {
+            padding-left: 1.5rem;
+            color: #2f4d2f;
+        }
+        .guide-step li {
+            margin: 0.5rem 0;
+        }
+        .required-badge {
+            color: #d16b4b;
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin-left: 5px;
+            text-transform: uppercase;
+        }
+        .optional-badge {
+            color: #5a7344;
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin-left: 5px;
+            text-transform: uppercase;
+        }
         .region-bar {
             background: #31754a;
-            padding: 1rem 1.5rem;
+            padding: 1rem 2.5rem;
             display: flex;
-            flex-direction: column;
-            gap: 1rem;
+            align-items: center;
+            gap: 2.5rem;
+            flex-wrap: wrap;
             border-bottom: 2px solid #edc150;
-        }
-        @media (min-width: 700px) {
-            .region-bar { flex-direction: row; align-items: center; justify-content: space-between; }
         }
         .selector-group {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 20px;
             flex-wrap: wrap;
         }
         .selector-group label {
             font-weight: 700;
             color: #fffde4;
             text-transform: uppercase;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
         }
         .selector-group select {
             background: white;
             border: none;
             border-radius: 60px;
-            padding: 10px 32px 10px 18px;
-            font-size: 1rem;
+            padding: 12px 36px 12px 22px;
+            font-size: 1.1rem;
             font-weight: 600;
-            min-width: 260px;
+            min-width: 320px;
             border: 3px solid #fdcd5a;
-            transition: all 0.2s ease;
+            cursor: pointer;
+            font-style: italic;
         }
-        .selector-group select:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 0 #b58f3a;
-        }
-        .selector-group select option i {
+        .selector-group select option {
             font-style: italic;
         }
         .location-options {
             display: flex;
             gap: 15px;
             background: #22633a;
-            padding: 0.6rem 1.2rem;
+            padding: 0.6rem 1.8rem;
             border-radius: 60px;
             align-items: center;
-            flex-wrap: wrap;
             position: relative;
         }
         .location-options label {
             color: #fcf1b5;
             font-weight: 600;
-            white-space: nowrap;
         }
-        .region-select-wrapper {
-            position: relative;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            flex-wrap: wrap;
-        }
-        #regionSelect {
+        .location-options select {
             background: #fef7d6;
             border-radius: 40px;
             padding: 8px 28px 8px 16px;
             border: 2px solid #eeb844;
             font-weight: 600;
-            min-width: 200px;
             transition: all 0.3s ease;
+            min-width: 220px;
         }
-        #regionSelect:hover:not(.map-active) {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 0 #b58f3a;
-        }
-        #regionSelect.map-active {
+        .location-options select.map-active {
             background: #e0e0e0;
-            border-color: #999;
-            color: #666;
+            border-color: #999999;
+            color: #666666;
             cursor: not-allowed;
             opacity: 0.7;
-            pointer-events: none;
         }
         .map-in-use-badge {
-            display: inline-block;
+            position: absolute;
+            right: 30px;
             background: #d16b4b;
             color: white;
-            padding: 3px 12px;
+            padding: 2px 10px;
             border-radius: 30px;
             font-size: 0.7rem;
-            font-weight: 700;
+            font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            white-space: nowrap;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .map-in-use-badge.show {
+            opacity: 1;
         }
         .location-mode-indicator {
             font-size: 0.8rem;
-            padding: 4px 12px;
+            padding: 4px 10px;
             border-radius: 30px;
             background: #4a90e2;
             color: white;
             font-weight: 600;
             display: inline-block;
-            white-space: nowrap;
-            transition: all 0.2s ease;
         }
-        .reset-map-mode-btn {
-            background: #edb84a;
-            border: 2px solid #a57c2b;
-            border-radius: 40px;
-            padding: 6px 15px;
-            font-weight: 700;
-            font-size: 0.9rem;
-            color: #2d421d;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            transition: all 0.2s ease;
+        .content {
+            padding: 2.5rem;
         }
-        .reset-map-mode-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 0 #7b5f2b;
-            background: #f5c55a;
-        }
-        .content { padding: 1.5rem 1.5rem; }
         .current-conditions {
             background: #deecbf;
-            border-radius: 28px;
-            padding: 1.2rem 1.5rem;
-            margin-bottom: 1.8rem;
+            border-radius: 32px;
+            padding: 1.5rem 2.5rem;
+            margin-bottom: 2rem;
             display: flex;
             flex-wrap: wrap;
-            gap: 1rem;
             justify-content: space-between;
-            border-left: 10px solid #e0aa3a;
+            align-items: center;
+            border-left: 15px solid #e0aa3a;
+            border-right: 2px solid #b59849;
         }
-        .species-info { font-size: 1.2rem; font-weight: 700; color: #174d17; }
-        .species-info i { font-style: italic; }
-        .month-indicator { background: #3e823e; padding: 0.5rem 1.2rem; border-radius: 60px; color: #ffffc7; font-weight: 700; }
-        .stats-panel { background: #f0e6c5; border-radius: 60px; padding: 0.4rem 1.2rem; display: flex; gap: 1.5rem; flex-wrap: wrap; }
-        .stat-item { display: flex; align-items: center; gap: 5px; }
-        .stat-value { background: #528a44; color: white; padding: 0.2rem 0.8rem; border-radius: 30px; }
+        .species-info {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #174d17;
+        }
+        .month-indicator {
+            background: #3e823e;
+            padding: 0.6rem 2.2rem;
+            border-radius: 60px;
+            color: #ffffc7;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+        .stats-panel {
+            background: #f0e6c5;
+            border-radius: 60px;
+            padding: 0.5rem 1.5rem;
+            font-weight: 600;
+            color: #1f4f1f;
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .stat-value {
+            background: #528a44;
+            color: white;
+            padding: 0.2rem 0.8rem;
+            border-radius: 30px;
+        }
         .map-section {
+            margin-bottom: 2rem;
             background: #e8f0da;
-            border-radius: 28px;
-            padding: 1.5rem 1.2rem;
-            margin-bottom: 1.8rem;
+            border-radius: 32px;
+            padding: 1.5rem;
             border: 3px solid #c1aa5a;
         }
         .map-header {
             display: flex;
-            flex-direction: column;
-            gap: 0.8rem;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 1rem;
-        }
-        @media (min-width: 600px) {
-            .map-header { flex-direction: row; align-items: center; justify-content: space-between; }
+            flex-wrap: wrap;
+            gap: 1rem;
         }
         .map-header h3 {
             color: #1e611e;
-            font-size: 1.3rem;
+            font-size: 1.5rem;
             font-weight: 600;
             display: flex;
             align-items: center;
-            gap: 6px;
-            flex-wrap: wrap;
+            gap: 10px;
         }
         .map-toggle {
             display: flex;
-            gap: 0.6rem;
+            gap: 1rem;
             flex-wrap: wrap;
         }
         .map-btn {
             background: white;
             border: 3px solid #5e8f4a;
-            padding: 8px 16px;
+            padding: 8px 20px;
             border-radius: 50px;
             cursor: pointer;
             font-weight: 600;
             color: #265226;
-            font-size: 0.9rem;
-            transition: all 0.2s ease;
         }
-        .map-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 0 #3b683b;
+        .map-btn.active {
+            background: #3d973d;
+            border-color: #f5bc3c;
+            color: white;
         }
-        .map-btn.active { background: #3d973d; border-color: #f5bc3c; color: white; }
-        .map-btn.location-btn { background: #4a90e2; border-color: #2a5080; color: white; }
+        .map-btn.location-btn {
+            background: #4a90e2;
+            border-color: #2a5080;
+            color: white;
+        }
         .map-btn.location-btn:hover {
-            background: #5fa0f0;
-            box-shadow: 0 4px 0 #1e3c60;
+            background: #5a9ef2;
         }
-        #map { height: 250px; border-radius: 24px; border: 3px solid #a5b87a; margin-bottom: 1rem; display: none; }
-        #map.show { display: block; }
+        #map {
+            height: 300px;
+            border-radius: 24px;
+            border: 3px solid #a5b87a;
+            margin-bottom: 1rem;
+            display: none;
+        }
+        #map.show {
+            display: block;
+        }
         .coord-display {
             background: #f4fbe4;
             padding: 1rem;
             border-radius: 50px;
             display: flex;
-            gap: 1rem 2rem;
+            gap: 2rem;
             justify-content: center;
             flex-wrap: wrap;
+            border: 2px solid #99aa66;
         }
-        .coord-item { display: flex; align-items: center; gap: 6px; }
-        .coord-item label { font-weight: 700; color: #1b581b; font-size: 0.9rem; }
+        .coord-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .coord-item label {
+            font-weight: 700;
+            color: #1b581b;
+        }
         .coord-item input {
             background: white;
             border: 2px solid #bcc987;
             border-radius: 40px;
-            padding: 6px 12px;
-            width: 110px;
+            padding: 8px 16px;
+            width: 120px;
             font-weight: 600;
-            transition: all 0.2s ease;
         }
-        .coord-item input:hover:not(:read-only) {
-            border-color: #8ba34a;
+        .coord-item input:read-only {
+            background: #f0f0f0;
+            border-color: #cccccc;
         }
-        .coord-item input:read-only { background: #f0f0f0; border-color: #ccc; }
         .location-note {
             background: #fdebb3;
-            padding: 0.5rem 1rem;
+            padding: 0.5rem 1.5rem;
             border-radius: 60px;
             color: #1f4f1f;
             font-weight: 600;
             text-align: center;
             margin-top: 1rem;
             font-size: 0.9rem;
-            transition: all 0.2s ease;
         }
-        .location-note:hover {
-            transform: scale(1.02);
-            background: #ffe6a3;
+        .split-panel {
+            display: flex;
+            gap: 2.5rem;
+            flex-wrap: wrap;
         }
-        .split-panel { display: flex; gap: 2rem; flex-wrap: wrap; }
-        .split-panel > div { flex: 1 1 300px; }
+        .split-panel > div {
+            flex: 1 1 350px;
+        }
         .data-card {
             background: #f7ffee;
-            border-radius: 28px;
-            padding: 1.8rem 1.5rem;
+            border-radius: 32px;
+            padding: 2rem;
             margin-bottom: 2rem;
             border: 3px solid #c7d392;
             box-shadow: 0 8px 0 #7a9865;
-            transition: all 0.2s ease;
         }
-        .data-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 0 #7a9865;
+        .data-card h2 {
+            color: #1f6b1f;
+            font-weight: 700;
+            font-size: 1.9rem;
+            border-bottom: 4px dotted #c2d17e;
+            padding-bottom: 0.8rem;
+            margin-bottom: 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
-        .data-card h2 { color: #1f6b1f; font-size: 1.6rem; border-bottom: 4px dotted #c2d17e; padding-bottom: 0.6rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 10px; }
-        .field-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; }
-        .field { display: flex; flex-direction: column; gap: 4px; }
-        .field label { font-weight: 800; color: #1b591b; font-size: 0.8rem; text-transform: uppercase; }
+        .field-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .field label {
+            font-weight: 800;
+            color: #1b591b;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
         .field input, .field select, .field textarea {
             border: 3px solid #a5b77a;
-            border-radius: 40px;
-            padding: 10px 14px;
+            border-radius: 50px;
+            padding: 12px 18px;
             font-size: 1rem;
             background: white;
-            transition: all 0.2s ease;
-        }
-        .field input:hover, .field select:hover, .field textarea:hover {
-            border-color: #6f9a3a;
-            transform: translateY(-1px);
         }
         .field input:focus, .field select:focus, .field textarea:focus {
-            border-color: #3d973d;
+            border-color: #479e47;
+            box-shadow: 0 0 0 5px #c6ec9e;
             outline: none;
-            box-shadow: 0 0 0 3px rgba(61, 151, 61, 0.2);
         }
-        .field input::placeholder {
+        .field input::placeholder, .field select::placeholder, .field textarea::placeholder {
             color: #999;
             font-style: italic;
-            font-weight: 300;
+            font-size: 0.9rem;
+        }
+        .field input:read-only, .field select:disabled, .field textarea:read-only {
+            background: #f0f0f0;
+            border-color: #cccccc;
+            color: #666;
         }
         .checkbox-cluster {
             display: flex;
             flex-wrap: wrap;
-            gap: 1rem 1.8rem;
-            margin: 1.2rem 0;
+            gap: 1.2rem 2rem;
+            margin: 1.2rem 0 0.8rem;
+            padding: 1rem;
+            background: #e8f0da;
+            border-radius: 30px;
         }
-        .checkbox-cluster div { 
-            display: flex; 
-            align-items: center; 
-            gap: 6px;
-            transition: transform 0.2s ease;
+        .checkbox-cluster div {
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
-        .checkbox-cluster div:hover {
-            transform: translateX(2px);
-        }
-        .checkbox-cluster input[type="checkbox"] { 
-            width: 22px; 
-            height: 22px; 
+        .checkbox-cluster input[type="checkbox"] {
+            width: 22px;
+            height: 22px;
             accent-color: #3f9643;
-            transition: all 0.2s ease;
-        }
-        .checkbox-cluster input[type="checkbox"]:hover {
-            transform: scale(1.1);
         }
         .weather-panel {
             background: #e3f0cf;
-            border-radius: 28px;
-            padding: 1.5rem;
+            border-radius: 32px;
+            padding: 1.8rem;
             margin: 1.5rem 0;
             border: 3px solid #bfc868;
+            box-shadow: inset 0 2px 10px #f7ffd9, 0 7px 0 #61854b;
+        }
+        .weather-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.2rem;
+            font-weight: 700;
+            font-size: 1.2rem;
         }
         .manual-temp-card {
             background: #2d6d8a;
             color: white;
             border-radius: 80px;
-            padding: 1.2rem 1.5rem;
+            padding: 1.5rem 2.5rem;
             display: flex;
             align-items: center;
             justify-content: space-between;
             flex-wrap: wrap;
-            gap: 1rem;
+            gap: 2rem;
             margin: 1.5rem 0;
             border: 4px solid #fad971;
         }
-        .temp-item { text-align: center; }
-        .temp-item .label { font-size: 0.8rem; opacity: 0.9; }
-        .temp-item .value { font-size: 2.2rem; font-weight: 800; line-height: 1; }
-        .temp-note { background: #fdebb3; padding: 0.5rem 1.5rem; border-radius: 60px; color: #1f4f1f; font-weight: 600; text-align: center; }
+        .temp-item {
+            text-align: center;
+        }
+        .temp-item .label {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            opacity: 0.9;
+        }
+        .temp-item .value {
+            font-size: 2.8rem;
+            font-weight: 800;
+            line-height: 1.2;
+        }
+        .temp-note {
+            background: #fdebb3;
+            padding: 0.5rem 1.5rem;
+            border-radius: 60px;
+            color: #1f4f1f;
+            font-weight: 600;
+            text-align: center;
+        }
         .photo-section {
             margin: 1.5rem 0;
             padding: 1rem;
@@ -430,27 +501,23 @@
         }
         .photo-preview {
             display: flex;
-            gap: 8px;
+            gap: 10px;
             flex-wrap: wrap;
             margin-top: 10px;
-            max-height: 220px;
+            max-height: 200px;
             overflow-y: auto;
-            padding: 8px;
+            padding: 10px;
             background: #d4e3b5;
             border-radius: 20px;
         }
         .photo-preview-item {
             position: relative;
-            width: 70px;
+            width: 80px;
             text-align: center;
-            transition: transform 0.2s ease;
-        }
-        .photo-preview-item:hover {
-            transform: scale(1.05);
         }
         .photo-preview-item img {
-            width: 70px;
-            height: 70px;
+            width: 80px;
+            height: 80px;
             object-fit: cover;
             border-radius: 10px;
             border: 2px solid #8ba35e;
@@ -470,109 +537,259 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.2s ease;
         }
-        .photo-remove:hover {
-            background: #b84f2f;
-            transform: scale(1.1);
+        .photo-size {
+            font-size: 0.7rem;
+            color: #555;
+            margin-top: 2px;
         }
-        .photo-size { font-size: 0.7rem; color: #555; }
+        .template-buttons {
+            display: flex;
+            gap: 10px;
+            margin: 1rem 0;
+            flex-wrap: wrap;
+        }
+        .template-btn {
+            background: #e9dba7;
+            border: 2px solid #9c8b4b;
+            padding: 8px 15px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #2f4f2f;
+            font-size: 0.9rem;
+        }
+        .template-btn:hover {
+            background: #f3e9b0;
+        }
         .action-row {
             display: flex;
-            gap: 0.8rem;
+            gap: 1.5rem;
             justify-content: flex-end;
-            margin: 2rem 0 1.5rem;
+            margin: 2.5rem 0 1.8rem;
             flex-wrap: wrap;
         }
         .btn {
             background: white;
             border: 4px solid #467a33;
-            padding: 12px 18px;
-            border-radius: 60px;
+            padding: 14px 28px;
+            border-radius: 70px;
             font-weight: 800;
             color: #1f561f;
             cursor: pointer;
-            font-size: 0.9rem;
-            flex: 1 0 auto;
-            transition: all 0.2s ease;
-            max-width: 200px;
+            transition: all 0.2s;
+            font-size: 1rem;
+        }
+        .btn-primary {
+            background: #32853a;
+            border-color: #f5bc3c;
+            color: white;
+            box-shadow: 0 6px 0 #1f591f;
+        }
+        .btn-excel {
+            background: #1f7c3c;
+            border-color: #f5bc3c;
+            color: white;
+            box-shadow: 0 6px 0 #175717;
+        }
+        .btn-save {
+            background: #c47e2e;
+            border-color: #f5bc3c;
+            color: white;
+            box-shadow: 0 6px 0 #7b4d1a;
+        }
+        .btn-csv {
+            background: #4a6b8a;
+            border-color: #f5bc3c;
+            color: white;
+            box-shadow: 0 6px 0 #2d4055;
+        }
+        .btn-import {
+            background: #8a6e4b;
+            border-color: #f5bc3c;
+            color: white;
+            box-shadow: 0 6px 0 #5a4a2e;
+        }
+        .btn-primary:hover, .btn-excel:hover, .btn-save:hover, .btn-csv:hover, .btn-import:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 0 #1f591f;
+        }
+        .btn-save:hover {
+            background: #da973d;
+        }
+        .btn-csv:hover {
+            background: #5a7b9a;
+        }
+        .btn-import:hover {
+            background: #a5855a;
         }
         .btn:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 6px 0 #2f5e2f;
-            background: #f0ffe0;
-        }
-        .btn-primary { background: #32853a; border-color: #f5bc3c; color: white; box-shadow: 0 6px 0 #1f591f; }
-        .btn-primary:hover { background: #3f9f4a; }
-        .btn-save { background: #c47e2e; border-color: #f5bc3c; color: white; box-shadow: 0 6px 0 #7b4d1a; }
-        .btn-save:hover { background: #d88f3f; }
-        .btn-excel { background: #1f7c3c; border-color: #f5bc3c; color: white; }
-        .btn-excel:hover { background: #269b4a; }
-        .btn-csv { background: #4a6b8a; border-color: #f5bc3c; color: white; }
-        .btn-csv:hover { background: #5a80a5; }
-        .btn-small {
-            max-width: 120px;
-            padding: 8px 12px;
+            background: #e4fbcb;
         }
         .records-section {
             background: #e3d8b0;
-            border-radius: 28px;
-            padding: 1.8rem 1.2rem;
+            border-radius: 32px;
+            padding: 2rem;
             margin-top: 2rem;
             border: 3px solid #b7973a;
         }
-        .records-header { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            margin-bottom: 1.5rem; 
-            flex-wrap: wrap; 
-            gap: 1rem; 
+        .records-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
         }
-        .records-header h3 { color: #2d571d; font-size: 1.6rem; }
-        .record-count { background: #528a44; color: white; padding: 0.4rem 1.5rem; border-radius: 50px; }
+        .records-header h3 {
+            color: #2d571d;
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+        .record-count {
+            background: #528a44;
+            color: white;
+            padding: 0.4rem 1.5rem;
+            border-radius: 50px;
+            font-weight: 600;
+        }
+        .import-area {
+            background: #f0e6c5;
+            border-radius: 30px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .import-label {
+            background: #8a6e4b;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .import-label:hover {
+            background: #9f825a;
+        }
+        #importFile {
+            display: none;
+        }
         .records-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-            gap: 1rem;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.2rem;
             max-height: 400px;
             overflow-y: auto;
-            padding: 0.3rem;
+            padding: 0.5rem 0.2rem;
         }
         .record-card {
             background: white;
-            border-radius: 20px;
-            padding: 1rem;
+            border-radius: 24px;
+            padding: 1.2rem;
             border-left: 8px solid #4f8a4f;
             box-shadow: 0 4px 0 #af9f5a;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: 0.2s;
+            position: relative;
         }
         .record-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 0 #af9f5a;
+            transform: translateY(-3px);
+            box-shadow: 0 7px 0 #af9f5a;
         }
-        .record-card.selected { border-left: 8px solid #e5a526; background: #fff7df; }
-        .record-date { font-weight: 700; color: #2d741d; }
-        .record-species { color: #3f4f2b; margin: 0.3rem 0; }
-        .record-weather { background: #e5f0ce; border-radius: 30px; padding: 0.2rem 0.8rem; display: inline-block; margin-top: 0.5rem; }
-        .record-photo-indicator { color: #b35e1a; font-size: 0.9rem; }
-        .record-actions { display: flex; gap: 0.5rem; margin-top: 0.8rem; }
-        .record-btn {
-            border: none;
-            padding: 0.3rem 0.8rem;
+        .record-card.selected {
+            border-left: 8px solid #e5a526;
+            background: #fff7df;
+        }
+        .record-card.missing-required {
+            border-left: 8px solid #d16b4b;
+        }
+        .record-date {
+            font-weight: 700;
+            color: #2d741d;
+            font-size: 1.1rem;
+        }
+        .record-species {
+            color: #3f4f2b;
+            margin: 0.3rem 0;
+            font-style: italic;
+        }
+        .record-location {
+            color: #626e44;
+            font-size: 0.9rem;
+        }
+        .record-weather {
+            background: #e5f0ce;
             border-radius: 30px;
-            font-weight: 600;
-            font-size: 0.75rem;
+            padding: 0.3rem 0.8rem;
+            display: inline-block;
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+        }
+        .record-photo-indicator {
+            color: #b35e1a;
+            font-size: 0.9rem;
+            margin-top: 0.3rem;
+        }
+        .record-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.8rem;
+            justify-content: flex-end;
+        }
+        .record-btn {
+            background: none;
+            border: 2px solid #8ba35e;
+            padding: 0.3rem 1rem;
+            border-radius: 30px;
             cursor: pointer;
-            transition: all 0.2s ease;
+            font-weight: 600;
+            font-size: 0.8rem;
         }
-        .record-btn:hover {
-            transform: translateY(-2px);
-            filter: brightness(1.1);
+        .record-btn.edit {
+            background: #edb84a;
+            border-color: #a57c2b;
+            color: #2d421d;
         }
-        .record-btn.edit { background: #edb84a; }
-        .record-btn.delete { background: #d16b4b; color: white; }
+        .record-btn.delete {
+            background: #d16b4b;
+            border-color: #994f34;
+            color: white;
+        }
+        .output-box {
+            background: #1e3b1a;
+            color: #e6ffb3;
+            padding: 1.8rem;
+            border-radius: 32px;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            font-size: 0.95rem;
+            border: 4px solid #d6b556;
+            margin-top: 1.8rem;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .weather-credit {
+            font-size: 0.9rem;
+            text-align: right;
+            color: #4b7137;
+            margin-top: 0.5rem;
+            font-weight: 600;
+        }
+        .weather-note {
+            background: #e9b53b;
+            color: #1d481d;
+            padding: 0.8rem;
+            border-radius: 50px;
+            text-align: center;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
         .warnings-panel {
             background: #ffecb3;
             border: 3px solid #ffa000;
@@ -581,52 +798,29 @@
             margin: 1rem 0;
             color: #b26500;
             font-weight: 600;
-            display: none;
         }
-        .info-badge { background: #4a90e2; color: white; padding: 0.2rem 0.8rem; border-radius: 30px; font-size: 0.75rem; font-weight: 600; margin-left: 6px; }
-        .camera-note { font-size: 0.8rem; color: #3a6b3a; background: #e8f5e8; border-radius: 20px; padding: 5px; text-align: center; }
-        .weather-credit { font-size: 0.8rem; text-align: right; color: #4b7137; margin-top: 0.5rem; }
-        
-        /* Mobile optimizations for location bar */
-        @media (max-width: 768px) {
-            .location-options {
-                flex-direction: column;
-                align-items: flex-start;
-                width: 100%;
-            }
-            .region-select-wrapper {
-                width: 100%;
-                justify-content: space-between;
-            }
-            #regionSelect {
-                flex: 1;
-                min-width: 150px;
-            }
-            .location-mode-indicator {
-                margin-left: 0;
-            }
-            .reset-map-mode-btn {
-                width: 100%;
-                justify-content: center;
-            }
-            .btn {
-                max-width: none;
-            }
+        .camera-note {
+            font-size: 0.85rem;
+            color: #3a6b3a;
+            margin: 5px 0;
+            padding: 5px;
+            background: #e8f5e8;
+            border-radius: 20px;
+            text-align: center;
         }
-
-        /* Placeholder styling for empty inputs */
-        input::placeholder, textarea::placeholder {
-            color: #aaa;
-            font-style: italic;
-            font-weight: 300;
-            opacity: 0.7;
+        .info-badge {
+            background: #4a90e2;
+            color: white;
+            padding: 0.2rem 0.8rem;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-left: 10px;
         }
-
-        /* Species dropdown option styling */
-        select option {
-            font-style: normal;
-        }
-        select option i {
+        .persist-note {
+            font-size: 0.8rem;
+            color: #4a6b8a;
+            margin-top: 5px;
             font-style: italic;
         }
     </style>
@@ -634,20 +828,90 @@
 <body>
 <div class="card">
     <div class="header">
-        <h1>🌱 FUTURE SEEDS PROGRAM <span>DATA COLLECTOR v5.5</span></h1>
+        <h1>
+            🌱 FUTURE SEEDS PROGRAM 
+            <span>DATA COLLECTOR</span>
+        </h1>
+        <div class="program-badge">⚡ interactive map · quick region · camera ready · data import</div>
     </div>
 
-    <!-- User Guide Toggle -->
+    <!-- Instructions Toggle (formerly User Guide) -->
     <div class="guide-toggle" onclick="toggleGuide()">
-        <span>📖</span> Show/Hide User Guide & Instructions
+        <span>📖</span> Show/Hide Instructions
     </div>
     <div class="guide-panel" id="guidePanel">
         <div class="guide-grid">
-            <div class="guide-step"><h3>📍 1. Choose Location</h3><ul><li>Quick Region: broad area (faster)</li><li>Precise Map: click or "My Location"</li><li>Use "↩️ Use quick region" to switch back</li></ul></div>
-            <div class="guide-step"><h3>📝 2. Field Data</h3><ul><li>Flowering stage, pollinators</li><li>Site notes</li></ul></div>
-            <div class="guide-step"><h3>📸 3. Photos</h3><ul><li>Take Photo Now (camera)</li><li>Choose from Gallery</li><li>Max 10 photos</li></ul></div>
-            <div class="guide-step"><h3>🌡️ 4. Weather (manual)</h3><ul><li>Enter actual BOM min/max (optional)</li><li>Station name & ID (optional)</li></ul></div>
-            <div class="guide-step"><h3>💾 5. Save & Export</h3><ul><li>Save to browser storage</li><li>Export JSON / Excel / CSV</li><li>Edit or delete records</li></ul></div>
+            <div class="guide-step">
+                <h3>📍 1. Choose Location <span class="required-badge">required</span></h3>
+                <ul>
+                    <li><strong>Quick Region:</strong> Use dropdown for broad area</li>
+                    <li><strong>Precise Map:</strong> Click map or use "My Location" for exact coordinates</li>
+                    <li>When using map, dropdown shows "📍 Map in use"</li>
+                    <li>Both methods store region + coordinates</li>
+                </ul>
+            </div>
+            <div class="guide-step">
+                <h3>👤 2. Observer Name <span class="required-badge">required · persists</span></h3>
+                <ul>
+                    <li>Enter your name (compulsory field)</li>
+                    <li>Name is saved and will auto-fill next time</li>
+                    <li>Greyed out example shows format</li>
+                </ul>
+            </div>
+            <div class="guide-step">
+                <h3>📅 3. Date <span class="required-badge">required</span></h3>
+                <ul>
+                    <li>Select collection date</li>
+                    <li>Month auto-updates weather display</li>
+                </ul>
+            </div>
+            <div class="guide-step">
+                <h3>🌼 4. Flowering Stage <span class="required-badge">required</span></h3>
+                <ul>
+                    <li>Check all that apply</li>
+                    <li>At least one stage must be selected</li>
+                </ul>
+            </div>
+            <div class="guide-step">
+                <h3>🐝 5. Insect Pollinators <span class="required-badge">required</span></h3>
+                <ul>
+                    <li>Check all observed pollinators</li>
+                    <li>"Other" field for additional species</li>
+                </ul>
+            </div>
+            <div class="guide-step">
+                <h3>📸 6. Photos <span class="optional-badge">optional</span></h3>
+                <ul>
+                    <li><strong>Take Photo Now:</strong> Opens camera</li>
+                    <li><strong>Choose from Gallery:</strong> Select existing</li>
+                    <li>Photos are embedded in saved records</li>
+                </ul>
+            </div>
+            <div class="guide-step">
+                <h3>🌡️ 7. Weather Data <span class="optional-badge">optional</span></h3>
+                <ul>
+                    <li>Look up BOM data for your location</li>
+                    <li>Enter ACTUAL min/max temperatures</li>
+                    <li>Station name and ID optional but helpful</li>
+                </ul>
+            </div>
+            <div class="guide-step">
+                <h3>🌱 8. Seed & Fire <span class="optional-badge">optional</span></h3>
+                <ul>
+                    <li>Seed maturity (example shown in grey)</li>
+                    <li>Fire history (example shown in grey)</li>
+                    <li>Site notes for additional observations</li>
+                </ul>
+            </div>
+            <div class="guide-step">
+                <h3>💾 9. Save & Export</h3>
+                <ul>
+                    <li>Save to local storage</li>
+                    <li>Export as JSON, Excel, or CSV</li>
+                    <li><strong>Import Data:</strong> Load previously exported JSON</li>
+                    <li>Edit or delete existing records</li>
+                </ul>
+            </div>
         </div>
     </div>
 
@@ -655,27 +919,24 @@
         <div class="selector-group">
             <label>🌿 Species:</label>
             <select id="speciesSelect" onchange="updateSpeciesInfo()">
-                <option value="Acacia verticillata" selected>🌼 <i>Acacia verticillata</i> (Prickly Moses)</option>
-                <option value="Acacia dealbata">🌿 <i>Acacia dealbata</i> (Silver Wattle)</option>
-                <option value="Banksia marginata">🪻 <i>Banksia marginata</i> (Silver Banksia)</option>
-                <option value="Leptospermum scoparium">🌸 <i>Leptospermum scoparium</i> (Manuka)</option>
-                <option value="Nothofagus cunninghamii">🍂 <i>Nothofagus cunninghamii</i> (Myrtle Beech)</option>
+                <option value="Acacia verticillata" selected><i>Acacia verticillata</i> (Prickly Moses) — TEST SPECIES</option>
+                <option value="Acacia dealbata"><i>Acacia dealbata</i> (Silver Wattle)</option>
+                <option value="Banksia marginata"><i>Banksia marginata</i> (Silver Banksia)</option>
+                <option value="Leptospermum scoparium"><i>Leptospermum scoparium</i> (Manuka)</option>
+                <option value="Nothofagus cunninghamii"><i>Nothofagus cunninghamii</i> (Myrtle Beech)</option>
             </select>
         </div>
         <div class="location-options">
-            <label>📍 Quick Region:</label>
-            <div class="region-select-wrapper">
-                <select id="regionSelect" onchange="updateFromRegion()">
-                    <option value="northWest">🌊 North West (Burnie/Devonport)</option>
-                    <option value="north">🌲 North (Launceston)</option>
-                    <option value="south" selected>🏔️ South (Hobart)</option>
-                    <option value="westCoast">🌧️ West Coast (Strahan/Queenstown)</option>
-                    <option value="eastCoast">🏖️ East Coast (St Helens/Bicheno)</option>
-                </select>
-                <span id="mapInUseBadge" class="map-in-use-badge" style="display: none;">📍 Map in use</span>
-            </div>
-            <span class="location-mode-indicator" id="locationMode">⚡ Quick Region</span>
-            <button id="resetToQuickBtn" class="reset-map-mode-btn" onclick="forceQuickRegion()" style="display: none;">↩️ Use quick region</button>
+            <label>📍 Quick Region <span class="required-badge">required</span>:</label>
+            <select id="regionSelect" onchange="updateFromRegion()">
+                <option value="northWest">🌊 North West (Burnie/Devonport)</option>
+                <option value="north">🌲 North (Launceston)</option>
+                <option value="south" selected>🏔️ South (Hobart)</option>
+                <option value="westCoast">🌧️ West Coast (Strahan/Queenstown)</option>
+                <option value="eastCoast">🏖️ East Coast (St Helens/Bicheno)</option>
+            </select>
+            <span class="map-in-use-badge" id="mapInUseBadge">📍 Map in use</span>
+            <span class="location-mode-indicator" id="locationMode">Quick Region</span>
         </div>
     </div>
 
@@ -692,20 +953,44 @@
         <!-- MAP SECTION -->
         <div class="map-section">
             <div class="map-header">
-                <h3>🗺️ Precise Location Map <span class="info-badge" id="mapModeIndicator">Click map to activate</span></h3>
+                <h3>
+                    🗺️ Precise Location Map <span class="required-badge">required if map used</span>
+                    <span class="info-badge" id="mapModeIndicator">Click map to activate</span>
+                </h3>
                 <div class="map-toggle">
-                    <button class="map-btn location-btn" onclick="getUserLocation()">📱 Use My Location</button>
+                    <button class="map-btn location-btn" onclick="getUserLocation()">
+                        📱 Use My Location
+                    </button>
                     <button class="map-btn active" id="showMapBtn" onclick="toggleMap(true)">Show Map</button>
                     <button class="map-btn" id="hideMapBtn" onclick="toggleMap(false)">Hide Map</button>
                 </div>
             </div>
             <div id="map" class="show"></div>
             <div class="coord-display">
-                <div class="coord-item"><label>Latitude:</label><input type="text" id="lat" value="-42.88" readonly></div>
-                <div class="coord-item"><label>Longitude:</label><input type="text" id="lon" value="147.33" readonly></div>
-                <div class="coord-item"><label>Source:</label><input type="text" id="coordSource" value="Quick Region (South (Hobart))" readonly></div>
+                <div class="coord-item">
+                    <label>Latitude:</label>
+                    <input type="text" id="lat" value="-42.88" readonly>
+                </div>
+                <div class="coord-item">
+                    <label>Longitude:</label>
+                    <input type="text" id="lon" value="147.33" readonly>
+                </div>
+                <div class="coord-item">
+                    <label>Source:</label>
+                    <input type="text" id="coordSource" value="Quick Region (Hobart)" readonly>
+                </div>
             </div>
-            <div class="location-note" id="locationNote">⚡ Using Quick Region mode. Click map or use "My Location" for precise coordinates.</div>
+            <div class="location-note" id="locationNote">
+                ⚡ Using Quick Region mode. Click map or use "My Location" for precise coordinates.
+            </div>
+        </div>
+
+        <!-- TEMPLATE BUTTONS -->
+        <div class="template-buttons">
+            <button class="template-btn" onclick="applyTemplate('postFire')">🔥 Post-fire Monitoring</button>
+            <button class="template-btn" onclick="applyTemplate('peakFlower')">🌸 Peak Flowering</button>
+            <button class="template-btn" onclick="applyTemplate('seedCollection')">🌱 Seed Collection</button>
+            <button class="template-btn" onclick="applyTemplate('pollinatorSurvey')">🐝 Pollinator Survey</button>
         </div>
 
         <div class="split-panel">
@@ -714,13 +999,23 @@
                 <div class="data-card">
                     <h2>🌸 Flowering & pollinators</h2>
                     <div class="field-grid">
-                        <div class="field"><label>Observer</label><input type="text" id="observer" placeholder="full name" value="Lee"></div>
-                        <div class="field"><label>Date</label><input type="date" id="obsDate" value="2026-02-26" onchange="updateMonthDisplay()"></div>
-                        <div class="field"><label>Site name</label><input type="text" id="siteName" placeholder="e.g. Burnie coastal" value="Hobart Rivulet"></div>
+                        <div class="field">
+                            <label>Observer <span class="required-badge">required · persists</span></label>
+                            <input type="text" id="observer" placeholder="e.g., Lee Smith" value="">
+                            <div class="persist-note">✓ Name will be saved for next session</div>
+                        </div>
+                        <div class="field">
+                            <label>Date <span class="required-badge">required</span></label>
+                            <input type="date" id="obsDate" value="2026-02-26" onchange="updateMonthDisplay()">
+                        </div>
+                        <div class="field">
+                            <label>Site name <span class="optional-badge">optional</span></label>
+                            <input type="text" id="siteName" placeholder="e.g., Hobart Rivulet" value="">
+                        </div>
                     </div>
-                    
+
                     <div style="margin: 1.8rem 0 1rem;">
-                        <label style="font-weight:800; color:#1f681f;">🌼 Flowering stage</label>
+                        <label style="font-weight:800; color:#1f681f;">🌼 Flowering stage <span class="required-badge">required</span></label>
                         <div class="checkbox-cluster">
                             <div><input type="checkbox" id="bud"> Bud</div>
                             <div><input type="checkbox" id="earlyFlower"> Early flower</div>
@@ -729,9 +1024,9 @@
                             <div><input type="checkbox" id="seedPod"> Seed pod</div>
                         </div>
                     </div>
-                    
+
                     <div style="margin: 1.5rem 0;">
-                        <label style="font-weight:800; color:#1f681f;">🐝 Insect pollinators</label>
+                        <label style="font-weight:800; color:#1f681f;">🐝 Insect pollinators <span class="required-badge">required</span></label>
                         <div class="checkbox-cluster">
                             <div><input type="checkbox" id="honeybee"> Honeybee</div>
                             <div><input type="checkbox" id="nativeBee"> Native bee</div>
@@ -741,61 +1036,104 @@
                             <div><input type="checkbox" id="butterfly"> Butterfly/moth</div>
                         </div>
                         <div class="field" style="margin-top:15px;">
-                            <label>Other insects</label>
-                            <textarea id="otherInsects" rows="2" placeholder="e.g. ants, thrips..."></textarea>
+                            <label>Other insects <span class="optional-badge">optional</span></label>
+                            <textarea id="otherInsects" rows="2" placeholder="e.g., ants, thrips..."></textarea>
                         </div>
                     </div>
-                    
+
                     <!-- PHOTO SECTION -->
                     <div class="photo-section">
-                        <label style="font-weight:800; color:#1f681f;">📸 Photo Documentation</label>
+                        <label style="font-weight:800; color:#1f681f;">📸 Photo Documentation <span class="optional-badge">optional</span></label>
                         <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px;">
-                            <button class="btn" onclick="openCamera()" style="background: #4a90e2; color: white; padding: 10px 20px; border-color: #2a5080;">📷 Take Photo Now</button>
+                            <button class="btn" onclick="openCamera()" style="background: #4a90e2; color: white; padding: 10px 20px; border-color: #2a5080;">
+                                📷 Take Photo Now
+                            </button>
+                            
                             <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display: none;">
-                            <button class="btn" onclick="document.getElementById('photoInput').click()" style="background: #8a6e4b; color: white; padding: 10px 20px;">🖼️ Choose from Gallery</button>
+                            
+                            <button class="btn" onclick="document.getElementById('photoInput').click()" style="background: #8a6e4b; color: white; padding: 10px 20px;">
+                                🖼️ Choose from Gallery
+                            </button>
+                            
                             <input type="file" id="photoInput" accept="image/*" multiple style="display: none;">
+                            
                             <span id="photoCount" style="align-self: center;">0 photos selected</span>
                         </div>
-                        <div class="camera-note">📱 On mobile: Camera opens automatically • On desktop: Select files</div>
+                        
+                        <div class="camera-note">
+                            📱 On mobile: Camera opens automatically • On desktop: Select files
+                        </div>
+                        
                         <div class="photo-preview" id="photoPreview"></div>
-                        <div style="font-size: 0.8rem; color: #5a7344; margin-top: 5px;">⚠️ Photos stored as data URLs</div>
+                        
+                        <div style="font-size: 0.8rem; color: #5a7344; margin-top: 5px;">
+                            ⚠️ Photos are stored as data URLs - large images may affect performance
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- RIGHT: SEED + WEATHER -->
+            <!-- RIGHT: SEED + FIRE + MANUAL WEATHER -->
             <div>
                 <div class="data-card">
-                    <h2>🌡️ MANUAL weather entry</h2>
-                    <div class="weather-note">🔍 Look up BOM data and enter actual monthly values (optional)</div>
+                    <h2>🌡️ WEATHER DATA <span class="optional-badge">optional</span></h2>
+                    
+                    <div class="weather-note">
+                        🔍 Look up BOM data for your location and enter actual monthly values
+                    </div>
+                    
                     <div class="field-grid">
-                        <div class="field"><label>🌡️ Actual min temp (°C)</label><input type="number" id="actualMinTemp" step="0.1" placeholder="e.g. 14.2" oninput="updateTempDisplay()"></div>
-                        <div class="field"><label>🌡️ Actual max temp (°C)</label><input type="number" id="actualMaxTemp" step="0.1" placeholder="e.g. 23.1" oninput="updateTempDisplay()"></div>
-                        <div class="field"><label>📍 BOM station name</label><input type="text" id="bomStation" placeholder="e.g. Hobart (Ellerslie Road)"></div>
-                        <div class="field"><label>🆔 Station ID</label><input type="text" id="stationId" placeholder="e.g. 094029"></div>
+                        <div class="field">
+                            <label>🌡️ Actual min temp (°C)</label>
+                            <input type="number" id="actualMinTemp" step="0.1" placeholder="e.g., 14.2" oninput="updateTempDisplay()">
+                        </div>
+                        <div class="field">
+                            <label>🌡️ Actual max temp (°C)</label>
+                            <input type="number" id="actualMaxTemp" step="0.1" placeholder="e.g., 23.1" oninput="updateTempDisplay()">
+                        </div>
+                        <div class="field">
+                            <label>📍 BOM station name</label>
+                            <input type="text" id="bomStation" placeholder="e.g., Hobart Airport">
+                        </div>
+                        <div class="field">
+                            <label>🆔 Station ID</label>
+                            <input type="text" id="stationId" placeholder="e.g., 094029">
+                        </div>
+                    </div>
+
+                    <div class="manual-temp-card" id="manualTempCard">
+                        <div class="temp-item"><span class="label">min</span><div class="value" id="displayMin">--°C</div></div>
+                        <div class="temp-item"><span class="label">max</span><div class="value" id="displayMax">--°C</div></div>
                     </div>
                     
-                    <div class="manual-temp-card">
-                        <div class="temp-item"><span class="label">entered min</span><div class="value" id="displayMin">—°C</div></div>
-                        <div class="temp-item"><span class="label">entered max</span><div class="value" id="displayMax">—°C</div></div>
+                    <div class="temp-note">
+                        ⏱️ Enter ACTUAL recorded min/max for this collection month (optional)
                     </div>
-                    
-                    <div class="temp-note">⏱️ Enter ACTUAL recorded min/max for this month (optional)</div>
-                    
+
                     <div style="margin-top: 2rem;">
                         <div class="field">
-                            <label>🌱 Seed maturity</label>
+                            <label>🌱 Seed maturity <span class="optional-badge">optional</span></label>
                             <select id="seedMaturity">
+                                <option value="" selected disabled>— select if known —</option>
                                 <option value="green">Green / immature</option>
-                                <option value="early" selected>Early filling</option>
+                                <option value="early">Early filling</option>
                                 <option value="mature">Mature / ready</option>
                                 <option value="dispersed">Already dispersed</option>
                             </select>
                         </div>
-                        
                         <div class="field" style="margin-top:15px;">
-                            <label>📝 Site notes</label>
-                            <textarea id="notes" rows="2" placeholder="plant health, flowering density..."></textarea>
+                            <label>🔥 Fire history <span class="optional-badge">optional</span></label>
+                            <select id="fireHistory">
+                                <option value="" selected disabled>— select if known —</option>
+                                <option value="none">No known fire</option>
+                                <option value="recent">Recent fire (<2 yrs)</option>
+                                <option value="old">Old fire scar (>5 yrs)</option>
+                                <option value="megafire">Mega-fire footprint</option>
+                            </select>
+                        </div>
+                        <div class="field" style="margin-top:15px;">
+                            <label>📝 Site notes <span class="optional-badge">optional</span></label>
+                            <textarea id="notes" rows="2" placeholder="plant health, fire damage, flowering density..."></textarea>
                         </div>
                     </div>
                 </div>
@@ -803,12 +1141,12 @@
         </div>
 
         <!-- WARNINGS PANEL -->
-        <div id="warningsPanel" class="warnings-panel"></div>
+        <div id="warningsPanel" class="warnings-panel" style="display: none;"></div>
 
         <!-- ACTION BUTTONS -->
         <div class="action-row">
             <button class="btn" onclick="resetForm()">⟲ Reset</button>
-            <button class="btn btn-save" onclick="saveRecord()">💾 Save to Local Storage</button>
+            <button class="btn btn-save" onclick="saveRecord()">💾 Save Record</button>
             <button class="btn btn-primary" onclick="captureJSON()">📥 Export as JSON</button>
             <button class="btn btn-excel" onclick="exportToExcel()">📊 Export to Excel</button>
             <button class="btn btn-csv" onclick="exportToCSV()">📄 Export to CSV</button>
@@ -819,20 +1157,48 @@
             <div class="records-header">
                 <h3>📋 Saved Records</h3>
                 <div class="record-count" id="recordCount">0 records</div>
-                <button class="btn btn-small" onclick="clearAllRecords()">🗑️ Clear All</button>
+                <div class="import-area">
+                    <label for="importFile" class="import-label">
+                        📂 Import Data (JSON)
+                        <input type="file" id="importFile" accept=".json,application/json" onchange="importData()">
+                    </label>
+                    <button class="btn" onclick="clearAllRecords()" style="padding:8px 20px;">🗑️ Clear All</button>
+                </div>
             </div>
-            <div class="records-grid" id="recordsGrid"></div>
+            <div class="records-grid" id="recordsGrid">
+                <!-- Records will be populated here -->
+            </div>
         </div>
 
+        <!-- OUTPUT PREVIEW - Commented out for now
+        <div class="output-box" id="outputBox">
+            ⏺ Dataset preview will appear here. Capture data to begin.
+        </div> -->
         <div class="weather-credit">Enter actual BOM observations for correlation analysis (optional)</div>
+    </div>
+
+    <!-- Footer -->
+    <div style="background: #1a5830; color: #f6f9ed; padding: 1rem 2.5rem; text-align: center; border-top: 3px solid #f5c542; font-size: 0.9rem; border-radius: 0 0 36px 36px;">
+        <p>🌱 Future Seeds Program · Tasmania · Field Data Collection Tool </p>
+        <p style="font-size: 0.8rem; margin-top: 0.3rem; opacity: 0.8;">Developer: Jay Rowley 2026</p>
     </div>
 </div>
 
 <script>
-    // --- full JavaScript with all features, plus map mode reset improvements ---
-    const monthDisplayNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    // Month display names
+    const monthDisplayNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+    // Local storage keys
     const STORAGE_KEY = 'futureSeedsRecords';
+    const OBSERVER_KEY = 'futureSeedsObserver';
+
+    // Load records from localStorage
     let savedRecords = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+
+    // Load saved observer name
+    let savedObserver = localStorage.getItem(OBSERVER_KEY) || '';
+
+    // Region presets
     const regionPresets = {
         northWest: { lat: -41.05, lon: 145.90, name: "North West (Burnie/Devonport)" },
         north: { lat: -41.43, lon: 147.14, name: "North (Launceston)" },
@@ -840,16 +1206,63 @@
         westCoast: { lat: -42.15, lon: 145.32, name: "West Coast (Strahan/Queenstown)" },
         eastCoast: { lat: -41.73, lon: 148.25, name: "East Coast (St Helens/Bicheno)" }
     };
-    let usingMapMode = false;
-    let selectedPhotos = [];
-    let map, marker;
 
-    // Guide toggle
+    // Track location mode
+    let usingMapMode = false;
+
+    // Templates
+    const templates = {
+        postFire: {
+            fireHistory: 'recent',
+            notes: 'Post-fire regeneration monitoring',
+            seedMaturity: 'early',
+        },
+        peakFlower: {
+            fullFlower: true,
+            seedMaturity: 'early',
+            notes: 'Peak flowering observed',
+        },
+        seedCollection: {
+            seedPod: true,
+            seedMaturity: 'mature',
+            notes: 'Seed collection site',
+        },
+        pollinatorSurvey: {
+            notes: 'Pollinator survey location',
+        }
+    };
+
+    // Photo handling
+    let selectedPhotos = [];
+
+    // Initialize map
+    let map;
+    let marker;
+
+    // Toggle guide
     function toggleGuide() {
         document.getElementById('guidePanel').classList.toggle('show');
     }
 
-    // ---------- Map mode toggles ----------
+    // Toggle map visibility
+    function toggleMap(show) {
+        const mapEl = document.getElementById('map');
+        const showBtn = document.getElementById('showMapBtn');
+        const hideBtn = document.getElementById('hideMapBtn');
+        
+        if (show) {
+            mapEl.classList.add('show');
+            showBtn.classList.add('active');
+            hideBtn.classList.remove('active');
+            setTimeout(() => map.invalidateSize(), 100);
+        } else {
+            mapEl.classList.remove('show');
+            showBtn.classList.remove('active');
+            hideBtn.classList.add('active');
+        }
+    }
+
+    // Switch to map mode
     function enableMapMode() {
         usingMapMode = true;
         document.getElementById('locationMode').innerText = '📍 Map Mode';
@@ -857,11 +1270,12 @@
         document.getElementById('mapModeIndicator').innerText = '✅ Map active';
         document.getElementById('mapModeIndicator').style.background = '#d16b4b';
         document.getElementById('regionSelect').classList.add('map-active');
-        document.getElementById('mapInUseBadge').style.display = 'inline-block';
-        document.getElementById('resetToQuickBtn').style.display = 'inline-flex';
-        document.getElementById('locationNote').innerHTML = '📍 Using precise map coordinates. Click "Use quick region" to switch back.';
+        document.getElementById('regionSelect').disabled = true;
+        document.getElementById('mapInUseBadge').classList.add('show');
+        document.getElementById('locationNote').innerHTML = '📍 Using precise map coordinates. Region dropdown shows "📍 Map in use".';
     }
 
+    // Switch to quick region mode
     function enableQuickRegionMode() {
         usingMapMode = false;
         document.getElementById('locationMode').innerText = '⚡ Quick Region';
@@ -869,27 +1283,113 @@
         document.getElementById('mapModeIndicator').innerText = 'Click map to activate';
         document.getElementById('mapModeIndicator').style.background = '#4a90e2';
         document.getElementById('regionSelect').classList.remove('map-active');
-        document.getElementById('mapInUseBadge').style.display = 'none';
-        document.getElementById('resetToQuickBtn').style.display = 'none';
+        document.getElementById('regionSelect').disabled = false;
+        document.getElementById('mapInUseBadge').classList.remove('show');
         document.getElementById('locationNote').innerHTML = '⚡ Using Quick Region mode. Click map or use "My Location" for precise coordinates.';
-        updateFromRegion();  // sync coords
     }
 
-    function forceQuickRegion() {
-        if (!usingMapMode) return;
-        enableQuickRegionMode();
-        const region = document.getElementById('regionSelect').value;
-        const preset = regionPresets[region];
-        if (marker) {
-            marker.setLatLng([preset.lat, preset.lon]);
-            map.setView([preset.lat, preset.lon], 8);
+    // Get user location
+    function getUserLocation() {
+        if (!navigator.geolocation) {
+            alert('Geolocation is not supported by your browser');
+            return;
         }
-        updateCoordinates(preset.lat, preset.lon, false);
+        
+        const outputBox = document.getElementById('outputBox');
+        outputBox.innerText = '📍 Getting your location...';
+        
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+                
+                if (marker) {
+                    marker.setLatLng([lat, lng]);
+                    map.setView([lat, lng], 12);
+                }
+                
+                updateCoordinates(lat, lng, true);
+                reverseGeocode(lat, lng);
+                enableMapMode();
+                
+                outputBox.innerText = `📍 Location captured: ${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+            },
+            (error) => {
+                let errorMessage = 'Location error: ';
+                switch(error.code) {
+                    case error.PERMISSION_DENIED:
+                        errorMessage += 'Please allow location access';
+                        break;
+                    case error.POSITION_UNAVAILABLE:
+                        errorMessage += 'Location information unavailable';
+                        break;
+                    case error.TIMEOUT:
+                        errorMessage += 'Location request timed out';
+                        break;
+                    default:
+                        errorMessage += 'Unknown error';
+                }
+                alert(errorMessage);
+                outputBox.innerText = '❌ ' + errorMessage;
+            },
+            {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 0
+            }
+        );
     }
 
+    // Reverse geocoding
+    function reverseGeocode(lat, lng) {
+        fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.display_name) {
+                    const locationParts = [];
+                    if (data.address.suburb) locationParts.push(data.address.suburb);
+                    if (data.address.town) locationParts.push(data.address.town);
+                    if (data.address.city) locationParts.push(data.address.city);
+                    if (data.address.state) locationParts.push(data.address.state);
+                    
+                    if (locationParts.length > 0) {
+                        document.getElementById('siteName').value = locationParts.join(', ');
+                    }
+                }
+            })
+            .catch(error => console.log('Reverse geocoding failed:', error));
+    }
+
+    // Initialize map
+    function initMap() {
+        map = L.map('map').setView([-42.88, 147.33], 7);
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        marker = L.marker([-42.88, 147.33], {
+            draggable: true
+        }).addTo(map);
+
+        marker.on('dragend', function(e) {
+            const latlng = marker.getLatLng();
+            updateCoordinates(latlng.lat, latlng.lng, true);
+            enableMapMode();
+        });
+
+        map.on('click', function(e) {
+            marker.setLatLng(e.latlng);
+            updateCoordinates(e.latlng.lat, e.latlng.lng, true);
+            enableMapMode();
+        });
+    }
+
+    // Update coordinates
     function updateCoordinates(lat, lng, fromMap = false) {
         document.getElementById('lat').value = lat.toFixed(4);
         document.getElementById('lon').value = lng.toFixed(4);
+        
         if (fromMap) {
             document.getElementById('coordSource').value = 'Map selection';
         } else {
@@ -898,199 +1398,292 @@
         }
     }
 
+    // Update from region dropdown
     function updateFromRegion() {
-        if (usingMapMode) return;
+        if (usingMapMode) {
+            return;
+        }
+        
         const region = document.getElementById('regionSelect').value;
         const preset = regionPresets[region];
+        
         document.getElementById('lat').value = preset.lat.toFixed(4);
         document.getElementById('lon').value = preset.lon.toFixed(4);
         document.getElementById('coordSource').value = `Quick Region (${preset.name})`;
-        if (marker) marker.setLatLng([preset.lat, preset.lon]);
-        map.setView([preset.lat, preset.lon], 8);
-    }
-
-    function toggleMap(show) {
-        const mapEl = document.getElementById('map');
-        if (show) {
-            mapEl.classList.add('show');
-            document.getElementById('showMapBtn').classList.add('active');
-            document.getElementById('hideMapBtn').classList.remove('active');
-            setTimeout(() => map.invalidateSize(), 150);
-        } else {
-            mapEl.classList.remove('show');
-            document.getElementById('showMapBtn').classList.remove('active');
-            document.getElementById('hideMapBtn').classList.add('active');
+        
+        if (marker) {
+            marker.setLatLng([preset.lat, preset.lon]);
+            map.setView([preset.lat, preset.lon], 8);
+        }
+        
+        if (usingMapMode) {
+            enableQuickRegionMode();
         }
     }
 
-    function getUserLocation() {
-        if (!navigator.geolocation) { alert('Geolocation not supported'); return; }
-        navigator.geolocation.getCurrentPosition(
-            (pos) => {
-                const lat = pos.coords.latitude, lng = pos.coords.longitude;
-                if (marker) marker.setLatLng([lat, lng]);
-                map.setView([lat, lng], 12);
-                updateCoordinates(lat, lng, true);
-                enableMapMode();
-                reverseGeocode(lat, lng);
-            },
-            (err) => { alert('Location error: ' + err.message); }
-        );
-    }
-
-    function reverseGeocode(lat, lng) {
-        fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
-            .then(r => r.json())
-            .then(data => {
-                if (data.display_name) {
-                    let parts = [];
-                    if (data.address.suburb) parts.push(data.address.suburb);
-                    if (data.address.town) parts.push(data.address.town);
-                    if (data.address.city) parts.push(data.address.city);
-                    if (parts.length) document.getElementById('siteName').value = parts.join(', ');
-                }
-            }).catch(() => {});
-    }
-
-    // ---------- init map ----------
-    function initMap() {
-        map = L.map('map').setView([-42.88, 147.33], 7);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
-        marker = L.marker([-42.88, 147.33], { draggable: true }).addTo(map);
-        marker.on('dragend', function(e) {
-            let ll = marker.getLatLng();
-            updateCoordinates(ll.lat, ll.lng, true);
-            enableMapMode();
-        });
-        map.on('click', function(e) {
-            marker.setLatLng(e.latlng);
-            updateCoordinates(e.latlng.lat, e.latlng.lng, true);
-            enableMapMode();
-        });
-    }
-
-    // ---------- helper functions ----------
-    function updateSpeciesInfo() {
-        let s = document.getElementById('speciesSelect').value;
-        let display = s;
-        if (s === 'Acacia verticillata') display = '🌼 <i>Acacia verticillata</i> (Prickly Moses)';
-        else if (s === 'Acacia dealbata') display = '🌿 <i>Acacia dealbata</i> (Silver Wattle)';
-        else if (s === 'Banksia marginata') display = '🪻 <i>Banksia marginata</i> (Silver Banksia)';
-        else if (s === 'Leptospermum scoparium') display = '🌸 <i>Leptospermum scoparium</i> (Manuka)';
-        else if (s === 'Nothofagus cunninghamii') display = '🍂 <i>Nothofagus cunninghamii</i> (Myrtle Beech)';
-        document.getElementById('speciesDisplay').innerHTML = display;
-    }
-
+    // Get current month index
     function getCurrentMonthIndex() {
-        let d = document.getElementById('obsDate').value;
-        return d ? new Date(d + 'T12:00:00').getMonth() : 1;
-    }
-    function updateMonthDisplay() {
-        let m = getCurrentMonthIndex();
-        document.getElementById('currentMonthDisplay').innerHTML = `📆 ${monthDisplayNames[m]} 2026 · manual weather entry`;
-    }
-    function updateTempDisplay() {
-        let min = document.getElementById('actualMinTemp').value;
-        let max = document.getElementById('actualMaxTemp').value;
-        document.getElementById('displayMin').innerText = min ? min + '°C' : '—°C';
-        document.getElementById('displayMax').innerText = max ? max + '°C' : '—°C';
+        const dateStr = document.getElementById('obsDate').value;
+        if (dateStr) {
+            const d = new Date(dateStr + 'T12:00:00');
+            return d.getMonth();
+        }
+        return 1;
     }
 
-    // Photo functions
-    function openCamera() {
-        let inp = document.getElementById('cameraInput');
-        inp.setAttribute('capture', 'environment');
-        inp.value = '';
-        inp.click();
-        inp.onchange = function(e) { if (e.target.files?.length) handleNewPhotos(Array.from(e.target.files)); };
+    // Update month display
+    function updateMonthDisplay() {
+        const monthIndex = getCurrentMonthIndex();
+        document.getElementById('currentMonthDisplay').innerHTML = `📆 ${monthDisplayNames[monthIndex]} 2026 · manual weather entry`;
     }
-    document.getElementById('photoInput').addEventListener('change', function(e) {
-        if (e.target.files?.length) handleNewPhotos(Array.from(e.target.files));
-    });
-    function handleNewPhotos(files) {
-        let all = [...selectedPhotos, ...files];
-        if (all.length > 10) { alert('Max 10 photos'); all = all.slice(0,10); }
-        selectedPhotos = all;
+
+    // Update temperature display
+    function updateTempDisplay() {
+        const minTemp = document.getElementById('actualMinTemp').value;
+        const maxTemp = document.getElementById('actualMaxTemp').value;
+        document.getElementById('displayMin').innerText = minTemp ? minTemp + '°C' : '--°C';
+        document.getElementById('displayMax').innerText = maxTemp ? maxTemp + '°C' : '--°C';
+    }
+
+    // Update species info with italics
+    function updateSpeciesInfo() {
+        const select = document.getElementById('speciesSelect');
+        const species = select.value;
+        let displayName = species;
+        if (species === 'Acacia verticillata') displayName = '🌼 <i>Acacia verticillata</i> (Prickly Moses) — TEST SPECIES';
+        else if (species === 'Acacia dealbata') displayName = '🌿 <i>Acacia dealbata</i> (Silver Wattle)';
+        else if (species === 'Banksia marginata') displayName = '🪻 <i>Banksia marginata</i> (Silver Banksia)';
+        else if (species === 'Leptospermum scoparium') displayName = '🌸 <i>Leptospermum scoparium</i> (Manuka)';
+        else if (species === 'Nothofagus cunninghamii') displayName = '🍂 <i>Nothofagus cunninghamii</i> (Myrtle Beech)';
+        document.getElementById('speciesDisplay').innerHTML = displayName;
+    }
+
+    // Open camera
+    function openCamera() {
+        const cameraInput = document.getElementById('cameraInput');
+        cameraInput.setAttribute('capture', 'environment');
+        cameraInput.setAttribute('accept', 'image/*');
+        cameraInput.value = '';
+        cameraInput.click();
+        
+        cameraInput.onchange = function(e) {
+            if (e.target.files && e.target.files[0]) {
+                handleNewPhotos(Array.from(e.target.files));
+            }
+        };
+    }
+
+    // Handle new photos
+    function handleNewPhotos(newFiles) {
+        const allFiles = [...selectedPhotos, ...newFiles];
+        const MAX_PHOTOS = 10;
+        
+        if (allFiles.length > MAX_PHOTOS) {
+            alert(`Maximum ${MAX_PHOTOS} photos allowed. Only the first ${MAX_PHOTOS} will be kept.`);
+            selectedPhotos = allFiles.slice(0, MAX_PHOTOS);
+        } else {
+            selectedPhotos = allFiles;
+        }
+        
         document.getElementById('photoCount').innerText = `${selectedPhotos.length} photo(s) selected`;
         updatePhotoPreviews();
-        let large = selectedPhotos.filter(f => f.size > 5*1024*1024);
-        if (large.length && confirm('Some photos >5MB. Compress?')) compressPhotos(large);
+        
+        const largeFiles = selectedPhotos.filter(f => f.size > 5 * 1024 * 1024);
+        if (largeFiles.length > 0) {
+            if (confirm('Some photos are large (>5MB). Would you like to compress them for better storage?')) {
+                compressPhotos(largeFiles);
+            }
+        }
     }
+
+    // Update photo previews
     function updatePhotoPreviews() {
-        let div = document.getElementById('photoPreview');
-        div.innerHTML = '';
-        selectedPhotos.forEach((f, idx) => {
-            let r = new FileReader();
-            r.onload = (e) => {
-                let item = document.createElement('div');
-                item.className = 'photo-preview-item';
-                item.innerHTML = `<img src="${e.target.result}"><button class="photo-remove" onclick="removePhoto(${idx})">×</button><div class="photo-size">${(f.size/1024).toFixed(0)}KB</div>`;
-                div.appendChild(item);
+        const previewDiv = document.getElementById('photoPreview');
+        previewDiv.innerHTML = '';
+        
+        selectedPhotos.forEach((file, index) => {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const preview = document.createElement('div');
+                preview.className = 'photo-preview-item';
+                preview.innerHTML = `
+                    <img src="${e.target.result}" alt="Preview">
+                    <button class="photo-remove" onclick="removePhoto(${index})">×</button>
+                    <div class="photo-size">${(file.size / 1024).toFixed(0)}KB</div>
+                `;
+                previewDiv.appendChild(preview);
             };
-            r.readAsDataURL(f);
+            reader.readAsDataURL(file);
         });
     }
-    window.removePhoto = (idx) => { selectedPhotos.splice(idx,1); document.getElementById('photoCount').innerText = selectedPhotos.length+' photo(s)'; updatePhotoPreviews(); };
+
+    // Remove photo
+    function removePhoto(index) {
+        selectedPhotos.splice(index, 1);
+        document.getElementById('photoCount').innerText = `${selectedPhotos.length} photo(s) selected`;
+        updatePhotoPreviews();
+    }
+
+    // Compress photos
     function compressPhotos(files) {
-        files.forEach(f => {
-            let r = new FileReader();
-            r.onload = (e) => {
-                let img = new Image();
-                img.onload = () => {
-                    let canvas = document.createElement('canvas');
-                    let w = img.width, h = img.height;
-                    let max = 1200;
-                    if (w > h && w > max) { h *= max/w; w = max; }
-                    else if (h > max) { w *= max/h; h = max; }
-                    canvas.width = w; canvas.height = h;
-                    canvas.getContext('2d').drawImage(img,0,0,w,h);
-                    canvas.toBlob(blob => {
-                        let cf = new File([blob], f.name, { type: 'image/jpeg', lastModified: Date.now() });
-                        let idx = selectedPhotos.indexOf(f);
-                        if (idx !== -1) selectedPhotos[idx] = cf;
-                        updatePhotoPreviews();
+        files.forEach((file) => {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+                    
+                    const MAX_WIDTH = 1200;
+                    const MAX_HEIGHT = 1200;
+                    
+                    if (width > height) {
+                        if (width > MAX_WIDTH) {
+                            height *= MAX_WIDTH / width;
+                            width = MAX_WIDTH;
+                        }
+                    } else {
+                        if (height > MAX_HEIGHT) {
+                            width *= MAX_HEIGHT / height;
+                            height = MAX_HEIGHT;
+                        }
+                    }
+                    
+                    canvas.width = width;
+                    canvas.height = height;
+                    
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    canvas.toBlob((blob) => {
+                        const compressedFile = new File([blob], file.name, {
+                            type: 'image/jpeg',
+                            lastModified: Date.now()
+                        });
+                        
+                        const fileIndex = selectedPhotos.indexOf(file);
+                        if (fileIndex !== -1) {
+                            selectedPhotos[fileIndex] = compressedFile;
+                            updatePhotoPreviews();
+                        }
                     }, 'image/jpeg', 0.8);
                 };
                 img.src = e.target.result;
             };
-            r.readAsDataURL(f);
+            reader.readAsDataURL(file);
         });
     }
 
-    // Validation & form
-    function validateForm() {
-        let w = [];
-        let lat = parseFloat(document.getElementById('lat').value);
-        let lon = parseFloat(document.getElementById('lon').value);
-        if (lat < -43.7 || lat > -40.4 || lon < 144.5 || lon > 148.5) w.push('⚠️ Coordinates outside Tasmania');
-        let min = document.getElementById('actualMinTemp').value;
-        let max = document.getElementById('actualMaxTemp').value;
-        if (min && (parseFloat(min) < -10 || parseFloat(min) > 30)) w.push('⚠️ Min temperature unusual');
-        if (max && (parseFloat(max) < 0 || parseFloat(max) > 45)) w.push('⚠️ Max temperature unusual');
-        if (new Date(document.getElementById('obsDate').value).getFullYear() !== 2026) w.push('⚠️ Date not 2026');
-        if (!['bud','earlyFlower','fullFlower','petalFall','seedPod'].some(id => document.getElementById(id).checked)) w.push('⚠️ No flowering stage');
-        return w;
-    }
-    function showWarnings(w) {
-        let p = document.getElementById('warningsPanel');
-        if (w.length) { p.style.display = 'block'; p.innerHTML = '⚠️ Validation Warnings:<br>' + w.join('<br>'); }
-        else p.style.display = 'none';
+    // Gallery photo selection
+    document.getElementById('photoInput').addEventListener('change', function(e) {
+        if (e.target.files && e.target.files.length > 0) {
+            handleNewPhotos(Array.from(e.target.files));
+        }
+    });
+
+    // Apply template
+    function applyTemplate(templateName) {
+        const template = templates[templateName];
+        
+        if (template.fireHistory) document.getElementById('fireHistory').value = template.fireHistory;
+        if (template.notes) document.getElementById('notes').value = template.notes;
+        if (template.seedMaturity) document.getElementById('seedMaturity').value = template.seedMaturity;
+        
+        if (template.fullFlower) document.getElementById('fullFlower').checked = true;
+        if (template.seedPod) document.getElementById('seedPod').checked = true;
+        
+        document.getElementById('outputBox').innerText = `✅ Applied template: ${templateName}`;
     }
 
-    function collectFormData() {
-        let region = document.getElementById('regionSelect').value;
-        let minTemp = document.getElementById('actualMinTemp').value;
-        let maxTemp = document.getElementById('actualMaxTemp').value;
+    // Validate required fields
+    function validateRequired() {
+        const errors = [];
         
+        // Check observer
+        const observer = document.getElementById('observer').value.trim();
+        if (!observer) {
+            errors.push('Observer name is required');
+        }
+        
+        // Check date
+        const date = document.getElementById('obsDate').value;
+        if (!date) {
+            errors.push('Date is required');
+        }
+        
+        // Check flowering stage
+        const floweringSelected = [
+            'bud', 'earlyFlower', 'fullFlower', 'petalFall', 'seedPod'
+        ].some(id => document.getElementById(id).checked);
+        
+        if (!floweringSelected) {
+            errors.push('At least one flowering stage must be selected');
+        }
+        
+        // Check pollinators
+        const pollinatorsSelected = [
+            'honeybee', 'nativeBee', 'fly', 'beetle', 'wasp', 'butterfly'
+        ].some(id => document.getElementById(id).checked);
+        
+        const otherPollinators = document.getElementById('otherInsects').value.trim();
+        
+        if (!pollinatorsSelected && !otherPollinators) {
+            errors.push('At least one pollinator must be selected or described');
+        }
+        
+        return errors;
+    }
+
+    // Show validation errors
+    function showErrors(errors) {
+        const panel = document.getElementById('warningsPanel');
+        if (errors.length > 0) {
+            panel.style.display = 'block';
+            panel.innerHTML = '❌ Required Fields Missing:<br>' + errors.join('<br>');
+            return false;
+        } else {
+            panel.style.display = 'none';
+            return true;
+        }
+    }
+
+    // Collect form data (optional fields can be empty)
+    function collectFormData() {
+        const region = document.getElementById('regionSelect').value;
+        
+        const monthIndex = getCurrentMonthIndex();
+        const monthName = monthDisplayNames[monthIndex];
+
+        // Get observer and save it for next time
+        const observer = document.getElementById('observer').value.trim();
+        if (observer) {
+            localStorage.setItem(OBSERVER_KEY, observer);
+        }
+
+        // Helper function to get optional values (return null if empty)
+        const getOptionalNumber = (id) => {
+            const val = document.getElementById(id).value;
+            return val ? parseFloat(val) : null;
+        };
+
+        const getOptionalString = (id) => {
+            const val = document.getElementById(id).value;
+            return val || null;
+        };
+
         return {
-            id: Date.now(), timestamp: new Date().toISOString(), program: "Future Seeds Program",
+            id: Date.now(),
+            timestamp: new Date().toISOString(),
+            program: "Future Seeds Program",
             locationMode: usingMapMode ? "precise_map" : "quick_region",
-            observer: document.getElementById('observer').value,
+            observer: observer,
             collectionDate: document.getElementById('obsDate').value,
             species: document.getElementById('speciesSelect').value,
             location: {
-                region: regionPresets[region].name, regionCode: region,
-                siteName: document.getElementById('siteName').value,
+                region: regionPresets[region].name,
+                regionCode: region,
+                siteName: getOptionalString('siteName'),
                 latitude: parseFloat(document.getElementById('lat').value),
                 longitude: parseFloat(document.getElementById('lon').value),
                 coordinateSource: document.getElementById('coordSource').value
@@ -1110,161 +1703,419 @@
                     beetle: document.getElementById('beetle').checked,
                     wasp: document.getElementById('wasp').checked,
                     butterfly: document.getElementById('butterfly').checked,
-                    other: document.getElementById('otherInsects').value
+                    other: getOptionalString('otherInsects')
                 },
-                seedMaturity: document.getElementById('seedMaturity').value
+                seedMaturity: getOptionalString('seedMaturity')
             },
             siteHistory: {
-                notes: document.getElementById('notes').value
+                fire: getOptionalString('fireHistory'),
+                notes: getOptionalString('notes')
             },
             weather: {
-                month: monthDisplayNames[getCurrentMonthIndex()], year: 2026,
-                minTemp: minTemp ? parseFloat(minTemp) : null,
-                maxTemp: maxTemp ? parseFloat(maxTemp) : null,
-                station: document.getElementById('bomStation').value || null,
-                stationId: document.getElementById('stationId').value || null,
+                month: monthName,
+                year: 2026,
+                minTemp: getOptionalNumber('actualMinTemp'),
+                maxTemp: getOptionalNumber('actualMaxTemp'),
+                station: getOptionalString('bomStation'),
+                stationId: getOptionalString('stationId'),
                 dataType: "Manual BOM entry"
             },
-            photos: [] // placeholder
+            photos: selectedPhotos.map(file => ({
+                name: file.name,
+                type: file.type,
+                size: file.size
+            }))
         };
     }
 
+    // Save record
     function saveRecord() {
         updateTempDisplay();
-        let warnings = validateForm();
-        showWarnings(warnings);
-        if (warnings.length && !confirm('⚠️ Warnings found. Save anyway?')) return;
-
-        let data = collectFormData();
-        let photoPromises = selectedPhotos.map(f => new Promise(res => {
-            let r = new FileReader();
-            r.onload = (e) => res({ name: f.name, type: f.type, size: f.size, data: e.target.result });
-            r.readAsDataURL(f);
-        }));
+        
+        const errors = validateRequired();
+        if (!showErrors(errors)) {
+            return;
+        }
+        
+        const data = collectFormData();
+        
+        const photoPromises = selectedPhotos.map(file => {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    resolve({
+                        name: file.name,
+                        type: file.type,
+                        size: file.size,
+                        data: e.target.result
+                    });
+                };
+                reader.readAsDataURL(file);
+            });
+        });
+        
         Promise.all(photoPromises).then(photoData => {
             data.photos = photoData;
             savedRecords.push(data);
             localStorage.setItem(STORAGE_KEY, JSON.stringify(savedRecords));
-            displayRecords(); updateStats();
-            alert('✅ Record saved!');
+            displayRecords();
+            updateStats();
+            document.getElementById('outputBox').innerText = '✅ Record saved to local storage!\n\n' + 
+                JSON.stringify({...data, photos: `${data.photos.length} photo(s)`}, null, 2);
         });
     }
 
-    function displayRecords() {
-        let grid = document.getElementById('recordsGrid');
-        let cnt = document.getElementById('recordCount');
-        if (!savedRecords.length) {
-            grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:2rem; color:#5f7344;">No records yet.</div>';
-            cnt.innerText = '0 records'; return;
-        }
-        cnt.innerText = `${savedRecords.length} record(s)`;
-        grid.innerHTML = savedRecords.map((r,i) => `
-            <div class="record-card" onclick="selectRecord(${i})">
-                <div class="record-date">📅 ${r.collectionDate}</div>
-                <div class="record-species">🌿 ${r.species.split(' ')[0]}</div>
-                <div class="record-location">📍 ${r.location.region}</div>
-                <div class="record-weather">🌡️ ${r.weather.minTemp ? r.weather.minTemp : '—'}/${r.weather.maxTemp ? r.weather.maxTemp : '—'}°C</div>
-                ${r.photos?.length ? `<div class="record-photo-indicator">📸 ${r.photos.length}</div>` : ''}
-                <div class="record-actions">
-                    <button class="record-btn edit" onclick="event.stopPropagation(); editRecord(${i})">✏️ Edit</button>
-                    <button class="record-btn delete" onclick="event.stopPropagation(); deleteRecord(${i})">🗑️ Delete</button>
-                </div>
-            </div>`).join('');
+    // Import data from JSON file
+    function importData() {
+        const fileInput = document.getElementById('importFile');
+        const file = fileInput.files[0];
+        
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const importedData = JSON.parse(e.target.result);
+                
+                // Handle single record or array of records
+                if (Array.isArray(importedData)) {
+                    // Check if it's an array of records
+                    savedRecords = [...savedRecords, ...importedData];
+                } else if (importedData.id) {
+                    // Single record
+                    savedRecords.push(importedData);
+                } else {
+                    alert('Invalid data format: Expected a record or array of records');
+                    return;
+                }
+                
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(savedRecords));
+                displayRecords();
+                updateStats();
+                document.getElementById('outputBox').innerText = `✅ Imported ${Array.isArray(importedData) ? importedData.length : 1} record(s)`;
+                
+                // Clear file input
+                fileInput.value = '';
+            } catch (error) {
+                alert('Error importing file: ' + error.message);
+            }
+        };
+        reader.readAsText(file);
     }
-    window.selectRecord = (i) => {
-        let r = savedRecords[i];
-        alert(`Record: ${r.collectionDate} - ${r.species}\nLocation: ${r.location.siteName}\nTemp: ${r.weather.minTemp ? r.weather.minTemp : '—'}/${r.weather.maxTemp ? r.weather.maxTemp : '—'}°C`);
-        document.querySelectorAll('.record-card').forEach(c => c.classList.remove('selected'));
-        document.querySelectorAll('.record-card')[i]?.classList.add('selected');
-    };
-    window.editRecord = (i) => {
-        let r = savedRecords[i];
-        document.getElementById('observer').value = r.observer;
-        document.getElementById('obsDate').value = r.collectionDate;
-        document.getElementById('siteName').value = r.location.siteName;
-        document.getElementById('lat').value = r.location.latitude;
-        document.getElementById('lon').value = r.location.longitude;
-        document.getElementById('coordSource').value = r.location.coordinateSource;
-        document.getElementById('speciesSelect').value = r.species; updateSpeciesInfo();
-        let regionCode = 'south';
-        for (let [c, p] of Object.entries(regionPresets)) if (p.name === r.location.region) { regionCode = c; break; }
-        document.getElementById('regionSelect').value = regionCode;
-        document.getElementById('bud').checked = r.phenology.flowering.bud;
-        document.getElementById('earlyFlower').checked = r.phenology.flowering.earlyFlower;
-        document.getElementById('fullFlower').checked = r.phenology.flowering.fullFlower;
-        document.getElementById('petalFall').checked = r.phenology.flowering.petalFall;
-        document.getElementById('seedPod').checked = r.phenology.flowering.seedPod;
-        document.getElementById('honeybee').checked = r.phenology.pollinators.honeybee;
-        document.getElementById('nativeBee').checked = r.phenology.pollinators.nativeBee;
-        document.getElementById('fly').checked = r.phenology.pollinators.fly;
-        document.getElementById('beetle').checked = r.phenology.pollinators.beetle;
-        document.getElementById('wasp').checked = r.phenology.pollinators.wasp;
-        document.getElementById('butterfly').checked = r.phenology.pollinators.butterfly;
-        document.getElementById('otherInsects').value = r.phenology.pollinators.other;
-        document.getElementById('actualMinTemp').value = r.weather.minTemp || '';
-        document.getElementById('actualMaxTemp').value = r.weather.maxTemp || '';
-        document.getElementById('bomStation').value = r.weather.station || '';
-        document.getElementById('stationId').value = r.weather.stationId || '';
-        document.getElementById('seedMaturity').value = r.phenology.seedMaturity;
-        document.getElementById('notes').value = r.siteHistory.notes;
-        selectedPhotos = []; document.getElementById('photoPreview').innerHTML = ''; document.getElementById('photoCount').innerText = '0 photos';
-        updateMonthDisplay(); updateTempDisplay();
-        if (marker) marker.setLatLng([r.location.latitude, r.location.longitude]);
-        map.setView([r.location.latitude, r.location.longitude], 8);
-        if (r.locationMode === 'precise_map') enableMapMode(); else enableQuickRegionMode();
-        deleteRecord(i, true);
-    };
-    window.deleteRecord = (i, silent) => { savedRecords.splice(i,1); localStorage.setItem(STORAGE_KEY,JSON.stringify(savedRecords)); displayRecords(); updateStats(); if(!silent) alert('🗑️ Record deleted.'); };
-    function clearAllRecords() { if(confirm('Delete ALL?')){ savedRecords=[]; localStorage.removeItem(STORAGE_KEY); displayRecords(); updateStats(); alert('🗑️ All records cleared.'); } }
 
+    // Display records
+    function displayRecords() {
+        const grid = document.getElementById('recordsGrid');
+        const countEl = document.getElementById('recordCount');
+        
+        if (savedRecords.length === 0) {
+            grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:2rem; color:#5f7344;">No saved records yet. Complete and save your first observation!</div>';
+            countEl.innerText = '0 records';
+            return;
+        }
+
+        countEl.innerText = `${savedRecords.length} record${savedRecords.length !== 1 ? 's' : ''}`;
+        
+        grid.innerHTML = savedRecords.map((record, index) => `
+            <div class="record-card" onclick="selectRecord(${index})">
+                <div class="record-date">📅 ${record.collectionDate}</div>
+                <div class="record-species">🌿 <i>${record.species.split(' ')[0]} ${record.species.split(' ')[1] || ''}</i></div>
+                <div class="record-location">📍 ${record.location.region}</div>
+                ${record.weather.minTemp && record.weather.maxTemp ? 
+                    `<div class="record-weather">🌡️ ${record.weather.minTemp}°C / ${record.weather.maxTemp}°C</div>` : ''}
+                ${record.photos && record.photos.length > 0 ? 
+                    `<div class="record-photo-indicator">📸 ${record.photos.length} photo(s)</div>` : ''}
+                <div class="record-actions">
+                    <button class="record-btn edit" onclick="event.stopPropagation(); editRecord(${index})">✏️ Edit</button>
+                    <button class="record-btn delete" onclick="event.stopPropagation(); deleteRecord(${index})">🗑️ Delete</button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // Select record
+    function selectRecord(index) {
+        const record = savedRecords[index];
+        const displayRecord = {...record};
+        if (displayRecord.photos) {
+            displayRecord.photos = `${displayRecord.photos.length} photo(s)`;
+        }
+        document.getElementById('outputBox').innerText = JSON.stringify(displayRecord, null, 2);
+        
+        const cards = document.querySelectorAll('.record-card');
+        cards.forEach(c => c.classList.remove('selected'));
+        cards[index]?.classList.add('selected');
+    }
+
+    // Edit record
+    function editRecord(index) {
+        const record = savedRecords[index];
+        
+        document.getElementById('observer').value = record.observer;
+        document.getElementById('obsDate').value = record.collectionDate;
+        document.getElementById('siteName').value = record.location.siteName || '';
+        document.getElementById('lat').value = record.location.latitude;
+        document.getElementById('lon').value = record.location.longitude;
+        document.getElementById('coordSource').value = record.location.coordinateSource;
+        
+        document.getElementById('speciesSelect').value = record.species;
+        updateSpeciesInfo();
+        
+        let regionCode = 'south';
+        for (const [code, preset] of Object.entries(regionPresets)) {
+            if (preset.name === record.location.region) {
+                regionCode = code;
+                break;
+            }
+        }
+        document.getElementById('regionSelect').value = regionCode;
+        
+        document.getElementById('bud').checked = record.phenology.flowering.bud;
+        document.getElementById('earlyFlower').checked = record.phenology.flowering.earlyFlower;
+        document.getElementById('fullFlower').checked = record.phenology.flowering.fullFlower;
+        document.getElementById('petalFall').checked = record.phenology.flowering.petalFall;
+        document.getElementById('seedPod').checked = record.phenology.flowering.seedPod;
+        
+        document.getElementById('honeybee').checked = record.phenology.pollinators.honeybee;
+        document.getElementById('nativeBee').checked = record.phenology.pollinators.nativeBee;
+        document.getElementById('fly').checked = record.phenology.pollinators.fly;
+        document.getElementById('beetle').checked = record.phenology.pollinators.beetle;
+        document.getElementById('wasp').checked = record.phenology.pollinators.wasp;
+        document.getElementById('butterfly').checked = record.phenology.pollinators.butterfly;
+        document.getElementById('otherInsects').value = record.phenology.pollinators.other || '';
+        
+        document.getElementById('actualMinTemp').value = record.weather.minTemp || '';
+        document.getElementById('actualMaxTemp').value = record.weather.maxTemp || '';
+        document.getElementById('bomStation').value = record.weather.station || '';
+        document.getElementById('stationId').value = record.weather.stationId || '';
+        
+        document.getElementById('seedMaturity').value = record.phenology.seedMaturity || '';
+        document.getElementById('fireHistory').value = record.siteHistory.fire || '';
+        document.getElementById('notes').value = record.siteHistory.notes || '';
+        
+        selectedPhotos = [];
+        document.getElementById('photoPreview').innerHTML = '';
+        document.getElementById('photoCount').innerText = '0 photos selected';
+        
+        updateMonthDisplay();
+        updateTempDisplay();
+        
+        if (marker) {
+            marker.setLatLng([record.location.latitude, record.location.longitude]);
+            map.setView([record.location.latitude, record.location.longitude], 8);
+        }
+        
+        if (record.locationMode === 'precise_map') {
+            enableMapMode();
+        } else {
+            enableQuickRegionMode();
+        }
+        
+        document.getElementById('outputBox').innerText = `✏️ Editing record from ${record.collectionDate}`;
+        
+        deleteRecord(index, true);
+    }
+
+    // Delete record
+    function deleteRecord(index, silent = false) {
+        savedRecords.splice(index, 1);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(savedRecords));
+        displayRecords();
+        updateStats();
+        if (!silent) {
+            document.getElementById('outputBox').innerText = '🗑️ Record deleted.';
+        }
+    }
+
+    // Clear all records
+    function clearAllRecords() {
+        if (confirm('Are you sure you want to delete ALL saved records?')) {
+            savedRecords = [];
+            localStorage.removeItem(STORAGE_KEY);
+            displayRecords();
+            updateStats();
+            document.getElementById('outputBox').innerText = '🗑️ All records cleared.';
+        }
+    }
+
+    // Update statistics
     function updateStats() {
         document.getElementById('totalRecordsStat').innerText = savedRecords.length;
-        if (savedRecords.length) {
-            let temps = savedRecords.filter(r => r.weather.minTemp && r.weather.maxTemp);
-            if (temps.length) {
-                let avgMin = temps.reduce((s,r)=>s+(r.weather.minTemp||0),0)/temps.length;
-                let avgMax = temps.reduce((s,r)=>s+(r.weather.maxTemp||0),0)/temps.length;
+        
+        if (savedRecords.length > 0) {
+            const temps = savedRecords.filter(r => r.weather.minTemp && r.weather.maxTemp);
+            if (temps.length > 0) {
+                const avgMin = temps.reduce((sum, r) => sum + r.weather.minTemp, 0) / temps.length;
+                const avgMax = temps.reduce((sum, r) => sum + r.weather.maxTemp, 0) / temps.length;
                 document.getElementById('avgTempStat').innerHTML = `${avgMin.toFixed(1)}/${avgMax.toFixed(1)}°C`;
             } else {
-                document.getElementById('avgTempStat').innerHTML = '—/—°C';
+                document.getElementById('avgTempStat').innerHTML = 'No temps';
             }
-        } else document.getElementById('avgTempStat').innerText = '-';
+        }
     }
 
-    function captureJSON() { updateTempDisplay(); alert('JSON data captured (see console)'); console.log(collectFormData()); }
-    function exportToExcel() {
-        let d = collectFormData();
-        let flat = {
-            'Program':d.program,'Mode':d.locationMode,'Observer':d.observer,'Date':d.collectionDate,'Species':d.species,
-            'Region':d.location.region,'Site':d.location.siteName,'Lat':d.location.latitude,'Lon':d.location.longitude,
-            'MinTemp':d.weather.minTemp !== null ? d.weather.minTemp : '', 'MaxTemp':d.weather.maxTemp !== null ? d.weather.maxTemp : '',
-            'Station':d.weather.station || '', 'StationID':d.weather.stationId || '',
-            'Notes':d.siteHistory.notes,
-            'PhotoCount':selectedPhotos.length
+    // Show field statistics
+    function showFieldStats() {
+        const stats = {
+            totalRecords: savedRecords.length,
+            uniqueSites: new Set(savedRecords.map(r => r.location.siteName).filter(Boolean)).size,
+            speciesCount: new Set(savedRecords.map(r => r.species)).size,
+            regions: {},
+            fireHistory: {},
+            locationModes: {
+                precise: savedRecords.filter(r => r.locationMode === 'precise_map').length,
+                quick: savedRecords.filter(r => r.locationMode === 'quick_region').length
+            },
+            totalPhotos: savedRecords.reduce((sum, r) => sum + (r.photos?.length || 0), 0),
+            weatherRecords: savedRecords.filter(r => r.weather.minTemp).length
         };
-        let wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet([flat]), "Future Seeds");
-        XLSX.writeFile(wb, `Future_Seeds_${d.collectionDate}.xlsx`);
-        alert('✅ Excel exported');
-    }
-    function exportToCSV() {
-        let d = collectFormData();
-        let row = [`"Program"`,`"Observer"`,`"Date"`,`"Species"`,`"Region"`,`"Lat"`,`"Lon"`,`"Min"`,`"Max"`,`"Notes"`];
-        let vals = [d.program, d.observer, d.collectionDate, d.species, d.location.region, d.location.latitude, d.location.longitude, 
-                   d.weather.minTemp !== null ? d.weather.minTemp : '', d.weather.maxTemp !== null ? d.weather.maxTemp : '', d.siteHistory.notes];
-        let csv = row.join(',') + '\n' + vals.map(v => typeof v === 'string' ? `"${v.replace(/"/g,'""')}"` : v).join(',');
-        let blob = new Blob([csv], {type:'text/csv'});
-        let a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = `data_${d.collectionDate}.csv`;
-        a.click();
-        alert('✅ CSV exported');
+        
+        savedRecords.forEach(r => {
+            stats.regions[r.location.region] = (stats.regions[r.location.region] || 0) + 1;
+            if (r.siteHistory.fire) {
+                stats.fireHistory[r.siteHistory.fire] = (stats.fireHistory[r.siteHistory.fire] || 0) + 1;
+            }
+        });
+        
+        let output = '📊 Field Statistics:\n\n' +
+            `Total Records: ${stats.totalRecords}\n` +
+            `Unique Sites: ${stats.uniqueSites}\n` +
+            `Species Count: ${stats.speciesCount}\n` +
+            `Total Photos: ${stats.totalPhotos}\n` +
+            `Weather Records: ${stats.weatherRecords}\n` +
+            `📍 Precise Map Records: ${stats.locationModes.precise}\n` +
+            `⚡ Quick Region Records: ${stats.locationModes.quick}\n\n`;
+        
+        if (Object.keys(stats.regions).length > 0) {
+            output += `Records by Region:\n${Object.entries(stats.regions).map(([r, c]) => `  ${r}: ${c}`).join('\n')}\n\n`;
+        }
+        
+        if (Object.keys(stats.fireHistory).length > 0) {
+            output += `Fire History:\n${Object.entries(stats.fireHistory).map(([f, c]) => `  ${f}: ${c}`).join('\n')}`;
+        }
+        
+        document.getElementById('outputBox').innerText = output;
     }
 
+    // JSON export
+    function captureJSON() {
+        updateTempDisplay();
+        const errors = validateRequired();
+        if (!showErrors(errors)) {
+            return;
+        }
+        const data = collectFormData();
+        document.getElementById('outputBox').innerText = JSON.stringify(data, null, 2);
+    }
+
+    // Excel export (optional fields as null become empty in Excel)
+    function exportToExcel() {
+        updateTempDisplay();
+        const errors = validateRequired();
+        if (!showErrors(errors)) {
+            return;
+        }
+        
+        const data = collectFormData();
+        
+        const flatData = {
+            'Program': data.program,
+            'Location Mode': data.locationMode,
+            'Observer': data.observer,
+            'Collection Date': data.collectionDate,
+            'Species': data.species,
+            'Region': data.location.region,
+            'Site Name': data.location.siteName || '',
+            'Latitude': data.location.latitude,
+            'Longitude': data.location.longitude,
+            'Coordinate Source': data.location.coordinateSource,
+            'Flowering - Bud': data.phenology.flowering.bud,
+            'Flowering - Early': data.phenology.flowering.earlyFlower,
+            'Flowering - Full': data.phenology.flowering.fullFlower,
+            'Flowering - Petal Fall': data.phenology.flowering.petalFall,
+            'Flowering - Seed Pod': data.phenology.flowering.seedPod,
+            'Pollinators - Honeybee': data.phenology.pollinators.honeybee,
+            'Pollinators - Native Bee': data.phenology.pollinators.nativeBee,
+            'Pollinators - Fly': data.phenology.pollinators.fly,
+            'Pollinators - Beetle': data.phenology.pollinators.beetle,
+            'Pollinators - Wasp': data.phenology.pollinators.wasp,
+            'Pollinators - Butterfly/Moth': data.phenology.pollinators.butterfly,
+            'Pollinators - Other': data.phenology.pollinators.other || '',
+            'Seed Maturity': data.phenology.seedMaturity || '',
+            'Fire History': data.siteHistory.fire || '',
+            'Site Notes': data.siteHistory.notes || '',
+            'Weather Month': data.weather.month,
+            'Weather Year': data.weather.year,
+            'Actual Min Temp (°C)': data.weather.minTemp !== null ? data.weather.minTemp : '',
+            'Actual Max Temp (°C)': data.weather.maxTemp !== null ? data.weather.maxTemp : '',
+            'BOM Station': data.weather.station || '',
+            'Station ID': data.weather.stationId || '',
+            'Photo Count': selectedPhotos.length,
+            'Record Timestamp': data.timestamp
+        };
+
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.json_to_sheet([flatData]);
+        XLSX.utils.book_append_sheet(wb, ws, "Future Seeds Data");
+        
+        const dateStr = data.collectionDate.replace(/-/g, '');
+        const filename = `Future_Seeds_${data.species.replace(/\s/g, '_')}_${dateStr}.xlsx`;
+        
+        XLSX.writeFile(wb, filename);
+        
+        document.getElementById('outputBox').innerText = `✅ Excel file exported: ${filename}`;
+    }
+
+    // CSV export (optional fields as empty strings)
+    function exportToCSV() {
+        updateTempDisplay();
+        const errors = validateRequired();
+        if (!showErrors(errors)) {
+            return;
+        }
+        
+        const data = collectFormData();
+        
+        const flatData = {
+            'Program': data.program,
+            'Observer': data.observer,
+            'Collection Date': data.collectionDate,
+            'Species': data.species,
+            'Region': data.location.region,
+            'Site': data.location.siteName || '',
+            'Latitude': data.location.latitude,
+            'Longitude': data.location.longitude,
+            'Min Temp': data.weather.minTemp !== null ? data.weather.minTemp : '',
+            'Max Temp': data.weather.maxTemp !== null ? data.weather.maxTemp : '',
+            'Fire History': data.siteHistory.fire || '',
+            'Notes': data.siteHistory.notes || ''
+        };
+        
+        const headers = Object.keys(flatData).join(',');
+        const values = Object.values(flatData).map(v => 
+            typeof v === 'string' && v.includes(',') ? `"${v}"` : v
+        ).join(',');
+        
+        const csv = headers + '\n' + values;
+        
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `data_${data.collectionDate}.csv`;
+        a.click();
+        
+        document.getElementById('outputBox').innerText = `✅ CSV file exported`;
+    }
+
+    // Reset form
     function resetForm() {
-        document.getElementById('observer').value = 'Lee';
+        document.getElementById('observer').value = savedObserver;
         document.getElementById('obsDate').value = '2026-02-26';
-        document.getElementById('siteName').value = 'Hobart Rivulet';
+        document.getElementById('siteName').value = '';
+        document.getElementById('lat').value = '-42.88';
+        document.getElementById('lon').value = '147.33';
+        document.getElementById('coordSource').value = 'Quick Region (South (Hobart))';
         document.getElementById('bud').checked = false;
         document.getElementById('earlyFlower').checked = false;
         document.getElementById('fullFlower').checked = false;
@@ -1281,26 +2132,46 @@
         document.getElementById('actualMaxTemp').value = '';
         document.getElementById('bomStation').value = '';
         document.getElementById('stationId').value = '';
-        document.getElementById('seedMaturity').value = 'early';
+        document.getElementById('seedMaturity').value = '';
+        document.getElementById('fireHistory').value = '';
         document.getElementById('notes').value = '';
         document.getElementById('speciesSelect').value = 'Acacia verticillata';
         document.getElementById('regionSelect').value = 'south';
+        
         selectedPhotos = [];
         document.getElementById('photoPreview').innerHTML = '';
         document.getElementById('photoCount').innerText = '0 photos selected';
-        updateSpeciesInfo(); updateMonthDisplay(); updateTempDisplay(); showWarnings([]);
+        
+        updateSpeciesInfo();
+        updateMonthDisplay();
+        updateTempDisplay();
+        document.getElementById('warningsPanel').style.display = 'none';
         enableQuickRegionMode();
-        updateFromRegion();
-        if (marker) marker.setLatLng([-42.88, 147.33]);
-        map.setView([-42.88, 147.33], 7);
-        alert('✅ Form has been reset');
+        
+        if (marker) {
+            marker.setLatLng([-42.88, 147.33]);
+            map.setView([-42.88, 147.33], 7);
+        }
+        
+        document.getElementById('outputBox').innerText = '⏺ Form reset. Ready for new capture.';
+        document.querySelectorAll('.record-card').forEach(c => c.classList.remove('selected'));
     }
 
+    // Initialize on load
     window.onload = function() {
         initMap();
-        updateSpeciesInfo(); updateMonthDisplay(); updateTempDisplay(); displayRecords(); updateStats();
+        updateSpeciesInfo();
+        updateMonthDisplay();
+        updateTempDisplay();
+        displayRecords();
+        updateStats();
         enableQuickRegionMode();
         updateFromRegion();
+        
+        // Load saved observer name
+        if (savedObserver) {
+            document.getElementById('observer').value = savedObserver;
+        }
     };
 </script>
 </body>
