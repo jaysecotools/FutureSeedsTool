@@ -1147,9 +1147,9 @@
         <div class="action-row">
             <button class="btn" onclick="resetForm()">⟲ Reset</button>
             <button class="btn btn-save" onclick="saveRecord()">💾 Save Record</button>
-            <button class="btn btn-primary" onclick="captureJSON()">📥 Export as JSON</button>
-            <button class="btn btn-excel" onclick="exportToExcel()">📊 Export to Excel</button>
-            <button class="btn btn-csv" onclick="exportToCSV()">📄 Export to CSV</button>
+            <button class="btn btn-primary" onclick="exportAllJSON()">📥 Export All as JSON</button>
+            <button class="btn btn-excel" onclick="exportAllExcel()">📊 Export All to Excel</button>
+            <button class="btn btn-csv" onclick="exportAllCSV()">📄 Export All to CSV</button>
         </div>
 
         <!-- RECORDS SECTION -->
@@ -1295,9 +1295,6 @@
             return;
         }
         
-        const outputBox = document.getElementById('outputBox');
-        outputBox.innerText = '📍 Getting your location...';
-        
         navigator.geolocation.getCurrentPosition(
             (position) => {
                 const lat = position.coords.latitude;
@@ -1311,8 +1308,6 @@
                 updateCoordinates(lat, lng, true);
                 reverseGeocode(lat, lng);
                 enableMapMode();
-                
-                outputBox.innerText = `📍 Location captured: ${lat.toFixed(4)}, ${lng.toFixed(4)}`;
             },
             (error) => {
                 let errorMessage = 'Location error: ';
@@ -1330,12 +1325,6 @@
                         errorMessage += 'Unknown error';
                 }
                 alert(errorMessage);
-                outputBox.innerText = '❌ ' + errorMessage;
-            },
-            {
-                enableHighAccuracy: true,
-                timeout: 10000,
-                maximumAge: 0
             }
         );
     }
@@ -1592,8 +1581,6 @@
         
         if (template.fullFlower) document.getElementById('fullFlower').checked = true;
         if (template.seedPod) document.getElementById('seedPod').checked = true;
-        
-        document.getElementById('outputBox').innerText = `✅ Applied template: ${templateName}`;
     }
 
     // Validate required fields
@@ -1760,8 +1747,7 @@
             localStorage.setItem(STORAGE_KEY, JSON.stringify(savedRecords));
             displayRecords();
             updateStats();
-            document.getElementById('outputBox').innerText = '✅ Record saved to local storage!\n\n' + 
-                JSON.stringify({...data, photos: `${data.photos.length} photo(s)`}, null, 2);
+            resetForm();
         });
     }
 
@@ -1792,7 +1778,6 @@
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(savedRecords));
                 displayRecords();
                 updateStats();
-                document.getElementById('outputBox').innerText = `✅ Imported ${Array.isArray(importedData) ? importedData.length : 1} record(s)`;
                 
                 // Clear file input
                 fileInput.value = '';
@@ -1840,7 +1825,6 @@
         if (displayRecord.photos) {
             displayRecord.photos = `${displayRecord.photos.length} photo(s)`;
         }
-        document.getElementById('outputBox').innerText = JSON.stringify(displayRecord, null, 2);
         
         const cards = document.querySelectorAll('.record-card');
         cards.forEach(c => c.classList.remove('selected'));
@@ -1911,8 +1895,6 @@
             enableQuickRegionMode();
         }
         
-        document.getElementById('outputBox').innerText = `✏️ Editing record from ${record.collectionDate}`;
-        
         deleteRecord(index, true);
     }
 
@@ -1922,9 +1904,6 @@
         localStorage.setItem(STORAGE_KEY, JSON.stringify(savedRecords));
         displayRecords();
         updateStats();
-        if (!silent) {
-            document.getElementById('outputBox').innerText = '🗑️ Record deleted.';
-        }
     }
 
     // Clear all records
@@ -1934,7 +1913,6 @@
             localStorage.removeItem(STORAGE_KEY);
             displayRecords();
             updateStats();
-            document.getElementById('outputBox').innerText = '🗑️ All records cleared.';
         }
     }
 
@@ -1976,136 +1954,120 @@
                 stats.fireHistory[r.siteHistory.fire] = (stats.fireHistory[r.siteHistory.fire] || 0) + 1;
             }
         });
-        
-        let output = '📊 Field Statistics:\n\n' +
-            `Total Records: ${stats.totalRecords}\n` +
-            `Unique Sites: ${stats.uniqueSites}\n` +
-            `Species Count: ${stats.speciesCount}\n` +
-            `Total Photos: ${stats.totalPhotos}\n` +
-            `Weather Records: ${stats.weatherRecords}\n` +
-            `📍 Precise Map Records: ${stats.locationModes.precise}\n` +
-            `⚡ Quick Region Records: ${stats.locationModes.quick}\n\n`;
-        
-        if (Object.keys(stats.regions).length > 0) {
-            output += `Records by Region:\n${Object.entries(stats.regions).map(([r, c]) => `  ${r}: ${c}`).join('\n')}\n\n`;
-        }
-        
-        if (Object.keys(stats.fireHistory).length > 0) {
-            output += `Fire History:\n${Object.entries(stats.fireHistory).map(([f, c]) => `  ${f}: ${c}`).join('\n')}`;
-        }
-        
-        document.getElementById('outputBox').innerText = output;
     }
 
-    // JSON export
-    function captureJSON() {
-        updateTempDisplay();
-        const errors = validateRequired();
-        if (!showErrors(errors)) {
-            return;
-        }
-        const data = collectFormData();
-        document.getElementById('outputBox').innerText = JSON.stringify(data, null, 2);
-    }
-
-    // Excel export (optional fields as null become empty in Excel)
-    function exportToExcel() {
-        updateTempDisplay();
-        const errors = validateRequired();
-        if (!showErrors(errors)) {
+    // NEW FUNCTION: Export ALL records as JSON
+    function exportAllJSON() {
+        if (savedRecords.length === 0) {
+            alert('No records to export');
             return;
         }
         
-        const data = collectFormData();
+        const dataStr = JSON.stringify(savedRecords, null, 2);
+        const dataBlob = new Blob([dataStr], { type: 'application/json' });
+        const url = URL.createObjectURL(dataBlob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `future_seeds_all_records_${new Date().toISOString().split('T')[0]}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    // NEW FUNCTION: Export ALL records as Excel
+    function exportAllExcel() {
+        if (savedRecords.length === 0) {
+            alert('No records to export');
+            return;
+        }
         
-        const flatData = {
-            'Program': data.program,
-            'Location Mode': data.locationMode,
-            'Observer': data.observer,
-            'Collection Date': data.collectionDate,
-            'Species': data.species,
-            'Region': data.location.region,
-            'Site Name': data.location.siteName || '',
-            'Latitude': data.location.latitude,
-            'Longitude': data.location.longitude,
-            'Coordinate Source': data.location.coordinateSource,
-            'Flowering - Bud': data.phenology.flowering.bud,
-            'Flowering - Early': data.phenology.flowering.earlyFlower,
-            'Flowering - Full': data.phenology.flowering.fullFlower,
-            'Flowering - Petal Fall': data.phenology.flowering.petalFall,
-            'Flowering - Seed Pod': data.phenology.flowering.seedPod,
-            'Pollinators - Honeybee': data.phenology.pollinators.honeybee,
-            'Pollinators - Native Bee': data.phenology.pollinators.nativeBee,
-            'Pollinators - Fly': data.phenology.pollinators.fly,
-            'Pollinators - Beetle': data.phenology.pollinators.beetle,
-            'Pollinators - Wasp': data.phenology.pollinators.wasp,
-            'Pollinators - Butterfly/Moth': data.phenology.pollinators.butterfly,
-            'Pollinators - Other': data.phenology.pollinators.other || '',
-            'Seed Maturity': data.phenology.seedMaturity || '',
-            'Fire History': data.siteHistory.fire || '',
-            'Site Notes': data.siteHistory.notes || '',
-            'Weather Month': data.weather.month,
-            'Weather Year': data.weather.year,
-            'Actual Min Temp (°C)': data.weather.minTemp !== null ? data.weather.minTemp : '',
-            'Actual Max Temp (°C)': data.weather.maxTemp !== null ? data.weather.maxTemp : '',
-            'BOM Station': data.weather.station || '',
-            'Station ID': data.weather.stationId || '',
-            'Photo Count': selectedPhotos.length,
-            'Record Timestamp': data.timestamp
-        };
+        // Flatten each record for Excel
+        const flatData = savedRecords.map(record => ({
+            'Program': record.program,
+            'Location Mode': record.locationMode,
+            'Observer': record.observer,
+            'Collection Date': record.collectionDate,
+            'Species': record.species,
+            'Region': record.location.region,
+            'Site Name': record.location.siteName || '',
+            'Latitude': record.location.latitude,
+            'Longitude': record.location.longitude,
+            'Coordinate Source': record.location.coordinateSource,
+            'Flowering - Bud': record.phenology.flowering.bud,
+            'Flowering - Early': record.phenology.flowering.earlyFlower,
+            'Flowering - Full': record.phenology.flowering.fullFlower,
+            'Flowering - Petal Fall': record.phenology.flowering.petalFall,
+            'Flowering - Seed Pod': record.phenology.flowering.seedPod,
+            'Pollinators - Honeybee': record.phenology.pollinators.honeybee,
+            'Pollinators - Native Bee': record.phenology.pollinators.nativeBee,
+            'Pollinators - Fly': record.phenology.pollinators.fly,
+            'Pollinators - Beetle': record.phenology.pollinators.beetle,
+            'Pollinators - Wasp': record.phenology.pollinators.wasp,
+            'Pollinators - Butterfly/Moth': record.phenology.pollinators.butterfly,
+            'Pollinators - Other': record.phenology.pollinators.other || '',
+            'Seed Maturity': record.phenology.seedMaturity || '',
+            'Fire History': record.siteHistory.fire || '',
+            'Site Notes': record.siteHistory.notes || '',
+            'Weather Month': record.weather.month,
+            'Weather Year': record.weather.year,
+            'Actual Min Temp (°C)': record.weather.minTemp || '',
+            'Actual Max Temp (°C)': record.weather.maxTemp || '',
+            'BOM Station': record.weather.station || '',
+            'Station ID': record.weather.stationId || '',
+            'Photo Count': record.photos ? record.photos.length : 0,
+            'Record Timestamp': record.timestamp
+        }));
 
         const wb = XLSX.utils.book_new();
-        const ws = XLSX.utils.json_to_sheet([flatData]);
+        const ws = XLSX.utils.json_to_sheet(flatData);
         XLSX.utils.book_append_sheet(wb, ws, "Future Seeds Data");
         
-        const dateStr = data.collectionDate.replace(/-/g, '');
-        const filename = `Future_Seeds_${data.species.replace(/\s/g, '_')}_${dateStr}.xlsx`;
+        const filename = `Future_Seeds_All_Records_${new Date().toISOString().split('T')[0]}.xlsx`;
         
         XLSX.writeFile(wb, filename);
-        
-        document.getElementById('outputBox').innerText = `✅ Excel file exported: ${filename}`;
     }
 
-    // CSV export (optional fields as empty strings)
-    function exportToCSV() {
-        updateTempDisplay();
-        const errors = validateRequired();
-        if (!showErrors(errors)) {
+    // NEW FUNCTION: Export ALL records as CSV
+    function exportAllCSV() {
+        if (savedRecords.length === 0) {
+            alert('No records to export');
             return;
         }
         
-        const data = collectFormData();
+        // Flatten each record for CSV
+        const flatData = savedRecords.map(record => ({
+            'Program': record.program,
+            'Observer': record.observer,
+            'Collection Date': record.collectionDate,
+            'Species': record.species,
+            'Region': record.location.region,
+            'Site': record.location.siteName || '',
+            'Latitude': record.location.latitude,
+            'Longitude': record.location.longitude,
+            'Min Temp': record.weather.minTemp || '',
+            'Max Temp': record.weather.maxTemp || '',
+            'Fire History': record.siteHistory.fire || '',
+            'Notes': record.siteHistory.notes || ''
+        }));
         
-        const flatData = {
-            'Program': data.program,
-            'Observer': data.observer,
-            'Collection Date': data.collectionDate,
-            'Species': data.species,
-            'Region': data.location.region,
-            'Site': data.location.siteName || '',
-            'Latitude': data.location.latitude,
-            'Longitude': data.location.longitude,
-            'Min Temp': data.weather.minTemp !== null ? data.weather.minTemp : '',
-            'Max Temp': data.weather.maxTemp !== null ? data.weather.maxTemp : '',
-            'Fire History': data.siteHistory.fire || '',
-            'Notes': data.siteHistory.notes || ''
-        };
+        // Create CSV headers
+        const headers = Object.keys(flatData[0]).join(',');
+        const rows = flatData.map(row => 
+            Object.values(row).map(v => 
+                typeof v === 'string' && (v.includes(',') || v.includes('"')) 
+                    ? `"${v.replace(/"/g, '""')}"` 
+                    : v
+            ).join(',')
+        );
         
-        const headers = Object.keys(flatData).join(',');
-        const values = Object.values(flatData).map(v => 
-            typeof v === 'string' && v.includes(',') ? `"${v}"` : v
-        ).join(',');
-        
-        const csv = headers + '\n' + values;
+        const csv = [headers, ...rows].join('\n');
         
         const blob = new Blob([csv], { type: 'text/csv' });
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `data_${data.collectionDate}.csv`;
+        a.download = `future_seeds_all_records_${new Date().toISOString().split('T')[0]}.csv`;
         a.click();
-        
-        document.getElementById('outputBox').innerText = `✅ CSV file exported`;
+        window.URL.revokeObjectURL(url);
     }
 
     // Reset form
@@ -2153,7 +2115,6 @@
             map.setView([-42.88, 147.33], 7);
         }
         
-        document.getElementById('outputBox').innerText = '⏺ Form reset. Ready for new capture.';
         document.querySelectorAll('.record-card').forEach(c => c.classList.remove('selected'));
     }
 
