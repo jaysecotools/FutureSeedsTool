@@ -63,9 +63,14 @@
             align-items: center;
             gap: 10px;
             border-bottom: 2px solid #f5c542;
+            transition: all 0.3s ease;
         }
         .guide-toggle:hover {
             background: #469657;
+            transform: translateY(-2px);
+        }
+        .guide-toggle:active {
+            transform: translateY(0);
         }
         .guide-panel {
             background: #f4fbe7;
@@ -75,6 +80,17 @@
         }
         .guide-panel.show {
             display: block;
+            animation: slideDown 0.3s ease;
+        }
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
         .guide-grid {
             display: grid;
@@ -87,6 +103,11 @@
             border-radius: 24px;
             border-left: 8px solid #3c8d4a;
             box-shadow: 0 4px 0 #a1b473;
+            transition: all 0.3s ease;
+        }
+        .guide-step:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 0 #a1b473;
         }
         .guide-step h3 {
             color: #1e621e;
@@ -146,6 +167,14 @@
             border: 3px solid #fdcd5a;
             cursor: pointer;
             font-style: italic;
+            transition: all 0.3s ease;
+        }
+        .selector-group select:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 0 #b38f3a;
+        }
+        .selector-group select:active {
+            transform: translateY(0);
         }
         .selector-group select option {
             font-style: italic;
@@ -171,6 +200,10 @@
             font-weight: 600;
             transition: all 0.3s ease;
             min-width: 220px;
+        }
+        .location-options select:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 0 #b38f3a;
         }
         .location-options select.map-active {
             background: #e0e0e0;
@@ -205,6 +238,7 @@
             color: white;
             font-weight: 600;
             display: inline-block;
+            transition: all 0.3s ease;
         }
         .content {
             padding: 2.5rem;
@@ -220,6 +254,11 @@
             align-items: center;
             border-left: 15px solid #e0aa3a;
             border-right: 2px solid #b59849;
+            transition: all 0.3s ease;
+        }
+        .current-conditions:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 0 #9a833d;
         }
         .species-info {
             font-size: 1.4rem;
@@ -233,6 +272,10 @@
             color: #ffffc7;
             font-weight: 700;
             font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+        .month-indicator:hover {
+            transform: scale(1.02);
         }
         .stats-panel {
             background: #f0e6c5;
@@ -254,6 +297,10 @@
             color: white;
             padding: 0.2rem 0.8rem;
             border-radius: 30px;
+            transition: all 0.3s ease;
+        }
+        .stat-value:hover {
+            transform: scale(1.05);
         }
         .map-section {
             margin-bottom: 2rem;
@@ -261,6 +308,10 @@
             border-radius: 32px;
             padding: 1.5rem;
             border: 3px solid #c1aa5a;
+            transition: all 0.3s ease;
+        }
+        .map-section:hover {
+            box-shadow: 0 8px 0 #9a833d;
         }
         .map-header {
             display: flex;
@@ -291,6 +342,14 @@
             cursor: pointer;
             font-weight: 600;
             color: #265226;
+            transition: all 0.3s ease;
+        }
+        .map-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 0 #3a5f3a;
+        }
+        .map-btn:active {
+            transform: translateY(0);
         }
         .map-btn.active {
             background: #3d973d;
@@ -314,6 +373,11 @@
         }
         #map.show {
             display: block;
+            animation: fadeIn 0.5s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
         .coord-display {
             background: #f4fbe4;
@@ -341,6 +405,13 @@
             padding: 8px 16px;
             width: 120px;
             font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .coord-item input:focus {
+            border-color: #479e47;
+            box-shadow: 0 0 0 5px #c6ec9e;
+            outline: none;
+            transform: scale(1.02);
         }
         .coord-item input:read-only {
             background: #f0f0f0;
@@ -355,6 +426,7 @@
             text-align: center;
             margin-top: 1rem;
             font-size: 0.9rem;
+            transition: all 0.3s ease;
         }
         .split-panel {
             display: flex;
@@ -371,6 +443,11 @@
             margin-bottom: 2rem;
             border: 3px solid #c7d392;
             box-shadow: 0 8px 0 #7a9865;
+            transition: all 0.3s ease;
+        }
+        .data-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 0 #7a9865;
         }
         .data-card h2 {
             color: #1f6b1f;
@@ -408,11 +485,17 @@
             padding: 12px 18px;
             font-size: 1rem;
             background: white;
+            transition: all 0.3s ease;
+        }
+        .field input:hover, .field select:hover, .field textarea:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 0 #7a9865;
         }
         .field input:focus, .field select:focus, .field textarea:focus {
             border-color: #479e47;
             box-shadow: 0 0 0 5px #c6ec9e;
             outline: none;
+            transform: scale(1.02);
         }
         .field input::placeholder, .field select::placeholder, .field textarea::placeholder {
             color: #999;
@@ -442,6 +525,10 @@
             width: 22px;
             height: 22px;
             accent-color: #3f9643;
+            transition: all 0.3s ease;
+        }
+        .checkbox-cluster input[type="checkbox"]:hover {
+            transform: scale(1.2);
         }
         .weather-panel {
             background: #e3f0cf;
@@ -450,6 +537,11 @@
             margin: 1.5rem 0;
             border: 3px solid #bfc868;
             box-shadow: inset 0 2px 10px #f7ffd9, 0 7px 0 #61854b;
+            transition: all 0.3s ease;
+        }
+        .weather-panel:hover {
+            transform: translateY(-2px);
+            box-shadow: inset 0 2px 10px #f7ffd9, 0 9px 0 #61854b;
         }
         .weather-header {
             display: flex;
@@ -471,6 +563,11 @@
             gap: 2rem;
             margin: 1.5rem 0;
             border: 4px solid #fad971;
+            transition: all 0.3s ease;
+        }
+        .manual-temp-card:hover {
+            transform: scale(1.02);
+            box-shadow: 0 8px 0 #1a4a5a;
         }
         .temp-item {
             text-align: center;
@@ -492,6 +589,7 @@
             color: #1f4f1f;
             font-weight: 600;
             text-align: center;
+            transition: all 0.3s ease;
         }
         .photo-section {
             margin: 1.5rem 0;
@@ -514,6 +612,17 @@
             position: relative;
             width: 80px;
             text-align: center;
+            animation: popIn 0.3s ease;
+        }
+        @keyframes popIn {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
         }
         .photo-preview-item img {
             width: 80px;
@@ -521,6 +630,11 @@
             object-fit: cover;
             border-radius: 10px;
             border: 2px solid #8ba35e;
+            transition: all 0.3s ease;
+        }
+        .photo-preview-item img:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
         }
         .photo-remove {
             position: absolute;
@@ -537,6 +651,11 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            transition: all 0.3s ease;
+        }
+        .photo-remove:hover {
+            transform: scale(1.2);
+            background: #b85a3a;
         }
         .photo-size {
             font-size: 0.7rem;
@@ -558,9 +677,15 @@
             font-weight: 600;
             color: #2f4f2f;
             font-size: 0.9rem;
+            transition: all 0.3s ease;
         }
         .template-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 0 #7a6a3a;
             background: #f3e9b0;
+        }
+        .template-btn:active {
+            transform: translateY(0);
         }
         .action-row {
             display: flex;
@@ -579,6 +704,15 @@
             cursor: pointer;
             transition: all 0.2s;
             font-size: 1rem;
+        }
+        .btn:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 6px 0 #2d4f2d;
+            background: #e4fbcb;
+        }
+        .btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 0 #2d4f2d;
         }
         .btn-primary {
             background: #32853a;
@@ -623,15 +757,16 @@
         .btn-import:hover {
             background: #a5855a;
         }
-        .btn:hover {
-            background: #e4fbcb;
-        }
         .records-section {
             background: #e3d8b0;
             border-radius: 32px;
             padding: 2rem;
             margin-top: 2rem;
             border: 3px solid #b7973a;
+            transition: all 0.3s ease;
+        }
+        .records-section:hover {
+            box-shadow: 0 8px 0 #8f7230;
         }
         .records-header {
             display: flex;
@@ -652,6 +787,10 @@
             padding: 0.4rem 1.5rem;
             border-radius: 50px;
             font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .record-count:hover {
+            transform: scale(1.05);
         }
         .import-area {
             background: #f0e6c5;
@@ -673,9 +812,15 @@
             display: inline-flex;
             align-items: center;
             gap: 10px;
+            transition: all 0.3s ease;
         }
         .import-label:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 0 #5a4a2e;
             background: #9f825a;
+        }
+        .import-label:active {
+            transform: translateY(0);
         }
         #importFile {
             display: none;
@@ -695,16 +840,21 @@
             border-left: 8px solid #4f8a4f;
             box-shadow: 0 4px 0 #af9f5a;
             cursor: pointer;
-            transition: 0.2s;
+            transition: all 0.3s ease;
             position: relative;
         }
         .record-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 7px 0 #af9f5a;
+            transform: translateY(-5px);
+            box-shadow: 0 8px 0 #af9f5a;
+        }
+        .record-card:active {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 #af9f5a;
         }
         .record-card.selected {
             border-left: 8px solid #e5a526;
             background: #fff7df;
+            transform: scale(1.02);
         }
         .record-card.missing-required {
             border-left: 8px solid #d16b4b;
@@ -730,6 +880,10 @@
             display: inline-block;
             margin-top: 0.5rem;
             font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+        .record-weather:hover {
+            transform: scale(1.05);
         }
         .record-photo-indicator {
             color: #b35e1a;
@@ -750,6 +904,14 @@
             cursor: pointer;
             font-weight: 600;
             font-size: 0.8rem;
+            transition: all 0.3s ease;
+        }
+        .record-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 2px 0 #6b834e;
+        }
+        .record-btn:active {
+            transform: translateY(0);
         }
         .record-btn.edit {
             background: #edb84a;
@@ -773,6 +935,11 @@
             margin-top: 1.8rem;
             max-height: 400px;
             overflow-y: auto;
+            transition: all 0.3s ease;
+        }
+        .output-box:hover {
+            transform: scale(1.01);
+            box-shadow: 0 8px 0 #a58d3a;
         }
         .weather-credit {
             font-size: 0.9rem;
@@ -789,6 +956,10 @@
             text-align: center;
             font-weight: 600;
             margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+        .weather-note:hover {
+            transform: scale(1.02);
         }
         .warnings-panel {
             background: #ffecb3;
@@ -798,6 +969,12 @@
             margin: 1rem 0;
             color: #b26500;
             font-weight: 600;
+            animation: shake 0.5s ease;
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
         }
         .camera-note {
             font-size: 0.85rem;
@@ -816,6 +993,7 @@
             font-size: 0.8rem;
             font-weight: 600;
             margin-left: 10px;
+            transition: all 0.3s ease;
         }
         .persist-note {
             font-size: 0.8rem;
@@ -1170,10 +1348,10 @@
             </div>
         </div>
 
-        <!-- OUTPUT PREVIEW - Commented out for now
+        <!-- OUTPUT PREVIEW - Restored from commented out section -->
         <div class="output-box" id="outputBox">
             ⏺ Dataset preview will appear here. Capture data to begin.
-        </div> -->
+        </div>
         <div class="weather-credit">Enter actual BOM observations for correlation analysis (optional)</div>
     </div>
 
@@ -1295,6 +1473,8 @@
             return;
         }
         
+        document.getElementById('outputBox').innerText = '📍 Getting your location...';
+        
         navigator.geolocation.getCurrentPosition(
             (position) => {
                 const lat = position.coords.latitude;
@@ -1308,6 +1488,8 @@
                 updateCoordinates(lat, lng, true);
                 reverseGeocode(lat, lng);
                 enableMapMode();
+                
+                document.getElementById('outputBox').innerText = `📍 Location captured: ${lat.toFixed(4)}, ${lng.toFixed(4)}`;
             },
             (error) => {
                 let errorMessage = 'Location error: ';
@@ -1325,6 +1507,12 @@
                         errorMessage += 'Unknown error';
                 }
                 alert(errorMessage);
+                document.getElementById('outputBox').innerText = '❌ ' + errorMessage;
+            },
+            {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 0
             }
         );
     }
@@ -1581,6 +1769,8 @@
         
         if (template.fullFlower) document.getElementById('fullFlower').checked = true;
         if (template.seedPod) document.getElementById('seedPod').checked = true;
+        
+        document.getElementById('outputBox').innerText = `✅ Applied template: ${templateName}`;
     }
 
     // Validate required fields
@@ -1707,11 +1897,7 @@
                 stationId: getOptionalString('stationId'),
                 dataType: "Manual BOM entry"
             },
-            photos: selectedPhotos.map(file => ({
-                name: file.name,
-                type: file.type,
-                size: file.size
-            }))
+            photos: [] // Will be populated with full photo data when saving
         };
     }
 
@@ -1747,6 +1933,8 @@
             localStorage.setItem(STORAGE_KEY, JSON.stringify(savedRecords));
             displayRecords();
             updateStats();
+            document.getElementById('outputBox').innerText = '✅ Record saved to local storage!\n\n' + 
+                JSON.stringify({...data, photos: `${data.photos.length} photo(s)`}, null, 2);
             resetForm();
         });
     }
@@ -1767,9 +1955,11 @@
                 if (Array.isArray(importedData)) {
                     // Check if it's an array of records
                     savedRecords = [...savedRecords, ...importedData];
+                    document.getElementById('outputBox').innerText = `✅ Imported ${importedData.length} records`;
                 } else if (importedData.id) {
                     // Single record
                     savedRecords.push(importedData);
+                    document.getElementById('outputBox').innerText = `✅ Imported 1 record`;
                 } else {
                     alert('Invalid data format: Expected a record or array of records');
                     return;
@@ -1825,6 +2015,7 @@
         if (displayRecord.photos) {
             displayRecord.photos = `${displayRecord.photos.length} photo(s)`;
         }
+        document.getElementById('outputBox').innerText = JSON.stringify(displayRecord, null, 2);
         
         const cards = document.querySelectorAll('.record-card');
         cards.forEach(c => c.classList.remove('selected'));
@@ -1877,9 +2068,27 @@
         document.getElementById('fireHistory').value = record.siteHistory.fire || '';
         document.getElementById('notes').value = record.siteHistory.notes || '';
         
-        selectedPhotos = [];
-        document.getElementById('photoPreview').innerHTML = '';
-        document.getElementById('photoCount').innerText = '0 photos selected';
+        // Restore photos if they exist
+        if (record.photos && record.photos.length > 0) {
+            // Convert stored photo data back to File objects
+            const photoFiles = record.photos.map(photo => {
+                const byteString = atob(photo.data.split(',')[1]);
+                const mimeString = photo.data.split(',')[0].split(':')[1].split(';')[0];
+                const ab = new ArrayBuffer(byteString.length);
+                const ia = new Uint8Array(ab);
+                for (let i = 0; i < byteString.length; i++) {
+                    ia[i] = byteString.charCodeAt(i);
+                }
+                return new File([ab], photo.name, { type: mimeString });
+            });
+            selectedPhotos = photoFiles;
+            updatePhotoPreviews();
+            document.getElementById('photoCount').innerText = `${selectedPhotos.length} photo(s) selected`;
+        } else {
+            selectedPhotos = [];
+            document.getElementById('photoPreview').innerHTML = '';
+            document.getElementById('photoCount').innerText = '0 photos selected';
+        }
         
         updateMonthDisplay();
         updateTempDisplay();
@@ -1895,6 +2104,8 @@
             enableQuickRegionMode();
         }
         
+        document.getElementById('outputBox').innerText = `✏️ Editing record from ${record.collectionDate}`;
+        
         deleteRecord(index, true);
     }
 
@@ -1904,6 +2115,9 @@
         localStorage.setItem(STORAGE_KEY, JSON.stringify(savedRecords));
         displayRecords();
         updateStats();
+        if (!silent) {
+            document.getElementById('outputBox').innerText = '🗑️ Record deleted.';
+        }
     }
 
     // Clear all records
@@ -1913,6 +2127,7 @@
             localStorage.removeItem(STORAGE_KEY);
             displayRecords();
             updateStats();
+            document.getElementById('outputBox').innerText = '🗑️ All records cleared.';
         }
     }
 
@@ -1954,6 +2169,25 @@
                 stats.fireHistory[r.siteHistory.fire] = (stats.fireHistory[r.siteHistory.fire] || 0) + 1;
             }
         });
+        
+        let output = '📊 Field Statistics:\n\n' +
+            `Total Records: ${stats.totalRecords}\n` +
+            `Unique Sites: ${stats.uniqueSites}\n` +
+            `Species Count: ${stats.speciesCount}\n` +
+            `Total Photos: ${stats.totalPhotos}\n` +
+            `Weather Records: ${stats.weatherRecords}\n` +
+            `📍 Precise Map Records: ${stats.locationModes.precise}\n` +
+            `⚡ Quick Region Records: ${stats.locationModes.quick}\n\n`;
+        
+        if (Object.keys(stats.regions).length > 0) {
+            output += `Records by Region:\n${Object.entries(stats.regions).map(([r, c]) => `  ${r}: ${c}`).join('\n')}\n\n`;
+        }
+        
+        if (Object.keys(stats.fireHistory).length > 0) {
+            output += `Fire History:\n${Object.entries(stats.fireHistory).map(([f, c]) => `  ${f}: ${c}`).join('\n')}`;
+        }
+        
+        document.getElementById('outputBox').innerText = output;
     }
 
     // NEW FUNCTION: Export ALL records as JSON
@@ -1971,6 +2205,8 @@
         a.download = `future_seeds_all_records_${new Date().toISOString().split('T')[0]}.json`;
         a.click();
         URL.revokeObjectURL(url);
+        
+        document.getElementById('outputBox').innerText = `✅ Exported ${savedRecords.length} records to JSON`;
     }
 
     // NEW FUNCTION: Export ALL records as Excel
@@ -2024,6 +2260,8 @@
         const filename = `Future_Seeds_All_Records_${new Date().toISOString().split('T')[0]}.xlsx`;
         
         XLSX.writeFile(wb, filename);
+        
+        document.getElementById('outputBox').innerText = `✅ Exported ${savedRecords.length} records to Excel`;
     }
 
     // NEW FUNCTION: Export ALL records as CSV
@@ -2033,7 +2271,7 @@
             return;
         }
         
-        // Flatten each record for CSV
+        // Flatten each record for CSV (simplified version)
         const flatData = savedRecords.map(record => ({
             'Program': record.program,
             'Observer': record.observer,
@@ -2068,6 +2306,8 @@
         a.download = `future_seeds_all_records_${new Date().toISOString().split('T')[0]}.csv`;
         a.click();
         window.URL.revokeObjectURL(url);
+        
+        document.getElementById('outputBox').innerText = `✅ Exported ${savedRecords.length} records to CSV`;
     }
 
     // Reset form
@@ -2115,6 +2355,7 @@
             map.setView([-42.88, 147.33], 7);
         }
         
+        document.getElementById('outputBox').innerText = '⏺ Form reset. Ready for new capture.';
         document.querySelectorAll('.record-card').forEach(c => c.classList.remove('selected'));
     }
 
@@ -2133,6 +2374,9 @@
         if (savedObserver) {
             document.getElementById('observer').value = savedObserver;
         }
+        
+        // Show field statistics in output box on load
+        showFieldStats();
     };
 </script>
 </body>
