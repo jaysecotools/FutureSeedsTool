@@ -1,3 +1,5 @@
+<!-- Developed by Jay Rowley for TasTAFE Future Seeds Program 2026 -->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1067,14 +1069,14 @@
             <div class="guide-step">
                 <h3>🌼 4. Flowering Stage <span class="required-badge">required</span></h3>
                 <ul>
-                    <li>Check all that apply</li>
-                    <li>At least one stage must be selected</li>
+                    <li>Check all that apply, or check "None" if no flowering observed</li>
+                    <li>At least one stage or "None" must be selected</li>
                 </ul>
             </div>
             <div class="guide-step">
                 <h3>🐝 5. Insect Pollinators <span class="required-badge">required</span></h3>
                 <ul>
-                    <li>Check all observed pollinators</li>
+                    <li>Check all observed pollinators, or check "None" if no pollinators observed</li>
                     <li>"Other" field for additional species</li>
                 </ul>
             </div>
@@ -1224,6 +1226,7 @@
                             <div><input type="checkbox" id="fullFlower"> Full flower</div>
                             <div><input type="checkbox" id="petalFall"> Petal fall</div>
                             <div><input type="checkbox" id="seedPod"> Seed pod</div>
+                            <div><input type="checkbox" id="floweringNone" onclick="handleFloweringNone()"> 🚫 None (no flowering observed)</div>
                         </div>
                     </div>
 
@@ -1236,6 +1239,7 @@
                             <div><input type="checkbox" id="beetle"> Beetle</div>
                             <div><input type="checkbox" id="wasp"> Wasp</div>
                             <div><input type="checkbox" id="butterfly"> Butterfly/moth</div>
+                            <div><input type="checkbox" id="pollinatorsNone" onclick="handlePollinatorsNone()"> 🚫 None (no pollinators observed)</div>
                         </div>
                         <div class="field" style="margin-top:15px;">
                             <label>Other insects <span class="optional-badge">optional</span></label>
@@ -1383,7 +1387,7 @@
     <!-- Footer -->
     <div style="background: #1a5830; color: #f6f9ed; padding: 1rem 2.5rem; text-align: center; border-top: 3px solid #f5c542; font-size: 0.9rem; border-radius: 0 0 36px 36px;">
         <p>🌱 Future Seeds Program · Tasmania · Field Data Collection Tool </p>
-        <p style="font-size: 0.8rem; margin-top: 0.3rem; opacity: 0.8;">Developer: Jay Rowley 2026</p>
+        <p style="font-size: 0.8rem; margin-top: 0.3rem; opacity: 0.8;">Developed by Jay Rowley for TasTAFE Future Seeds Program 2026</p>
     </div>
 </div>
 
@@ -1674,6 +1678,35 @@
         document.getElementById('speciesDisplay').innerHTML = displayName;
     }
 
+    // Handle Flowering None checkbox
+    function handleFloweringNone() {
+        const floweringNone = document.getElementById('floweringNone');
+        if (floweringNone.checked) {
+            // Uncheck all other flowering options
+            document.getElementById('bud').checked = false;
+            document.getElementById('earlyFlower').checked = false;
+            document.getElementById('fullFlower').checked = false;
+            document.getElementById('petalFall').checked = false;
+            document.getElementById('seedPod').checked = false;
+        }
+    }
+
+    // Handle Pollinators None checkbox
+    function handlePollinatorsNone() {
+        const pollinatorsNone = document.getElementById('pollinatorsNone');
+        if (pollinatorsNone.checked) {
+            // Uncheck all other pollinator options
+            document.getElementById('honeybee').checked = false;
+            document.getElementById('nativeBee').checked = false;
+            document.getElementById('fly').checked = false;
+            document.getElementById('beetle').checked = false;
+            document.getElementById('wasp').checked = false;
+            document.getElementById('butterfly').checked = false;
+            // Clear other insects textarea
+            document.getElementById('otherInsects').value = '';
+        }
+    }
+
     // Open camera
     function openCamera() {
         const cameraInput = document.getElementById('cameraInput');
@@ -1828,24 +1861,27 @@
             errors.push('Date is required');
         }
         
-        // Check flowering stage
+        // Check flowering stage (including None option)
         const floweringSelected = [
             'bud', 'earlyFlower', 'fullFlower', 'petalFall', 'seedPod'
         ].some(id => document.getElementById(id).checked);
         
-        if (!floweringSelected) {
-            errors.push('At least one flowering stage must be selected');
+        const floweringNone = document.getElementById('floweringNone').checked;
+        
+        if (!floweringSelected && !floweringNone) {
+            errors.push('Either select a flowering stage or check "None"');
         }
         
-        // Check pollinators
+        // Check pollinators (including None option)
         const pollinatorsSelected = [
             'honeybee', 'nativeBee', 'fly', 'beetle', 'wasp', 'butterfly'
         ].some(id => document.getElementById(id).checked);
         
+        const pollinatorsNone = document.getElementById('pollinatorsNone').checked;
         const otherPollinators = document.getElementById('otherInsects').value.trim();
         
-        if (!pollinatorsSelected && !otherPollinators) {
-            errors.push('At least one pollinator must be selected or described');
+        if (!pollinatorsSelected && !otherPollinators && !pollinatorsNone) {
+            errors.push('Either select pollinators, describe others, or check "None"');
         }
         
         return errors;
@@ -1910,7 +1946,8 @@
                     earlyFlower: document.getElementById('earlyFlower').checked,
                     fullFlower: document.getElementById('fullFlower').checked,
                     petalFall: document.getElementById('petalFall').checked,
-                    seedPod: document.getElementById('seedPod').checked
+                    seedPod: document.getElementById('seedPod').checked,
+                    none: document.getElementById('floweringNone').checked
                 },
                 pollinators: {
                     honeybee: document.getElementById('honeybee').checked,
@@ -1919,7 +1956,8 @@
                     beetle: document.getElementById('beetle').checked,
                     wasp: document.getElementById('wasp').checked,
                     butterfly: document.getElementById('butterfly').checked,
-                    other: getOptionalString('otherInsects')
+                    other: getOptionalString('otherInsects'),
+                    none: document.getElementById('pollinatorsNone').checked
                 },
                 seedMaturity: getOptionalString('seedMaturity')
             },
@@ -2094,6 +2132,7 @@
         document.getElementById('fullFlower').checked = record.phenology.flowering.fullFlower;
         document.getElementById('petalFall').checked = record.phenology.flowering.petalFall;
         document.getElementById('seedPod').checked = record.phenology.flowering.seedPod;
+        document.getElementById('floweringNone').checked = record.phenology.flowering.none || false;
         
         document.getElementById('honeybee').checked = record.phenology.pollinators.honeybee;
         document.getElementById('nativeBee').checked = record.phenology.pollinators.nativeBee;
@@ -2102,6 +2141,7 @@
         document.getElementById('wasp').checked = record.phenology.pollinators.wasp;
         document.getElementById('butterfly').checked = record.phenology.pollinators.butterfly;
         document.getElementById('otherInsects').value = record.phenology.pollinators.other || '';
+        document.getElementById('pollinatorsNone').checked = record.phenology.pollinators.none || false;
         
         document.getElementById('actualMinTemp').value = record.weather.minTemp || '';
         document.getElementById('actualMaxTemp').value = record.weather.maxTemp || '';
@@ -2297,6 +2337,7 @@
             'Flowering - Full': record.phenology ? record.phenology.flowering.fullFlower : '',
             'Flowering - Petal Fall': record.phenology ? record.phenology.flowering.petalFall : '',
             'Flowering - Seed Pod': record.phenology ? record.phenology.flowering.seedPod : '',
+            'Flowering - None': record.phenology ? record.phenology.flowering.none : '',
             'Pollinators - Honeybee': record.phenology ? record.phenology.pollinators.honeybee : '',
             'Pollinators - Native Bee': record.phenology ? record.phenology.pollinators.nativeBee : '',
             'Pollinators - Fly': record.phenology ? record.phenology.pollinators.fly : '',
@@ -2304,6 +2345,7 @@
             'Pollinators - Wasp': record.phenology ? record.phenology.pollinators.wasp : '',
             'Pollinators - Butterfly/Moth': record.phenology ? record.phenology.pollinators.butterfly : '',
             'Pollinators - Other': record.phenology ? record.phenology.pollinators.other || '' : '',
+            'Pollinators - None': record.phenology ? record.phenology.pollinators.none : '',
             'Seed Maturity': record.phenology ? record.phenology.seedMaturity || '' : '',
             'Fire History': record.siteHistory ? record.siteHistory.fire || '' : '',
             'Site Notes': record.siteHistory ? record.siteHistory.notes || '' : '',
@@ -2387,12 +2429,14 @@
         document.getElementById('fullFlower').checked = false;
         document.getElementById('petalFall').checked = false;
         document.getElementById('seedPod').checked = false;
+        document.getElementById('floweringNone').checked = false;
         document.getElementById('honeybee').checked = false;
         document.getElementById('nativeBee').checked = false;
         document.getElementById('fly').checked = false;
         document.getElementById('beetle').checked = false;
         document.getElementById('wasp').checked = false;
         document.getElementById('butterfly').checked = false;
+        document.getElementById('pollinatorsNone').checked = false;
         document.getElementById('otherInsects').value = '';
         document.getElementById('actualMinTemp').value = '';
         document.getElementById('actualMaxTemp').value = '';
@@ -2422,6 +2466,36 @@
         document.getElementById('outputBox').innerText = '⏺ Form reset. Ready for new capture.';
         document.querySelectorAll('.record-card').forEach(c => c.classList.remove('selected'));
     }
+
+    // Add event listeners for checkbox interactions
+    document.addEventListener('DOMContentLoaded', function() {
+        // Flowering checkboxes
+        const floweringCheckboxes = ['bud', 'earlyFlower', 'fullFlower', 'petalFall', 'seedPod'];
+        floweringCheckboxes.forEach(id => {
+            document.getElementById(id).addEventListener('change', function() {
+                if (this.checked) {
+                    document.getElementById('floweringNone').checked = false;
+                }
+            });
+        });
+
+        // Pollinator checkboxes
+        const pollinatorCheckboxes = ['honeybee', 'nativeBee', 'fly', 'beetle', 'wasp', 'butterfly'];
+        pollinatorCheckboxes.forEach(id => {
+            document.getElementById(id).addEventListener('change', function() {
+                if (this.checked) {
+                    document.getElementById('pollinatorsNone').checked = false;
+                }
+            });
+        });
+
+        // Other insects textarea
+        document.getElementById('otherInsects').addEventListener('input', function() {
+            if (this.value.trim() !== '') {
+                document.getElementById('pollinatorsNone').checked = false;
+            }
+        });
+    });
 
     // Initialize on load
     window.onload = function() {
