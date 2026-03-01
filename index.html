@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
+        /* [Keep all your existing CSS exactly as is – no changes needed] */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -54,6 +55,28 @@
             border-radius: 60px;
             color: #1f4a1f;
             font-weight: 700;
+        }
+        .program-badge {
+            font-size: 1rem;
+            margin-top: 0.5rem;
+            opacity: 0.9;
+        }
+        .new-badge {
+            background: #f0c34a;
+            color: #1f4a1f;
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 30px;
+            margin-left: 8px;
+            text-transform: uppercase;
+            animation: pulse 2s infinite;
+            display: inline-block;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); background: #ffd966; }
+            100% { transform: scale(1); }
         }
         .guide-toggle {
             background: #3a7b4a;
@@ -613,6 +636,55 @@
             text-align: center;
             transition: all 0.3s ease;
         }
+        .weather-controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+            background: #e8f0da;
+            padding: 1rem 1.5rem;
+            border-radius: 60px;
+        }
+        .weather-auto-btn {
+            background: #4a90e2;
+            color: white;
+            border: 3px solid #f5c542;
+            border-radius: 50px;
+            padding: 12px 25px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1rem;
+        }
+        .weather-auto-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 0 #2a5080;
+            background: #5a9ef2;
+        }
+        .weather-auto-btn:active {
+            transform: translateY(0);
+        }
+        .weather-auto-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .weather-auto-btn:disabled:hover {
+            transform: none;
+            box-shadow: none;
+        }
+        .weather-source {
+            font-size: 0.85rem;
+            color: #1f5c33;
+            background: white;
+            padding: 5px 15px;
+            border-radius: 30px;
+            display: inline-block;
+        }
         .photo-section {
             margin: 1.5rem 0;
             padding: 1rem;
@@ -683,6 +755,25 @@
             font-size: 0.7rem;
             color: #555;
             margin-top: 2px;
+        }
+        .storage-warning {
+            background: #ff9800;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 30px;
+            margin: 10px 0;
+            font-weight: 600;
+            display: none;
+            animation: pulse 2s infinite;
+        }
+        .storage-meter {
+            background: #e8f0da;
+            border-radius: 20px;
+            padding: 5px 10px;
+            margin: 5px 0;
+            font-size: 0.9rem;
+            display: inline-block;
+            border: 1px solid #7a9865;
         }
         .template-buttons {
             display: flex;
@@ -766,7 +857,13 @@
             color: white;
             box-shadow: 0 6px 0 #5a4a2e;
         }
-        .btn-primary:hover, .btn-excel:hover, .btn-save:hover, .btn-csv:hover, .btn-import:hover {
+        .btn-share {
+            background: #4a90e2;
+            border-color: #f5bc3c;
+            color: white;
+            box-shadow: 0 6px 0 #2a5080;
+        }
+        .btn-primary:hover, .btn-excel:hover, .btn-save:hover, .btn-csv:hover, .btn-import:hover, .btn-share:hover {
             transform: translateY(-4px);
             box-shadow: 0 10px 0 #1f591f;
         }
@@ -778,6 +875,9 @@
         }
         .btn-import:hover {
             background: #a5855a;
+        }
+        .btn-share:hover {
+            background: #5a9ef2;
         }
         .records-section {
             background: #e3d8b0;
@@ -1023,6 +1123,12 @@
             margin-top: 5px;
             font-style: italic;
         }
+        .share-note {
+            font-size: 0.8rem;
+            color: #4a90e2;
+            margin-top: 5px;
+            font-style: italic;
+        }
     </style>
 </head>
 <body>
@@ -1032,10 +1138,10 @@
             🌱 FUTURE SEEDS PROGRAM 
             <span>DATA COLLECTOR</span>
         </h1>
-        <div class="program-badge">⚡ interactive map · quick region · camera ready · data import</div>
+        <div class="program-badge">⚡ interactive map · quick region · camera ready · data import · auto weather · share with details <span class="new-badge">NEW</span></div>
     </div>
 
-    <!-- Instructions Toggle (formerly User Guide) -->
+    <!-- Instructions Toggle -->
     <div class="guide-toggle" onclick="toggleGuide()">
         <span>📖</span> Show/Hide Instructions
     </div>
@@ -1056,7 +1162,6 @@
                 <ul>
                     <li>Enter your name (compulsory field)</li>
                     <li>Name is saved and will auto-fill next time</li>
-                    <li>Greyed out example shows format</li>
                 </ul>
             </div>
             <div class="guide-step">
@@ -1085,32 +1190,41 @@
                 <ul>
                     <li><strong>Take Photo Now:</strong> Opens camera</li>
                     <li><strong>Choose from Gallery:</strong> Select existing</li>
-                    <li>Photos are embedded in saved records</li>
+                    <li>Photos are automatically compressed (max 640px, quality 0.5) to save space</li>
+                    <li><strong>Clear Photos</strong> button discards all selected photos</li>
                 </ul>
             </div>
             <div class="guide-step">
-                <h3>🌡️ 7. Weather Data <span class="optional-badge">optional</span></h3>
+                <h3>🌡️ 7. Weather Data <span class="optional-badge">optional · NEW auto-load</span></h3>
                 <ul>
-                    <li>Look up BOM data for your location</li>
-                    <li>Enter ACTUAL min/max temperatures</li>
-                    <li>Station name and ID optional but helpful</li>
+                    <li><strong>Auto-load weather:</strong> Click "🌤️ Auto-load Current Weather" button</li>
+                    <li>Uses Open-Meteo (free, no API key required)</li>
+                    <li>Automatically loads when you click the map or use "My Location"</li>
+                    <li>All weather data (temp, humidity, wind, conditions) is saved with your record</li>
                 </ul>
             </div>
             <div class="guide-step">
                 <h3>🌱 8. Seed & Fire <span class="optional-badge">optional</span></h3>
                 <ul>
-                    <li>Seed maturity (example shown in grey)</li>
-                    <li>Fire history (example shown in grey)</li>
+                    <li>Seed maturity</li>
+                    <li>Fire history</li>
                     <li>Site notes for additional observations</li>
                 </ul>
             </div>
             <div class="guide-step">
-                <h3>💾 9. Save & Export</h3>
+                <h3>💾 9. Save, Export & Share <span class="new-badge">NEW · Share</span></h3>
                 <ul>
-                    <li>Save to local storage</li>
-                    <li>Export as JSON, Excel, or CSV</li>
-                    <li><strong>Import Data:</strong> Load previously exported JSON</li>
-                    <li>Edit or delete existing records</li>
+                    <li><strong>💾 Save:</strong> Store in browser - records appear below</li>
+                    <li><strong>📥 Export:</strong> JSON, Excel, or CSV with full weather data</li>
+                    <li><strong>📂 Import:</strong> Load previously exported JSON files</li>
+                    <li><strong>📱 Share (NEW):</strong> 
+                        <ul style="margin-top:4px; margin-left:20px; list-style-type:circle;">
+                            <li>Main Share button → shares records summary + app link</li>
+                            <li>Individual record buttons (blue) → share single observation</li>
+                            <li>Desktop: copies to clipboard • Mobile: native share menu</li>
+                        </ul>
+                    </li>
+                    <li><strong>✏️ Manage:</strong> Edit or delete existing records</li>
                 </ul>
             </div>
         </div>
@@ -1120,7 +1234,7 @@
         <div class="selector-group">
             <label>🌿 Species:</label>
             <select id="speciesSelect" onchange="updateSpeciesInfo()">
-                <option value="Acacia verticillata" selected><i>Acacia verticillata</i> (Prickly Moses) — TEST SPECIES</option>
+                <option value="Acacia verticillata"><i>Acacia verticillata</i> (Prickly Moses) — TEST SPECIES</option>
                 <option value="Acacia dealbata"><i>Acacia dealbata</i> (Silver Wattle)</option>
                 <option value="Banksia marginata"><i>Banksia marginata</i> (Silver Banksia)</option>
                 <option value="Leptospermum scoparium"><i>Leptospermum scoparium</i> (Manuka)</option>
@@ -1150,6 +1264,7 @@
             <div class="stats-panel" id="statsPanel">
                 <div class="stat-item">📊 Total: <span class="stat-value" id="totalRecordsStat">0</span></div>
                 <div class="stat-item">🌡️ Avg: <span class="stat-value" id="avgTempStat">-</span></div>
+                <div class="stat-item">💾 <span class="storage-meter" id="storageMeter">0 MB used</span></div>
             </div>
             <div class="month-indicator" id="currentMonthDisplay">📆 February 2026 · manual weather entry</div>
         </div>
@@ -1247,7 +1362,7 @@
                         </div>
                     </div>
 
-                    <!-- PHOTO SECTION -->
+                    <!-- PHOTO SECTION - IMPROVED -->
                     <div class="photo-section">
                         <label style="font-weight:800; color:#1f681f;">📸 Photo Documentation <span class="optional-badge">optional</span></label>
                         <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px;">
@@ -1255,7 +1370,7 @@
                                 📷 Take Photo Now
                             </button>
                             
-                            <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display: none;">
+                            <input type="file" id="cameraInput" accept="image/*" style="display: none;">
                             
                             <button class="btn" onclick="document.getElementById('photoInput').click()" style="background: #8a6e4b; color: white; padding: 10px 20px;">
                                 🖼️ Choose from Gallery
@@ -1263,29 +1378,47 @@
                             
                             <input type="file" id="photoInput" accept="image/*" multiple style="display: none;">
                             
+                            <button class="btn" onclick="clearAllPhotos()" style="background: #d16b4b; color: white; padding: 10px 20px; border-color: #994f34;">
+                                🗑️ Clear All Photos
+                            </button>
+                            
                             <span id="photoCount" style="align-self: center;">0 photos selected</span>
                         </div>
                         
                         <div class="camera-note">
-                            📱 On mobile: Camera opens automatically • On desktop: Select files
+                            📱 On mobile: Camera opens automatically • On desktop: Select files<br>
+                            ⚡ Photos are compressed to 640px max and 50% quality to save space (max 5 photos)
                         </div>
                         
                         <div class="photo-preview" id="photoPreview"></div>
                         
                         <div style="font-size: 0.8rem; color: #5a7344; margin-top: 5px;">
-                            ⚠️ Photos are stored as data URLs - large images may affect performance
+                            ⚠️ Large photos are automatically compressed. Storage usage is shown above.
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- RIGHT: SEED + FIRE + MANUAL WEATHER -->
+            <!-- RIGHT: SEED + FIRE + WEATHER -->
             <div>
                 <div class="data-card">
-                    <h2>🌡️ WEATHER DATA <span class="optional-badge">optional</span></h2>
+                    <h2>🌡️ WEATHER DATA 
+                        <span class="optional-badge">optional</span>
+                        <span class="new-badge">AUTO WEATHER</span>
+                    </h2>
+                    
+                    <!-- AUTO WEATHER CONTROLS -->
+                    <div class="weather-controls">
+                        <button class="weather-auto-btn" onclick="loadCurrentWeather(true)" id="autoWeatherBtn">
+                            <span>🌤️</span> Auto-load Current Weather
+                        </button>
+                        <span class="weather-source">
+                            Powered by Open-Meteo <span style="color: #4a90e2;">⚡ No API key required</span>
+                        </span>
+                    </div>
                     
                     <div class="weather-note">
-                        🔍 Look up BOM data for your location and enter actual monthly values
+                        🔍 Click the button above to auto-load current weather data (saved with your record)
                     </div>
                     
                     <div class="field-grid">
@@ -1298,8 +1431,8 @@
                             <input type="number" id="actualMaxTemp" step="0.1" placeholder="e.g., 23.1" oninput="updateTempDisplay()">
                         </div>
                         <div class="field">
-                            <label>📍 BOM station name</label>
-                            <input type="text" id="bomStation" placeholder="e.g., Hobart Airport">
+                            <label>📍 Weather source</label>
+                            <input type="text" id="bomStation" placeholder="e.g., Open-Meteo or BOM station">
                         </div>
                         <div class="field">
                             <label>🆔 Station ID</label>
@@ -1313,7 +1446,7 @@
                     </div>
                     
                     <div class="temp-note">
-                        ⏱️ Enter ACTUAL recorded min/max for this collection month (optional)
+                        ⏱️ Auto-loaded weather includes current conditions, humidity, wind, and precipitation
                     </div>
 
                     <div style="margin-top: 2rem;">
@@ -1346,6 +1479,9 @@
             </div>
         </div>
 
+        <!-- STORAGE WARNING -->
+        <div id="storageWarning" class="storage-warning"></div>
+
         <!-- WARNINGS PANEL -->
         <div id="warningsPanel" class="warnings-panel" style="display: none;"></div>
 
@@ -1353,9 +1489,13 @@
         <div class="action-row">
             <button class="btn" onclick="resetForm()">⟲ Reset</button>
             <button class="btn btn-save" onclick="saveRecord()">💾 Save Record</button>
+            <button class="btn btn-share" onclick="shareData()" id="shareBtn">📱 Share Data</button>
             <button class="btn btn-primary" onclick="exportAllJSON()">📥 Export All as JSON</button>
             <button class="btn btn-excel" onclick="exportAllExcel()">📊 Export All to Excel</button>
             <button class="btn btn-csv" onclick="exportAllCSV()">📄 Export All to CSV</button>
+        </div>
+        <div class="share-note" style="text-align: right; margin-top: -1rem; margin-bottom: 1rem;">
+            📱 Share button works on mobile - send data summaries or app link via email, messages, etc.
         </div>
 
         <!-- RECORDS SECTION -->
@@ -1371,27 +1511,38 @@
                     <button class="btn" onclick="clearAllRecords()" style="padding:8px 20px;">🗑️ Clear All</button>
                 </div>
             </div>
+            <div style="font-size:0.8rem; color:#4a90e2; margin-bottom:10px; text-align:right;">
+                💡 Each record has its own Share button (blue)
+            </div>
             <div class="records-grid" id="recordsGrid">
                 <!-- Records will be populated here -->
             </div>
         </div>
 
-        <!-- OUTPUT PREVIEW - Commented out for now but may be reinstated
+        <!-- OUTPUT PREVIEW -->
         <div class="output-box" id="outputBox">
-            ⏺ Dataset preview will appear here. Capture data to begin.
-        </div> -->
+            ⏺ Welcome to Future Seeds Data Collector! Fill out the form and click Save Record to begin.
+        </div>
 
-        <div class="weather-credit">Enter actual BOM observations for correlation analysis (optional)</div>
+        <div class="weather-credit">🌤️ Auto-weather powered by Open-Meteo (free, no API key) · Full weather data saved with each record</div>
     </div>
 
     <!-- Footer -->
     <div style="background: #1a5830; color: #f6f9ed; padding: 1rem 2.5rem; text-align: center; border-top: 3px solid #f5c542; font-size: 0.9rem; border-radius: 0 0 36px 36px;">
-        <p>🌱 Future Seeds Program · Tasmania · Field Data Collection Tool </p>
+        <p>🌱 Future Seeds Program · Tasmania · Field Data Collection Tool · Now with Auto Weather & Share! <span class="new-badge">NEW</span></p>
         <p style="font-size: 0.8rem; margin-top: 0.3rem; opacity: 0.8;">Developed by Jay Rowley for TasTAFE Future Seeds Program 2026</p>
     </div>
 </div>
 
 <script>
+    // ==================== CONFIGURATION ====================
+    const MAX_PHOTOS = 5;                // Maximum photos per record
+    const MAX_IMAGE_WIDTH = 640;          // Max width for compression
+    const MAX_IMAGE_HEIGHT = 640;         // Max height for compression
+    const COMPRESSION_QUALITY = 0.5;      // JPEG quality (0.5 = 50%)
+    const STORAGE_WARN_MB = 4;             // Warn when used >4MB
+    const STORAGE_LIMIT_MB = 5;            // Approximate localStorage limit
+
     // Month display names
     const monthDisplayNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
@@ -1405,6 +1556,15 @@
     // Load saved observer name
     let savedObserver = localStorage.getItem(OBSERVER_KEY) || '';
 
+    // Default species list
+    const defaultSpecies = [
+        { value: 'Acacia verticillata', display: '<i>Acacia verticillata</i> (Prickly Moses) — TEST SPECIES' },
+        { value: 'Acacia dealbata', display: '<i>Acacia dealbata</i> (Silver Wattle)' },
+        { value: 'Banksia marginata', display: '<i>Banksia marginata</i> (Silver Banksia)' },
+        { value: 'Leptospermum scoparium', display: '<i>Leptospermum scoparium</i> (Manuka)' },
+        { value: 'Nothofagus cunninghamii', display: '<i>Nothofagus cunninghamii</i> (Myrtle Beech)' }
+    ];
+
     // Region presets
     const regionPresets = {
         northWest: { lat: -41.05, lon: 145.90, name: "North West (Burnie/Devonport)" },
@@ -1416,6 +1576,16 @@
 
     // Track location mode
     let usingMapMode = false;
+
+    // Weather loading state
+    let isLoadingWeather = false;
+    let weatherLoadTimeout = null;
+    
+    // Store the last loaded weather data
+    let lastWeatherData = null;
+
+    // Rate limiting for reverse geocoding
+    let lastGeocodeTime = 0;
 
     // Templates
     const templates = {
@@ -1446,286 +1616,358 @@
     let map;
     let marker;
 
-    // Toggle guide
-    function toggleGuide() {
-        document.getElementById('guidePanel').classList.toggle('show');
-    }
+// ===== UPDATE NOTIFICATION =====
+const APP_VERSION = '2.0'; // Change this with each update
+const SEEN_VERSION_KEY = 'futureSeedsSeenVersion';
 
-    // Toggle map visibility
-    function toggleMap(show) {
-        const mapEl = document.getElementById('map');
-        const showBtn = document.getElementById('showMapBtn');
-        const hideBtn = document.getElementById('hideMapBtn');
-        
-        if (show) {
-            mapEl.classList.add('show');
-            showBtn.classList.add('active');
-            hideBtn.classList.remove('active');
-            setTimeout(() => map.invalidateSize(), 100);
-        } else {
-            mapEl.classList.remove('show');
-            showBtn.classList.remove('active');
-            hideBtn.classList.add('active');
-        }
-    }
+function showUpdatePopup() {
+    // Create a simple modal or use an existing UI element
+    const popup = document.createElement('div');
+    popup.id = 'updatePopup';
+    popup.style.cssText = `
+        position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+        background: #f6f9ed; border: 4px solid #dbb15a; border-radius: 36px;
+        padding: 2rem; box-shadow: 0 25px 50px -12px #0b2f1a; z-index: 10000;
+        max-width: 400px; text-align: center;
+    `;
+    popup.innerHTML = `
+        <h2 style="color:#1f5c33;">✨ What's New in v${APP_VERSION}</h2>
+        <ul style="text-align:left; margin:1rem 0;">
+            <li>Auto‑weather loading</li>
+            <li>Share individual records</li>
+            <li>Improved photo compression</li>
+        </ul>
+        <button id="closeUpdatePopup" class="btn btn-primary" style="font-size:1.2rem;">Got it!</button>
+    `;
+    document.body.appendChild(popup);
+    
+    document.getElementById('closeUpdatePopup').addEventListener('click', () => {
+        popup.remove();
+        localStorage.setItem(SEEN_VERSION_KEY, APP_VERSION);
+    });
+}
 
-    // Toggle between Quick Region and Map Mode
-    function toggleLocationMode() {
-        if (usingMapMode) {
-            enableQuickRegionMode();
-            updateFromRegion(); // Reset to current region coordinates
-            document.getElementById('toggleLocationMode').innerHTML = '🔄 Switch to Map Mode';
-        } else {
-            enableMapMode();
-            document.getElementById('toggleLocationMode').innerHTML = '🔄 Switch to Quick Region';
-        }
+// On page load, after your existing initializations
+window.addEventListener('load', function() {
+    const seenVersion = localStorage.getItem(SEEN_VERSION_KEY);
+    if (seenVersion !== APP_VERSION) {
+        // Small delay to let the main UI render first
+        setTimeout(showUpdatePopup, 500);
     }
+});
 
-    // Switch to map mode
-    function enableMapMode() {
-        usingMapMode = true;
-        document.getElementById('locationMode').innerText = '📍 Map Mode';
-        document.getElementById('locationMode').style.background = '#d16b4b';
-        document.getElementById('mapModeIndicator').innerText = '✅ Map active';
-        document.getElementById('mapModeIndicator').style.background = '#d16b4b';
-        document.getElementById('regionSelect').classList.add('map-active');
-        document.getElementById('regionSelect').disabled = true;
-        document.getElementById('mapInUseBadge').classList.add('show');
-        document.getElementById('locationNote').innerHTML = '📍 Using precise map coordinates. Region dropdown shows "📍 Map in use".';
-        document.getElementById('toggleLocationMode').innerHTML = '🔄 Switch to Quick Region';
-    }
-
-    // Switch to quick region mode
-    function enableQuickRegionMode() {
-        usingMapMode = false;
-        document.getElementById('locationMode').innerText = '⚡ Quick Region';
-        document.getElementById('locationMode').style.background = '#4a90e2';
-        document.getElementById('mapModeIndicator').innerText = 'Click map to activate';
-        document.getElementById('mapModeIndicator').style.background = '#4a90e2';
-        document.getElementById('regionSelect').classList.remove('map-active');
-        document.getElementById('regionSelect').disabled = false;
-        document.getElementById('mapInUseBadge').classList.remove('show');
-        document.getElementById('locationNote').innerHTML = '⚡ Using Quick Region mode. Click map or use "My Location" for precise coordinates.';
-        document.getElementById('toggleLocationMode').innerHTML = '🔄 Switch to Map Mode';
-    }
-
-    // Get user location
-    function getUserLocation() {
-        if (!navigator.geolocation) {
-            alert('Geolocation is not supported by your browser');
-            return;
-        }
-        
-        document.getElementById('outputBox').innerText = '📍 Getting your location...';
-        
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                const lat = position.coords.latitude;
-                const lng = position.coords.longitude;
-                
-                if (marker) {
-                    marker.setLatLng([lat, lng]);
-                    map.setView([lat, lng], 12);
-                }
-                
-                updateCoordinates(lat, lng, true);
-                reverseGeocode(lat, lng);
-                enableMapMode();
-                
-                document.getElementById('outputBox').innerText = `📍 Location captured: ${lat.toFixed(4)}, ${lng.toFixed(4)}`;
-            },
-            (error) => {
-                let errorMessage = 'Location error: ';
-                switch(error.code) {
-                    case error.PERMISSION_DENIED:
-                        errorMessage += 'Please allow location access';
-                        break;
-                    case error.POSITION_UNAVAILABLE:
-                        errorMessage += 'Location information unavailable';
-                        break;
-                    case error.TIMEOUT:
-                        errorMessage += 'Location request timed out';
-                        break;
-                    default:
-                        errorMessage += 'Unknown error';
-                }
-                alert(errorMessage);
-                document.getElementById('outputBox').innerText = '❌ ' + errorMessage;
-            },
-            {
-                enableHighAccuracy: true,
-                timeout: 10000,
-                maximumAge: 0
+    // ========== STORAGE METER ==========
+    function updateStorageMeter() {
+        try {
+            const data = localStorage.getItem(STORAGE_KEY);
+            const totalSize = data ? new Blob([data]).size : 0;
+            const totalSizeMB = (totalSize / (1024 * 1024)).toFixed(2);
+            document.getElementById('storageMeter').innerText = `${totalSizeMB} MB used`;
+            
+            const warningEl = document.getElementById('storageWarning');
+            if (totalSizeMB > STORAGE_WARN_MB) {
+                warningEl.style.display = 'block';
+                warningEl.innerHTML = `⚠️ Storage: ${totalSizeMB}MB used (near ${STORAGE_LIMIT_MB}MB limit). Export and clear some records if you have issues saving.`;
+            } else {
+                warningEl.style.display = 'none';
             }
-        );
-    }
-
-    // Reverse geocoding
-    function reverseGeocode(lat, lng) {
-        fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.display_name) {
-                    const locationParts = [];
-                    if (data.address.suburb) locationParts.push(data.address.suburb);
-                    if (data.address.town) locationParts.push(data.address.town);
-                    if (data.address.city) locationParts.push(data.address.city);
-                    if (data.address.state) locationParts.push(data.address.state);
-                    
-                    if (locationParts.length > 0) {
-                        document.getElementById('siteName').value = locationParts.join(', ');
-                    }
-                }
-            })
-            .catch(error => console.log('Reverse geocoding failed:', error));
-    }
-
-    // Initialize map
-    function initMap() {
-        map = L.map('map').setView([-42.88, 147.33], 7);
-        
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors'
-        }).addTo(map);
-
-        marker = L.marker([-42.88, 147.33], {
-            draggable: true
-        }).addTo(map);
-
-        marker.on('dragend', function(e) {
-            const latlng = marker.getLatLng();
-            updateCoordinates(latlng.lat, latlng.lng, true);
-            enableMapMode();
-        });
-
-        map.on('click', function(e) {
-            marker.setLatLng(e.latlng);
-            updateCoordinates(e.latlng.lat, e.latlng.lng, true);
-            enableMapMode();
-        });
-    }
-
-    // Update coordinates
-    function updateCoordinates(lat, lng, fromMap = false) {
-        document.getElementById('lat').value = lat.toFixed(4);
-        document.getElementById('lon').value = lng.toFixed(4);
-        
-        if (fromMap) {
-            document.getElementById('coordSource').value = 'Map selection';
-        } else {
-            const region = document.getElementById('regionSelect').value;
-            document.getElementById('coordSource').value = `Quick Region (${regionPresets[region].name})`;
+            return parseFloat(totalSizeMB);
+        } catch (e) {
+            return 0;
         }
     }
 
-    // Update from region dropdown
-    function updateFromRegion() {
-        if (usingMapMode) {
+    // ========== SHARE FUNCTIONALITY ==========
+    async function shareData() {
+        if (!navigator.share) {
+            // Desktop fallback - copy to clipboard
+            const recordCount = savedRecords.length;
+            const summary = `🌱 Future Seeds Program\n📊 Total Records: ${recordCount}\n📅 Last updated: ${new Date().toLocaleDateString()}\n🔗 ${window.location.href}`;
+            
+            try {
+                await navigator.clipboard.writeText(summary);
+                alert('📋 Summary copied to clipboard!');
+            } catch (clipboardError) {
+                const textarea = document.createElement('textarea');
+                textarea.value = summary;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                alert('📋 Summary copied to clipboard!');
+            }
             return;
         }
         
-        const region = document.getElementById('regionSelect').value;
-        const preset = regionPresets[region];
+        try {
+            const recordCount = savedRecords.length;
+            
+            let shareText = `🌱 Future Seeds Program\n`;
+            shareText += `📊 Total Records: ${recordCount}\n`;
+            
+            if (recordCount > 0) {
+                const speciesCount = {};
+                savedRecords.forEach(r => {
+                    const species = r.species || 'Unknown';
+                    speciesCount[species] = (speciesCount[species] || 0) + 1;
+                });
+                
+                shareText += `🌿 Species:\n`;
+                Object.entries(speciesCount).slice(0, 3).forEach(([species, count]) => {
+                    const shortName = species.split(' ').slice(0, 2).join(' ');
+                    shareText += `   • ${shortName}: ${count}\n`;
+                });
+                
+                if (Object.keys(speciesCount).length > 3) {
+                    shareText += `   • ... and ${Object.keys(speciesCount).length - 3} more\n`;
+                }
+            }
+            
+            shareText += `\n🔗 ${window.location.href}`;
+            
+            await navigator.share({
+                title: 'Future Seeds Program Data',
+                text: shareText,
+                url: window.location.href,
+            });
+            
+            document.getElementById('outputBox').innerText = '✅ Data shared successfully!';
+            
+        } catch (err) {
+            if (err.name !== 'AbortError') {
+                console.error('Share failed:', err);
+                document.getElementById('outputBox').innerText = '❌ Sharing failed: ' + err.message;
+            }
+        }
+    }
+    
+    async function shareSingleRecord(id) {
+        const record = savedRecords.find(r => r.id == id);
+        if (!record) return;
         
-        document.getElementById('lat').value = preset.lat.toFixed(4);
-        document.getElementById('lon').value = preset.lon.toFixed(4);
-        document.getElementById('coordSource').value = `Quick Region (${preset.name})`;
-        
-        if (marker) {
-            marker.setLatLng([preset.lat, preset.lon]);
-            map.setView([preset.lat, preset.lon], 8);
+        if (!navigator.share) {
+            const summary = 
+                `🌱 Future Seeds Record\n` +
+                `📅 Date: ${record.collectionDate}\n` +
+                `👤 Observer: ${record.observer}\n` +
+                `🌿 Species: ${record.species}\n` +
+                `📍 Location: ${record.location?.region || 'Unknown'}\n` +
+                `🔗 ${window.location.href}`;
+            
+            try {
+                await navigator.clipboard.writeText(summary);
+                alert('📋 Record summary copied to clipboard!');
+            } catch (clipboardError) {
+                const textarea = document.createElement('textarea');
+                textarea.value = summary;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                alert('📋 Record summary copied to clipboard!');
+            }
+            return;
         }
         
-        if (usingMapMode) {
-            enableQuickRegionMode();
+        try {
+            const floweringStages = Object.entries(record.phenology?.flowering || {})
+                .filter(([key, value]) => value && key !== 'none')
+                .map(([key]) => key)
+                .join(', ') || 'None';
+            
+            const pollinatorTypes = Object.entries(record.phenology?.pollinators || {})
+                .filter(([key, value]) => value && key !== 'other' && key !== 'none')
+                .map(([key]) => key)
+                .join(', ') || 'None';
+            
+            const shareText = 
+                `🌱 Future Seeds Record\n` +
+                `📅 Date: ${record.collectionDate}\n` +
+                `👤 Observer: ${record.observer}\n` +
+                `🌿 Species: ${record.species}\n` +
+                `📍 Location: ${record.location?.region || 'Unknown'}\n` +
+                `📍 Coordinates: ${record.location?.latitude}, ${record.location?.longitude}\n` +
+                `🌼 Flowering: ${floweringStages}\n` +
+                `🐝 Pollinators: ${pollinatorTypes}\n` +
+                (record.weather?.minTemp ? `🌡️ Temp: ${record.weather.minTemp}°C - ${record.weather.maxTemp}°C\n` : '') +
+                (record.photos?.length ? `📸 Photos: ${record.photos.length}\n` : '') +
+                `\n🔗 ${window.location.href}`;
+            
+            await navigator.share({
+                title: `Future Seeds: ${record.species}`,
+                text: shareText,
+                url: window.location.href,
+            });
+            
+        } catch (err) {
+            if (err.name !== 'AbortError') {
+                console.error('Share failed:', err);
+                alert('Sharing failed: ' + err.message);
+            }
         }
     }
 
-    // Get current month index
-    function getCurrentMonthIndex() {
-        const dateStr = document.getElementById('obsDate').value;
-        if (dateStr) {
-            const d = new Date(dateStr + 'T12:00:00');
-            return d.getMonth();
+    // ========== WEATHER ==========
+    function getWeatherDescription(code) {
+        const weatherCodes = {
+            0: 'Clear sky',
+            1: 'Mainly clear',
+            2: 'Partly cloudy',
+            3: 'Overcast',
+            45: 'Fog',
+            48: 'Rime fog',
+            51: 'Light drizzle',
+            53: 'Moderate drizzle',
+            55: 'Dense drizzle',
+            56: 'Freezing drizzle',
+            57: 'Dense freezing drizzle',
+            61: 'Slight rain',
+            63: 'Moderate rain',
+            65: 'Heavy rain',
+            66: 'Freezing rain',
+            67: 'Heavy freezing rain',
+            71: 'Slight snow',
+            73: 'Moderate snow',
+            75: 'Heavy snow',
+            77: 'Snow grains',
+            80: 'Slight rain showers',
+            81: 'Moderate rain showers',
+            82: 'Violent rain showers',
+            85: 'Slight snow showers',
+            86: 'Heavy snow showers',
+            95: 'Thunderstorm',
+            96: 'Thunderstorm with hail',
+            99: 'Heavy thunderstorm with hail'
+        };
+        return weatherCodes[code] || 'Unknown conditions';
+    }
+
+    async function loadCurrentWeather(showFeedback = true) {
+        if (weatherLoadTimeout) clearTimeout(weatherLoadTimeout);
+        if (isLoadingWeather) return;
+        
+        const lat = document.getElementById('lat').value;
+        const lon = document.getElementById('lon').value;
+        const autoBtn = document.getElementById('autoWeatherBtn');
+        const originalText = autoBtn ? '<span>🌤️</span> Auto-load Current Weather' : '';
+        
+        try {
+            isLoadingWeather = true;
+            if (showFeedback && autoBtn) {
+                autoBtn.innerHTML = '<span>⏳</span> Loading weather...';
+                autoBtn.disabled = true;
+            }
+            document.getElementById('outputBox').innerText = '🌤️ Loading weather data from Open-Meteo...';
+            
+            const response = await fetch(
+                `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,pressure_msl&daily=temperature_2m_min,temperature_2m_max,precipitation_sum&timezone=auto`
+            );
+            
+            if (!response.ok) throw new Error('Weather service temporarily unavailable');
+            
+            const data = await response.json();
+            
+            if (data.current && data.daily) {
+                lastWeatherData = {
+                    latitude: parseFloat(lat),
+                    longitude: parseFloat(lon),
+                    current: {
+                        temperature: data.current.temperature_2m,
+                        humidity: data.current.relative_humidity_2m,
+                        weatherCode: data.current.weather_code,
+                        weatherDescription: getWeatherDescription(data.current.weather_code),
+                        windSpeed: data.current.wind_speed_10m,
+                        pressure: data.current.pressure_msl,
+                        timestamp: new Date().toISOString()
+                    },
+                    daily: {
+                        minTemp: data.daily.temperature_2m_min[0],
+                        maxTemp: data.daily.temperature_2m_max[0],
+                        precipitation: data.daily.precipitation_sum[0],
+                        date: data.daily.time[0]
+                    },
+                    timezone: data.timezone
+                };
+                
+                const minTemp = lastWeatherData.daily.minTemp;
+                const maxTemp = lastWeatherData.daily.maxTemp;
+                
+                document.getElementById('actualMinTemp').value = minTemp.toFixed(1);
+                document.getElementById('actualMaxTemp').value = maxTemp.toFixed(1);
+                document.getElementById('bomStation').value = `Open-Meteo - ${lastWeatherData.current.weatherDescription} (${lastWeatherData.current.temperature}°C, ${lastWeatherData.current.humidity}% RH)`;
+                
+                updateTempDisplay();
+                
+                document.getElementById('outputBox').innerText = 
+                    `✅ Weather loaded successfully!\n` +
+                    `📍 Location: ${lat}, ${lon}\n` +
+                    `🌡️ Current: ${lastWeatherData.current.temperature}°C\n` +
+                    `💧 Humidity: ${lastWeatherData.current.humidity}%\n` +
+                    `💨 Wind: ${lastWeatherData.current.windSpeed} km/h\n` +
+                    `📊 Today's range: ${minTemp.toFixed(1)}°C - ${maxTemp.toFixed(1)}°C\n` +
+                    `☁️ Conditions: ${lastWeatherData.current.weatherDescription}\n` +
+                    `🌧️ Precipitation: ${lastWeatherData.daily.precipitation} mm\n` +
+                    `⚡ Data from Open-Meteo (free, no API key)`;
+                
+                if (showFeedback && autoBtn) {
+                    autoBtn.innerHTML = '<span>✅</span> Loaded! ✓';
+                    weatherLoadTimeout = setTimeout(() => {
+                        if (autoBtn) {
+                            autoBtn.innerHTML = originalText;
+                            autoBtn.disabled = false;
+                        }
+                        weatherLoadTimeout = null;
+                    }, 2000);
+                } else if (autoBtn) {
+                    autoBtn.disabled = false;
+                }
+            } else {
+                throw new Error('Invalid weather data received');
+            }
+        } catch (error) {
+            console.error('Weather fetch failed:', error);
+            document.getElementById('outputBox').innerText = '❌ Failed to load weather data. Please try again or enter manually.';
+            if (showFeedback && autoBtn) {
+                autoBtn.innerHTML = '<span>❌</span> Failed - Try Again';
+                weatherLoadTimeout = setTimeout(() => {
+                    if (autoBtn) {
+                        autoBtn.innerHTML = originalText;
+                        autoBtn.disabled = false;
+                    }
+                    weatherLoadTimeout = null;
+                }, 2000);
+            } else if (autoBtn) {
+                autoBtn.disabled = false;
+            }
+        } finally {
+            isLoadingWeather = false;
         }
-        return 1;
     }
 
-    // Update month display
-    function updateMonthDisplay() {
-        const monthIndex = getCurrentMonthIndex();
-        document.getElementById('currentMonthDisplay').innerHTML = `📆 ${monthDisplayNames[monthIndex]} 2026 · manual weather entry`;
+    // ========== PHOTO HANDLING (IMPROVED COMPRESSION) ==========
+    function clearAllPhotos() {
+        if (selectedPhotos.length > 0 && !confirm('Remove all selected photos?')) return;
+        selectedPhotos = [];
+        document.getElementById('photoCount').innerText = '0 photos selected';
+        document.getElementById('photoPreview').innerHTML = '';
     }
 
-    // Update temperature display
-    function updateTempDisplay() {
-        const minTemp = document.getElementById('actualMinTemp').value;
-        const maxTemp = document.getElementById('actualMaxTemp').value;
-        document.getElementById('displayMin').innerText = minTemp ? minTemp + '°C' : '--°C';
-        document.getElementById('displayMax').innerText = maxTemp ? maxTemp + '°C' : '--°C';
-    }
-
-    // Update species info with italics
-    function updateSpeciesInfo() {
-        const select = document.getElementById('speciesSelect');
-        const species = select.value;
-        let displayName = species;
-        if (species === 'Acacia verticillata') displayName = '🌼 <i>Acacia verticillata</i> (Prickly Moses) — TEST SPECIES';
-        else if (species === 'Acacia dealbata') displayName = '🌿 <i>Acacia dealbata</i> (Silver Wattle)';
-        else if (species === 'Banksia marginata') displayName = '🪻 <i>Banksia marginata</i> (Silver Banksia)';
-        else if (species === 'Leptospermum scoparium') displayName = '🌸 <i>Leptospermum scoparium</i> (Manuka)';
-        else if (species === 'Nothofagus cunninghamii') displayName = '🍂 <i>Nothofagus cunninghamii</i> (Myrtle Beech)';
-        document.getElementById('speciesDisplay').innerHTML = displayName;
-    }
-
-    // Handle Flowering None checkbox
-    function handleFloweringNone() {
-        const floweringNone = document.getElementById('floweringNone');
-        if (floweringNone.checked) {
-            // Uncheck all other flowering options
-            document.getElementById('bud').checked = false;
-            document.getElementById('earlyFlower').checked = false;
-            document.getElementById('fullFlower').checked = false;
-            document.getElementById('petalFall').checked = false;
-            document.getElementById('seedPod').checked = false;
-        }
-    }
-
-    // Handle Pollinators None checkbox
-    function handlePollinatorsNone() {
-        const pollinatorsNone = document.getElementById('pollinatorsNone');
-        if (pollinatorsNone.checked) {
-            // Uncheck all other pollinator options
-            document.getElementById('honeybee').checked = false;
-            document.getElementById('nativeBee').checked = false;
-            document.getElementById('fly').checked = false;
-            document.getElementById('beetle').checked = false;
-            document.getElementById('wasp').checked = false;
-            document.getElementById('butterfly').checked = false;
-            // Clear other insects textarea
-            document.getElementById('otherInsects').value = '';
-        }
-    }
-
-    // Open camera
     function openCamera() {
         const cameraInput = document.getElementById('cameraInput');
-        cameraInput.setAttribute('capture', 'environment');
-        cameraInput.setAttribute('accept', 'image/*');
         cameraInput.value = '';
+        if (/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+            cameraInput.setAttribute('capture', 'environment');
+            cameraInput.setAttribute('accept', 'image/*');
+        } else {
+            cameraInput.removeAttribute('capture');
+            cameraInput.setAttribute('accept', 'image/*');
+        }
         cameraInput.click();
-        
-        cameraInput.onchange = function(e) {
-            if (e.target.files && e.target.files[0]) {
-                handleNewPhotos(Array.from(e.target.files));
-            }
-        };
     }
 
-    // Handle new photos
-    function handleNewPhotos(newFiles) {
-        const allFiles = [...selectedPhotos, ...newFiles];
-        const MAX_PHOTOS = 10;
+    function handleNewPhotos(files) {
+        const filesArray = Array.from(files);
+        const allFiles = [...selectedPhotos, ...filesArray];
         
         if (allFiles.length > MAX_PHOTOS) {
             alert(`Maximum ${MAX_PHOTOS} photos allowed. Only the first ${MAX_PHOTOS} will be kept.`);
@@ -1737,45 +1979,78 @@
         document.getElementById('photoCount').innerText = `${selectedPhotos.length} photo(s) selected`;
         updatePhotoPreviews();
         
-        const largeFiles = selectedPhotos.filter(f => f.size > 5 * 1024 * 1024);
+        // Compress large files (>1MB) automatically
+        const largeFiles = selectedPhotos.filter(f => f instanceof File && f.size > 1024 * 1024);
         if (largeFiles.length > 0) {
-            if (confirm('Some photos are large (>5MB). Would you like to compress them for better storage?')) {
+            if (confirm('Some photos are large (>1MB). Compress them now to save space?')) {
                 compressPhotos(largeFiles);
             }
         }
     }
 
-    // Update photo previews
     function updatePhotoPreviews() {
         const previewDiv = document.getElementById('photoPreview');
         previewDiv.innerHTML = '';
         
-        selectedPhotos.forEach((file, index) => {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const preview = document.createElement('div');
-                preview.className = 'photo-preview-item';
+        selectedPhotos.forEach((photo, index) => {
+            const preview = document.createElement('div');
+            preview.className = 'photo-preview-item';
+            
+            if (photo.isDataUrl && photo.data) {
                 preview.innerHTML = `
-                    <img src="${e.target.result}" alt="Preview">
+                    <img src="${photo.data}" alt="Preview">
                     <button class="photo-remove" onclick="removePhoto(${index})">×</button>
-                    <div class="photo-size">${(file.size / 1024).toFixed(0)}KB</div>
+                    <div class="photo-size">${(photo.size / 1024).toFixed(0)}KB</div>
                 `;
                 previewDiv.appendChild(preview);
-            };
-            reader.readAsDataURL(file);
+            } else if (photo instanceof File) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.innerHTML = `
+                        <img src="${e.target.result}" alt="Preview">
+                        <button class="photo-remove" onclick="removePhoto(${index})">×</button>
+                        <div class="photo-size">${(photo.size / 1024).toFixed(0)}KB</div>
+                    `;
+                    previewDiv.appendChild(preview);
+                };
+                reader.readAsDataURL(photo);
+            } else if (photo.data && photo.data.startsWith('data:')) {
+                preview.innerHTML = `
+                    <img src="${photo.data}" alt="Preview">
+                    <button class="photo-remove" onclick="removePhoto(${index})">×</button>
+                    <div class="photo-size">${(photo.size / 1024).toFixed(0)}KB</div>
+                `;
+                previewDiv.appendChild(preview);
+            }
         });
     }
 
-    // Remove photo
     function removePhoto(index) {
         selectedPhotos.splice(index, 1);
         document.getElementById('photoCount').innerText = `${selectedPhotos.length} photo(s) selected`;
         updatePhotoPreviews();
     }
 
-    // Compress photos
-    function compressPhotos(files) {
-        files.forEach((file) => {
+    async function compressPhotos(files) {
+        const compressionPromises = files.map(async (file) => {
+            try {
+                const compressedFile = await compressSinglePhoto(file);
+                const fileIndex = selectedPhotos.findIndex(f => f === file);
+                if (fileIndex !== -1) {
+                    selectedPhotos[fileIndex] = compressedFile;
+                }
+            } catch (error) {
+                console.error('Error compressing photo:', error);
+            }
+        });
+        
+        await Promise.all(compressionPromises);
+        updatePhotoPreviews();
+        document.getElementById('photoCount').innerText = `${selectedPhotos.length} photo(s) selected`;
+    }
+
+    function compressSinglePhoto(file) {
+        return new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.onload = function(e) {
                 const img = new Image();
@@ -1784,18 +2059,15 @@
                     let width = img.width;
                     let height = img.height;
                     
-                    const MAX_WIDTH = 1200;
-                    const MAX_HEIGHT = 1200;
-                    
                     if (width > height) {
-                        if (width > MAX_WIDTH) {
-                            height *= MAX_WIDTH / width;
-                            width = MAX_WIDTH;
+                        if (width > MAX_IMAGE_WIDTH) {
+                            height *= MAX_IMAGE_WIDTH / width;
+                            width = MAX_IMAGE_WIDTH;
                         }
                     } else {
-                        if (height > MAX_HEIGHT) {
-                            width *= MAX_HEIGHT / height;
-                            height = MAX_HEIGHT;
+                        if (height > MAX_IMAGE_HEIGHT) {
+                            width *= MAX_IMAGE_HEIGHT / height;
+                            height = MAX_IMAGE_HEIGHT;
                         }
                     }
                     
@@ -1810,16 +2082,13 @@
                             type: 'image/jpeg',
                             lastModified: Date.now()
                         });
-                        
-                        const fileIndex = selectedPhotos.indexOf(file);
-                        if (fileIndex !== -1) {
-                            selectedPhotos[fileIndex] = compressedFile;
-                            updatePhotoPreviews();
-                        }
-                    }, 'image/jpeg', 0.8);
+                        resolve(compressedFile);
+                    }, 'image/jpeg', COMPRESSION_QUALITY);
                 };
+                img.onerror = reject;
                 img.src = e.target.result;
             };
+            reader.onerror = reject;
             reader.readAsDataURL(file);
         });
     }
@@ -1831,63 +2100,279 @@
         }
     });
 
-    // Apply template
+    document.getElementById('cameraInput').addEventListener('change', function(e) {
+        if (e.target.files && e.target.files.length > 0) {
+            handleNewPhotos(Array.from(e.target.files));
+        }
+    });
+
+    // ========== OTHER FUNCTIONS (mostly unchanged) ==========
+    function initializeSpeciesDropdown() {
+        const select = document.getElementById('speciesSelect');
+        select.innerHTML = '';
+        defaultSpecies.forEach(species => {
+            const option = document.createElement('option');
+            option.value = species.value;
+            option.innerHTML = species.display;
+            select.appendChild(option);
+        });
+    }
+
+    function toggleGuide() {
+        document.getElementById('guidePanel').classList.toggle('show');
+    }
+
+    function toggleMap(show) {
+        const mapEl = document.getElementById('map');
+        const showBtn = document.getElementById('showMapBtn');
+        const hideBtn = document.getElementById('hideMapBtn');
+        if (show) {
+            mapEl.classList.add('show');
+            showBtn.classList.add('active');
+            hideBtn.classList.remove('active');
+            setTimeout(() => { if (map) map.invalidateSize(); }, 100);
+        } else {
+            mapEl.classList.remove('show');
+            showBtn.classList.remove('active');
+            hideBtn.classList.add('active');
+        }
+    }
+
+    function toggleLocationMode() {
+        if (usingMapMode) {
+            enableQuickRegionMode();
+            updateFromRegion();
+            document.getElementById('toggleLocationMode').innerHTML = '🔄 Switch to Map Mode';
+        } else {
+            enableMapMode();
+            document.getElementById('toggleLocationMode').innerHTML = '🔄 Switch to Quick Region';
+        }
+    }
+
+    function enableMapMode() {
+        usingMapMode = true;
+        document.getElementById('locationMode').innerText = '📍 Map Mode';
+        document.getElementById('locationMode').style.background = '#d16b4b';
+        document.getElementById('mapModeIndicator').innerText = '✅ Map active';
+        document.getElementById('mapModeIndicator').style.background = '#d16b4b';
+        document.getElementById('regionSelect').classList.add('map-active');
+        document.getElementById('regionSelect').disabled = true;
+        document.getElementById('mapInUseBadge').classList.add('show');
+        document.getElementById('locationNote').innerHTML = '📍 Using precise map coordinates. Region dropdown shows "📍 Map in use".';
+        document.getElementById('toggleLocationMode').innerHTML = '🔄 Switch to Quick Region';
+    }
+
+    function enableQuickRegionMode() {
+        usingMapMode = false;
+        document.getElementById('locationMode').innerText = '⚡ Quick Region';
+        document.getElementById('locationMode').style.background = '#4a90e2';
+        document.getElementById('mapModeIndicator').innerText = 'Click map to activate';
+        document.getElementById('mapModeIndicator').style.background = '#4a90e2';
+        document.getElementById('regionSelect').classList.remove('map-active');
+        document.getElementById('regionSelect').disabled = false;
+        document.getElementById('mapInUseBadge').classList.remove('show');
+        document.getElementById('locationNote').innerHTML = '⚡ Using Quick Region mode. Click map or use "My Location" for precise coordinates.';
+        document.getElementById('toggleLocationMode').innerHTML = '🔄 Switch to Map Mode';
+    }
+
+    function getUserLocation() {
+        if (!navigator.geolocation) {
+            alert('Geolocation is not supported by your browser');
+            return;
+        }
+        document.getElementById('outputBox').innerText = '📍 Getting your location...';
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+                if (marker) {
+                    marker.setLatLng([lat, lng]);
+                    map.setView([lat, lng], 12);
+                }
+                updateCoordinates(lat, lng, true);
+                reverseGeocode(lat, lng);
+                enableMapMode();
+                document.getElementById('outputBox').innerText = `📍 Location captured: ${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+                setTimeout(() => loadCurrentWeather(false), 500);
+            },
+            (error) => {
+                let errorMessage = 'Location error: ';
+                switch(error.code) {
+                    case error.PERMISSION_DENIED: errorMessage += 'Please allow location access'; break;
+                    case error.POSITION_UNAVAILABLE: errorMessage += 'Location information unavailable'; break;
+                    case error.TIMEOUT: errorMessage += 'Location request timed out'; break;
+                    default: errorMessage += 'Unknown error';
+                }
+                alert(errorMessage);
+                document.getElementById('outputBox').innerText = '❌ ' + errorMessage;
+            },
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+        );
+    }
+
+    function reverseGeocode(lat, lng) {
+        const now = Date.now();
+        if (now - lastGeocodeTime < 1000) {
+            setTimeout(() => reverseGeocode(lat, lng), 1000);
+            return;
+        }
+        lastGeocodeTime = now;
+        fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.display_name) {
+                    const locationParts = [];
+                    if (data.address.suburb) locationParts.push(data.address.suburb);
+                    if (data.address.town) locationParts.push(data.address.town);
+                    if (data.address.city) locationParts.push(data.address.city);
+                    if (data.address.state) locationParts.push(data.address.state);
+                    if (locationParts.length > 0) {
+                        document.getElementById('siteName').value = locationParts.join(', ');
+                    }
+                }
+            })
+            .catch(error => console.log('Reverse geocoding failed:', error));
+    }
+
+    function initMap() {
+        map = L.map('map').setView([-42.88, 147.33], 7);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+        marker = L.marker([-42.88, 147.33], { draggable: true }).addTo(map);
+        marker.on('dragend', function(e) {
+            const latlng = marker.getLatLng();
+            updateCoordinates(latlng.lat, latlng.lng, true);
+            enableMapMode();
+        });
+        map.on('click', function(e) {
+            marker.setLatLng(e.latlng);
+            updateCoordinates(e.latlng.lat, e.latlng.lng, true);
+            enableMapMode();
+        });
+    }
+
+    function updateCoordinates(lat, lng, fromMap = false) {
+        document.getElementById('lat').value = lat.toFixed(4);
+        document.getElementById('lon').value = lng.toFixed(4);
+        if (fromMap) {
+            document.getElementById('coordSource').value = 'Map selection';
+            setTimeout(() => loadCurrentWeather(false), 500);
+        } else {
+            const region = document.getElementById('regionSelect').value;
+            document.getElementById('coordSource').value = `Quick Region (${regionPresets[region].name})`;
+            setTimeout(() => loadCurrentWeather(false), 500);
+        }
+    }
+
+    function updateFromRegion() {
+        if (usingMapMode) return;
+        const region = document.getElementById('regionSelect').value;
+        const preset = regionPresets[region];
+        document.getElementById('lat').value = preset.lat.toFixed(4);
+        document.getElementById('lon').value = preset.lon.toFixed(4);
+        document.getElementById('coordSource').value = `Quick Region (${preset.name})`;
+        if (marker) {
+            marker.setLatLng([preset.lat, preset.lon]);
+            map.setView([preset.lat, preset.lon], 8);
+        }
+    }
+
+    function getCurrentMonthIndex() {
+        const dateStr = document.getElementById('obsDate').value;
+        if (dateStr) {
+            const d = new Date(dateStr + 'T12:00:00');
+            return d.getMonth();
+        }
+        return new Date().getMonth();
+    }
+
+    function updateMonthDisplay() {
+        const monthIndex = getCurrentMonthIndex();
+        document.getElementById('currentMonthDisplay').innerHTML = `📆 ${monthDisplayNames[monthIndex]} 2026 · weather data ready`;
+    }
+
+    function updateTempDisplay() {
+        const minTemp = document.getElementById('actualMinTemp').value;
+        const maxTemp = document.getElementById('actualMaxTemp').value;
+        document.getElementById('displayMin').innerText = minTemp ? minTemp + '°C' : '--°C';
+        document.getElementById('displayMax').innerText = maxTemp ? maxTemp + '°C' : '--°C';
+    }
+
+    function updateSpeciesInfo() {
+        const select = document.getElementById('speciesSelect');
+        const species = select.value;
+        let displayName = species;
+        const defaultSpeciesObj = defaultSpecies.find(s => s.value === species);
+        if (defaultSpeciesObj) {
+            displayName = defaultSpeciesObj.display;
+        } else {
+            displayName = `🌱 <i>${species}</i> (Custom)`;
+        }
+        document.getElementById('speciesDisplay').innerHTML = displayName;
+    }
+
+    function handleFloweringNone() {
+        const floweringNone = document.getElementById('floweringNone');
+        if (floweringNone.checked) {
+            document.getElementById('bud').checked = false;
+            document.getElementById('earlyFlower').checked = false;
+            document.getElementById('fullFlower').checked = false;
+            document.getElementById('petalFall').checked = false;
+            document.getElementById('seedPod').checked = false;
+        }
+    }
+
+    function handlePollinatorsNone() {
+        const pollinatorsNone = document.getElementById('pollinatorsNone');
+        if (pollinatorsNone.checked) {
+            document.getElementById('honeybee').checked = false;
+            document.getElementById('nativeBee').checked = false;
+            document.getElementById('fly').checked = false;
+            document.getElementById('beetle').checked = false;
+            document.getElementById('wasp').checked = false;
+            document.getElementById('butterfly').checked = false;
+            document.getElementById('otherInsects').value = '';
+        }
+    }
+
     function applyTemplate(templateName) {
         const template = templates[templateName];
-        
+        if (templateName === 'postFire') {
+            document.getElementById('fullFlower').checked = false;
+            document.getElementById('seedPod').checked = false;
+        } else if (templateName === 'peakFlower') {
+            document.getElementById('fireHistory').value = '';
+        } else if (templateName === 'seedCollection') {
+            document.getElementById('fireHistory').value = '';
+        } else if (templateName === 'pollinatorSurvey') {
+            document.getElementById('fireHistory').value = '';
+            document.getElementById('seedMaturity').value = '';
+        }
         if (template.fireHistory) document.getElementById('fireHistory').value = template.fireHistory;
         if (template.notes) document.getElementById('notes').value = template.notes;
         if (template.seedMaturity) document.getElementById('seedMaturity').value = template.seedMaturity;
-        
         if (template.fullFlower) document.getElementById('fullFlower').checked = true;
         if (template.seedPod) document.getElementById('seedPod').checked = true;
-        
         document.getElementById('outputBox').innerText = `✅ Applied template: ${templateName}`;
     }
 
-    // Validate required fields
     function validateRequired() {
         const errors = [];
-        
-        // Check observer
         const observer = document.getElementById('observer').value.trim();
-        if (!observer) {
-            errors.push('Observer name is required');
-        }
-        
-        // Check date
+        if (!observer) errors.push('Observer name is required');
         const date = document.getElementById('obsDate').value;
-        if (!date) {
-            errors.push('Date is required');
-        }
-        
-        // Check flowering stage (including None option)
-        const floweringSelected = [
-            'bud', 'earlyFlower', 'fullFlower', 'petalFall', 'seedPod'
-        ].some(id => document.getElementById(id).checked);
-        
+        if (!date) errors.push('Date is required');
+        const floweringSelected = ['bud', 'earlyFlower', 'fullFlower', 'petalFall', 'seedPod'].some(id => document.getElementById(id).checked);
         const floweringNone = document.getElementById('floweringNone').checked;
-        
-        if (!floweringSelected && !floweringNone) {
-            errors.push('Either select a flowering stage or check "None"');
-        }
-        
-        // Check pollinators (including None option)
-        const pollinatorsSelected = [
-            'honeybee', 'nativeBee', 'fly', 'beetle', 'wasp', 'butterfly'
-        ].some(id => document.getElementById(id).checked);
-        
+        if (!floweringSelected && !floweringNone) errors.push('Either select a flowering stage or check "None"');
+        const pollinatorsSelected = ['honeybee', 'nativeBee', 'fly', 'beetle', 'wasp', 'butterfly'].some(id => document.getElementById(id).checked);
         const pollinatorsNone = document.getElementById('pollinatorsNone').checked;
         const otherPollinators = document.getElementById('otherInsects').value.trim();
-        
-        if (!pollinatorsSelected && !otherPollinators && !pollinatorsNone) {
-            errors.push('Either select pollinators, describe others, or check "None"');
-        }
-        
+        if (!pollinatorsSelected && !otherPollinators && !pollinatorsNone) errors.push('Either select pollinators, describe others, or check "None"');
         return errors;
     }
 
-    // Show validation errors
     function showErrors(errors) {
         const panel = document.getElementById('warningsPanel');
         if (errors.length > 0) {
@@ -1900,29 +2385,42 @@
         }
     }
 
-    // Collect form data (optional fields can be empty)
     function collectFormData() {
         const region = document.getElementById('regionSelect').value;
-        
         const monthIndex = getCurrentMonthIndex();
         const monthName = monthDisplayNames[monthIndex];
-
-        // Get observer and save it for next time
         const observer = document.getElementById('observer').value.trim();
-        if (observer) {
-            localStorage.setItem(OBSERVER_KEY, observer);
-        }
+        if (observer) localStorage.setItem(OBSERVER_KEY, observer);
 
-        // Helper function to get optional values (return null if empty)
         const getOptionalNumber = (id) => {
             const val = document.getElementById(id).value;
             return val ? parseFloat(val) : null;
         };
-
         const getOptionalString = (id) => {
             const val = document.getElementById(id).value;
             return val || null;
         };
+
+        const weatherData = {
+            month: monthName,
+            year: 2026,
+            minTemp: getOptionalNumber('actualMinTemp'),
+            maxTemp: getOptionalNumber('actualMaxTemp'),
+            station: getOptionalString('bomStation'),
+            stationId: getOptionalString('stationId'),
+            dataType: lastWeatherData ? "Open-Meteo Auto" : "Manual Entry"
+        };
+
+        if (lastWeatherData) {
+            weatherData.autoWeather = {
+                latitude: lastWeatherData.latitude,
+                longitude: lastWeatherData.longitude,
+                current: lastWeatherData.current,
+                daily: lastWeatherData.daily,
+                timezone: lastWeatherData.timezone,
+                loadedAt: lastWeatherData.current.timestamp
+            };
+        }
 
         return {
             id: Date.now(),
@@ -1933,12 +2431,13 @@
             collectionDate: document.getElementById('obsDate').value,
             species: document.getElementById('speciesSelect').value,
             location: {
-                region: regionPresets[region].name,
-                regionCode: region,
+                region: usingMapMode ? "Precise Map Location" : regionPresets[region].name,
+                regionCode: usingMapMode ? "map_selected" : region,
                 siteName: getOptionalString('siteName'),
                 latitude: parseFloat(document.getElementById('lat').value),
                 longitude: parseFloat(document.getElementById('lon').value),
-                coordinateSource: document.getElementById('coordSource').value
+                coordinateSource: document.getElementById('coordSource').value,
+                locationMode: usingMapMode ? "precise_map" : "quick_region"
             },
             phenology: {
                 flowering: {
@@ -1965,88 +2464,142 @@
                 fire: getOptionalString('fireHistory'),
                 notes: getOptionalString('notes')
             },
-            weather: {
-                month: monthName,
-                year: 2026,
-                minTemp: getOptionalNumber('actualMinTemp'),
-                maxTemp: getOptionalNumber('actualMaxTemp'),
-                station: getOptionalString('bomStation'),
-                stationId: getOptionalString('stationId'),
-                dataType: "Manual BOM entry"
-            },
-            photos: [] // Will be populated with full photo data when saving
+            weather: weatherData,
+            photos: []
         };
     }
 
-    // Save record
-    function saveRecord() {
-        updateTempDisplay();
-        
-        const errors = validateRequired();
-        if (!showErrors(errors)) {
-            return;
+    // ========== SAVE RECORD WITH SIZE CHECK ==========
+    async function saveRecord() {
+        // Save observer immediately
+        const observer = document.getElementById('observer').value.trim();
+        if (observer) {
+            localStorage.setItem(OBSERVER_KEY, observer);
+            savedObserver = observer;
         }
+        
+        updateTempDisplay();
+        const errors = validateRequired();
+        if (!showErrors(errors)) return;
         
         const data = collectFormData();
         
-        const photoPromises = selectedPhotos.map(file => {
+        // Process photos
+        const photoPromises = selectedPhotos.map(photo => {
             return new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    resolve({
-                        name: file.name,
-                        type: file.type,
-                        size: file.size,
-                        data: e.target.result
-                    });
-                };
-                reader.readAsDataURL(file);
+                if (photo.data && photo.data.startsWith('data:')) {
+                    resolve({ name: photo.name || 'photo.jpg', type: photo.type || 'image/jpeg', size: photo.size || 0, data: photo.data });
+                } else if (photo.isDataUrl && photo.data) {
+                    resolve({ name: photo.name, type: photo.type, size: photo.size, data: photo.data });
+                } else if (photo instanceof File) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        resolve({ name: photo.name, type: photo.type, size: photo.size, data: e.target.result });
+                    };
+                    reader.readAsDataURL(photo);
+                } else {
+                    console.warn('Unknown photo format:', photo);
+                    resolve(null);
+                }
             });
         });
         
-        Promise.all(photoPromises).then(photoData => {
-            data.photos = photoData;
-            savedRecords.push(data);
+        const photoData = (await Promise.all(photoPromises)).filter(p => p !== null);
+        
+        // Check total size before saving
+        const totalPhotoSize = photoData.reduce((sum, p) => sum + (p.size || 0), 0);
+        const totalPhotoMB = totalPhotoSize / (1024 * 1024);
+        
+        // Estimate total new record size (rough approximation)
+        const tempRecord = { ...data, photos: photoData };
+        const estimatedSize = new Blob([JSON.stringify(tempRecord)]).size;
+        const estimatedMB = estimatedSize / (1024 * 1024);
+        
+        // Check current storage usage
+        const currentUsageMB = updateStorageMeter();
+        const projectedUsage = currentUsageMB + estimatedMB;
+        
+        if (projectedUsage > STORAGE_LIMIT_MB) {
+            if (!confirm(`⚠️ This record would use about ${estimatedMB.toFixed(2)} MB, pushing total to ${projectedUsage.toFixed(2)} MB (near the ${STORAGE_LIMIT_MB} MB limit). Continue anyway?`)) {
+                return;
+            }
+        } else if (estimatedMB > 2) {
+            if (!confirm(`⚠️ This record is large (${estimatedMB.toFixed(2)} MB). Consider using fewer or smaller photos. Continue?`)) {
+                return;
+            }
+        }
+        
+        data.photos = photoData;
+        savedRecords.push(data);
+        
+        try {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(savedRecords));
             displayRecords();
             updateStats();
-            document.getElementById('outputBox').innerText = '✅ Record saved to local storage!\n\n' + 
-                JSON.stringify({...data, photos: `${data.photos.length} photo(s)`}, null, 2);
+            updateStorageMeter();
+            
+            document.getElementById('outputBox').innerText = 
+                `✅ Record saved successfully!\n` +
+                `Observer: ${data.observer}\n` +
+                `Date: ${data.collectionDate}\n` +
+                `Species: ${data.species}\n` +
+                `Location: ${data.location.region} (${data.location.locationMode === 'precise_map' ? 'Map' : 'Quick Region'})\n` +
+                `Coordinates: ${data.location.latitude}, ${data.location.longitude}\n` +
+                `Weather: ${data.weather.minTemp || '--'}°C / ${data.weather.maxTemp || '--'}°C (${data.weather.dataType})\n` +
+                `Photos: ${data.photos.length}\n` +
+                `Total records: ${savedRecords.length}`;
+            
             resetForm();
-        });
+            
+        } catch (quotaError) {
+            console.error('Quota exceeded:', quotaError);
+            // Remove the record we just added (it wasn't saved)
+            savedRecords.pop();
+            
+            const action = confirm('Storage quota exceeded. Would you like to clear all current photos from this form and try again? (Click Cancel to keep photos and manually clear some old records first.)');
+            if (action) {
+                clearAllPhotos();
+            } else {
+                alert('Please export and delete some old records to free up space.');
+            }
+        }
     }
 
-    // Import data from JSON file
+    // ========== IMPORT / EXPORT ==========
     function importData() {
         const fileInput = document.getElementById('importFile');
         const file = fileInput.files[0];
-        
         if (!file) return;
+        if (file.size > 10 * 1024 * 1024) {
+            alert('File too large. Maximum size is 10MB.');
+            fileInput.value = '';
+            return;
+        }
         
         const reader = new FileReader();
         reader.onload = function(e) {
             try {
                 const importedData = JSON.parse(e.target.result);
+                const isValidRecord = (record) => record.observer && record.collectionDate && record.species && record.location && record.phenology;
+                const ensureId = (record) => { if (!record.id) record.id = Date.now() + Math.random(); return record; };
                 
-                // Handle single record or array of records
                 if (Array.isArray(importedData)) {
-                    // Check if it's an array of records
-                    savedRecords = [...savedRecords, ...importedData];
-                    document.getElementById('outputBox').innerText = `✅ Imported ${importedData.length} records`;
-                } else if (importedData.id) {
-                    // Single record
-                    savedRecords.push(importedData);
+                    const validRecords = importedData.filter(isValidRecord).map(ensureId);
+                    if (validRecords.length === 0) { alert('No valid records found'); return; }
+                    savedRecords = [...savedRecords, ...validRecords];
+                    document.getElementById('outputBox').innerText = `✅ Imported ${validRecords.length} records`;
+                } else if (isValidRecord(importedData)) {
+                    savedRecords.push(ensureId(importedData));
                     document.getElementById('outputBox').innerText = `✅ Imported 1 record`;
                 } else {
-                    alert('Invalid data format: Expected a record or array of records');
+                    alert('Invalid data format');
                     return;
                 }
                 
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(savedRecords));
                 displayRecords();
                 updateStats();
-                
-                // Clear file input
+                updateStorageMeter();
                 fileInput.value = '';
             } catch (error) {
                 alert('Error importing file: ' + error.message);
@@ -2055,58 +2608,61 @@
         reader.readAsText(file);
     }
 
-    // Display records
     function displayRecords() {
         const grid = document.getElementById('recordsGrid');
         const countEl = document.getElementById('recordCount');
         
-        if (savedRecords.length === 0) {
+        if (!savedRecords || savedRecords.length === 0) {
             grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:2rem; color:#5f7344;">No saved records yet. Complete and save your first observation!</div>';
             countEl.innerText = '0 records';
             return;
         }
 
         countEl.innerText = `${savedRecords.length} record${savedRecords.length !== 1 ? 's' : ''}`;
+        const sortedRecords = [...savedRecords].sort((a, b) => new Date(b.collectionDate) - new Date(a.collectionDate));
         
-        grid.innerHTML = savedRecords.map((record, index) => {
-            // Check if record has photos and display indicator
+        grid.innerHTML = sortedRecords.map((record) => {
             const hasPhotos = record.photos && record.photos.length > 0;
+            const weatherSource = record.weather && record.weather.dataType === "Open-Meteo Auto" ? " (auto)" : "";
+            const displaySpecies = record.species ? record.species.split(' ').slice(0, 2).join(' ') : 'Unknown';
+            const locationIcon = record.location.locationMode === 'precise_map' ? '🗺️' : '📍';
+            const locationDisplay = record.location.locationMode === 'precise_map' 
+                ? (record.location.siteName || 'Map pin') 
+                : record.location.region.split(' ')[0];
             
             return `
-                <div class="record-card" onclick="selectRecord(${index})">
+                <div class="record-card" data-id="${record.id}" onclick="selectRecord('${record.id}')">
                     <div class="record-date">📅 ${record.collectionDate}</div>
-                    <div class="record-species">🌿 <i>${record.species ? record.species.split(' ')[0] : ''} ${record.species ? record.species.split(' ')[1] || '' : ''}</i></div>
-                    <div class="record-location">📍 ${record.location ? record.location.region : 'Unknown'}</div>
+                    <div class="record-species">🌿 <i>${displaySpecies}</i></div>
+                    <div class="record-location">${locationIcon} ${locationDisplay}</div>
                     ${record.weather && record.weather.minTemp && record.weather.maxTemp ? 
-                        `<div class="record-weather">🌡️ ${record.weather.minTemp}°C / ${record.weather.maxTemp}°C</div>` : ''}
+                        `<div class="record-weather">🌡️ ${record.weather.minTemp}°C / ${record.weather.maxTemp}°C${weatherSource}</div>` : ''}
                     ${hasPhotos ? 
-                        `<div class="record-photo-indicator">📸 ${record.photos.length} photo(s)</div>` : ''}
+                        `<div class="record-photo-indicator">📸 ${record.photos.length}</div>` : ''}
                     <div class="record-actions">
-                        <button class="record-btn edit" onclick="event.stopPropagation(); editRecord(${index})">✏️ Edit</button>
-                        <button class="record-btn delete" onclick="event.stopPropagation(); deleteRecord(${index})">🗑️ Delete</button>
+                        <button class="record-btn edit" onclick="event.stopPropagation(); editRecord('${record.id}')">✏️ Edit</button>
+                        <button class="record-btn" style="background: #4a90e2; color: white; border-color: #2a5080;" onclick="event.stopPropagation(); shareSingleRecord('${record.id}')">📱 Share</button>
+                        <button class="record-btn delete" onclick="event.stopPropagation(); deleteRecord('${record.id}')">🗑️ Delete</button>
                     </div>
                 </div>
             `;
         }).join('');
     }
 
-    // Select record
-    function selectRecord(index) {
-        const record = savedRecords[index];
+    function selectRecord(id) {
+        const record = savedRecords.find(r => r.id == id);
+        if (!record) return;
         const displayRecord = {...record};
-        if (displayRecord.photos) {
-            displayRecord.photos = `${displayRecord.photos.length} photo(s)`;
-        }
+        if (displayRecord.photos) displayRecord.photos = `${displayRecord.photos.length} photo(s)`;
         document.getElementById('outputBox').innerText = JSON.stringify(displayRecord, null, 2);
-        
-        const cards = document.querySelectorAll('.record-card');
-        cards.forEach(c => c.classList.remove('selected'));
-        cards[index]?.classList.add('selected');
+        document.querySelectorAll('.record-card').forEach(c => c.classList.remove('selected'));
+        const selectedCard = document.querySelector(`.record-card[data-id="${id}"]`);
+        if (selectedCard) selectedCard.classList.add('selected');
     }
 
-    // Edit record
-    function editRecord(index) {
-        const record = savedRecords[index];
+    function editRecord(id) {
+        const record = savedRecords.find(r => r.id == id);
+        if (!record) return;
         
         document.getElementById('observer').value = record.observer;
         document.getElementById('obsDate').value = record.collectionDate;
@@ -2114,18 +2670,19 @@
         document.getElementById('lat').value = record.location.latitude;
         document.getElementById('lon').value = record.location.longitude;
         document.getElementById('coordSource').value = record.location.coordinateSource;
-        
         document.getElementById('speciesSelect').value = record.species;
         updateSpeciesInfo();
         
-        let regionCode = 'south';
-        for (const [code, preset] of Object.entries(regionPresets)) {
-            if (preset.name === record.location.region) {
-                regionCode = code;
-                break;
+        if (record.location.locationMode === 'quick_region') {
+            for (const [code, preset] of Object.entries(regionPresets)) {
+                if (preset.name === record.location.region) {
+                    document.getElementById('regionSelect').value = code;
+                    break;
+                }
             }
+        } else {
+            document.getElementById('regionSelect').value = 'south';
         }
-        document.getElementById('regionSelect').value = regionCode;
         
         document.getElementById('bud').checked = record.phenology.flowering.bud;
         document.getElementById('earlyFlower').checked = record.phenology.flowering.earlyFlower;
@@ -2148,43 +2705,23 @@
         document.getElementById('bomStation').value = record.weather.station || '';
         document.getElementById('stationId').value = record.weather.stationId || '';
         
+        if (record.weather.autoWeather) {
+            lastWeatherData = record.weather.autoWeather;
+        }
+        
         document.getElementById('seedMaturity').value = record.phenology.seedMaturity || '';
         document.getElementById('fireHistory').value = record.siteHistory.fire || '';
         document.getElementById('notes').value = record.siteHistory.notes || '';
         
-        // Restore photos if they exist
         if (record.photos && record.photos.length > 0) {
-            // Convert stored photo data back to File objects
-            const photoFiles = record.photos.map(photo => {
-                // Extract the base64 data
-                const byteString = atob(photo.data.split(',')[1]);
-                const mimeString = photo.data.split(',')[0].split(':')[1].split(';')[0];
-                const ab = new ArrayBuffer(byteString.length);
-                const ia = new Uint8Array(ab);
-                for (let i = 0; i < byteString.length; i++) {
-                    ia[i] = byteString.charCodeAt(i);
-                }
-                const file = new File([ab], photo.name, { type: mimeString });
-                // Add a custom property to store the data URL for preview
-                file.preview = photo.data;
-                return file;
-            });
-            selectedPhotos = photoFiles;
-            
-            // Update photo previews using stored data URLs
-            const previewDiv = document.getElementById('photoPreview');
-            previewDiv.innerHTML = '';
-            selectedPhotos.forEach((file, idx) => {
-                const preview = document.createElement('div');
-                preview.className = 'photo-preview-item';
-                preview.innerHTML = `
-                    <img src="${file.preview || URL.createObjectURL(file)}" alt="Preview">
-                    <button class="photo-remove" onclick="removePhoto(${idx})">×</button>
-                    <div class="photo-size">${(file.size / 1024).toFixed(0)}KB</div>
-                `;
-                previewDiv.appendChild(preview);
-            });
-            
+            selectedPhotos = record.photos.map(photo => ({
+                name: photo.name,
+                type: photo.type,
+                size: photo.size,
+                data: photo.data,
+                isDataUrl: true
+            }));
+            updatePhotoPreviews();
             document.getElementById('photoCount').innerText = `${selectedPhotos.length} photo(s) selected`;
         } else {
             selectedPhotos = [];
@@ -2200,43 +2737,38 @@
             map.setView([record.location.latitude, record.location.longitude], 8);
         }
         
-        if (record.locationMode === 'precise_map') {
-            enableMapMode();
-        } else {
-            enableQuickRegionMode();
-        }
+        if (record.locationMode === 'precise_map') enableMapMode();
+        else enableQuickRegionMode();
         
         document.getElementById('outputBox').innerText = `✏️ Editing record from ${record.collectionDate}`;
-        
-        deleteRecord(index, true);
+        deleteRecord(id, true);
     }
 
-    // Delete record
-    function deleteRecord(index, silent = false) {
+    function deleteRecord(id, silent = false) {
+        const index = savedRecords.findIndex(r => r.id == id);
+        if (index === -1) return;
+        if (!silent && !confirm('Delete this record?')) return;
         savedRecords.splice(index, 1);
         localStorage.setItem(STORAGE_KEY, JSON.stringify(savedRecords));
         displayRecords();
         updateStats();
-        if (!silent) {
-            document.getElementById('outputBox').innerText = '🗑️ Record deleted.';
-        }
+        updateStorageMeter();
+        if (!silent) document.getElementById('outputBox').innerText = '🗑️ Record deleted.';
     }
 
-    // Clear all records
     function clearAllRecords() {
-        if (confirm('Are you sure you want to delete ALL saved records?')) {
+        if (confirm('Delete ALL saved records?')) {
             savedRecords = [];
             localStorage.removeItem(STORAGE_KEY);
             displayRecords();
             updateStats();
+            updateStorageMeter();
             document.getElementById('outputBox').innerText = '🗑️ All records cleared.';
         }
     }
 
-    // Update statistics
     function updateStats() {
         document.getElementById('totalRecordsStat').innerText = savedRecords.length;
-        
         if (savedRecords.length > 0) {
             const temps = savedRecords.filter(r => r.weather && r.weather.minTemp && r.weather.maxTemp);
             if (temps.length > 0) {
@@ -2249,81 +2781,25 @@
         }
     }
 
-    // Show field statistics
-    function showFieldStats() {
-        const stats = {
-            totalRecords: savedRecords.length,
-            uniqueSites: new Set(savedRecords.map(r => r.location ? r.location.siteName : '').filter(Boolean)).size,
-            speciesCount: new Set(savedRecords.map(r => r.species)).size,
-            regions: {},
-            fireHistory: {},
-            locationModes: {
-                precise: savedRecords.filter(r => r.locationMode === 'precise_map').length,
-                quick: savedRecords.filter(r => r.locationMode === 'quick_region').length
-            },
-            totalPhotos: savedRecords.reduce((sum, r) => sum + (r.photos?.length || 0), 0),
-            weatherRecords: savedRecords.filter(r => r.weather && r.weather.minTemp).length
-        };
-        
-        savedRecords.forEach(r => {
-            if (r.location && r.location.region) {
-                stats.regions[r.location.region] = (stats.regions[r.location.region] || 0) + 1;
-            }
-            if (r.siteHistory && r.siteHistory.fire) {
-                stats.fireHistory[r.siteHistory.fire] = (stats.fireHistory[r.siteHistory.fire] || 0) + 1;
-            }
-        });
-        
-        let output = '📊 Field Statistics:\n\n' +
-            `Total Records: ${stats.totalRecords}\n` +
-            `Unique Sites: ${stats.uniqueSites}\n` +
-            `Species Count: ${stats.speciesCount}\n` +
-            `Total Photos: ${stats.totalPhotos}\n` +
-            `Weather Records: ${stats.weatherRecords}\n` +
-            `📍 Precise Map Records: ${stats.locationModes.precise}\n` +
-            `⚡ Quick Region Records: ${stats.locationModes.quick}\n\n`;
-        
-        if (Object.keys(stats.regions).length > 0) {
-            output += `Records by Region:\n${Object.entries(stats.regions).map(([r, c]) => `  ${r}: ${c}`).join('\n')}\n\n`;
-        }
-        
-        if (Object.keys(stats.fireHistory).length > 0) {
-            output += `Fire History:\n${Object.entries(stats.fireHistory).map(([f, c]) => `  ${f}: ${c}`).join('\n')}`;
-        }
-        
-        document.getElementById('outputBox').innerText = output;
-    }
-
-    // NEW FUNCTION: Export ALL records as JSON
     function exportAllJSON() {
-        if (savedRecords.length === 0) {
-            alert('No records to export');
-            return;
-        }
-        
+        if (savedRecords.length === 0) { alert('No records'); return; }
         const dataStr = JSON.stringify(savedRecords, null, 2);
-        const dataBlob = new Blob([dataStr], { type: 'application/json' });
-        const url = URL.createObjectURL(dataBlob);
+        const blob = new Blob([dataStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
         a.download = `future_seeds_all_records_${new Date().toISOString().split('T')[0]}.json`;
         a.click();
         URL.revokeObjectURL(url);
-        
         document.getElementById('outputBox').innerText = `✅ Exported ${savedRecords.length} records to JSON`;
     }
 
-    // NEW FUNCTION: Export ALL records as Excel
     function exportAllExcel() {
-        if (savedRecords.length === 0) {
-            alert('No records to export');
-            return;
-        }
-        
-        // Flatten each record for Excel
+        if (savedRecords.length === 0) { alert('No records'); return; }
         const flatData = savedRecords.map(record => ({
             'Program': record.program,
             'Location Mode': record.locationMode,
+            'Location Type': record.location.locationMode === 'precise_map' ? 'Precise Map' : 'Quick Region',
             'Observer': record.observer,
             'Collection Date': record.collectionDate,
             'Species': record.species,
@@ -2353,33 +2829,31 @@
             'Weather Year': record.weather ? record.weather.year : '',
             'Actual Min Temp (°C)': record.weather ? record.weather.minTemp || '' : '',
             'Actual Max Temp (°C)': record.weather ? record.weather.maxTemp || '' : '',
-            'BOM Station': record.weather ? record.weather.station || '' : '',
+            'Weather Station': record.weather ? record.weather.station || '' : '',
             'Station ID': record.weather ? record.weather.stationId || '' : '',
+            'Weather Data Source': record.weather ? record.weather.dataType || '' : '',
+            'Auto Weather - Current Temp (°C)': record.weather?.autoWeather?.current?.temperature || '',
+            'Auto Weather - Humidity (%)': record.weather?.autoWeather?.current?.humidity || '',
+            'Auto Weather - Conditions': record.weather?.autoWeather?.current?.weatherDescription || '',
+            'Auto Weather - Wind Speed (km/h)': record.weather?.autoWeather?.current?.windSpeed || '',
+            'Auto Weather - Pressure (hPa)': record.weather?.autoWeather?.current?.pressure || '',
+            'Auto Weather - Precipitation (mm)': record.weather?.autoWeather?.daily?.precipitation || '',
             'Photo Count': record.photos ? record.photos.length : 0,
             'Record Timestamp': record.timestamp
         }));
-
         const wb = XLSX.utils.book_new();
         const ws = XLSX.utils.json_to_sheet(flatData);
         XLSX.utils.book_append_sheet(wb, ws, "Future Seeds Data");
-        
-        const filename = `Future_Seeds_All_Records_${new Date().toISOString().split('T')[0]}.xlsx`;
-        
-        XLSX.writeFile(wb, filename);
-        
+        XLSX.writeFile(wb, `Future_Seeds_All_Records_${new Date().toISOString().split('T')[0]}.xlsx`);
         document.getElementById('outputBox').innerText = `✅ Exported ${savedRecords.length} records to Excel`;
     }
 
-    // NEW FUNCTION: Export ALL records as CSV
     function exportAllCSV() {
-        if (savedRecords.length === 0) {
-            alert('No records to export');
-            return;
-        }
-        
-        // Flatten each record for CSV (simplified version)
+        if (savedRecords.length === 0) { alert('No records'); return; }
         const flatData = savedRecords.map(record => ({
             'Program': record.program,
+            'Location Mode': record.locationMode,
+            'Location Type': record.location.locationMode === 'precise_map' ? 'Precise Map' : 'Quick Region',
             'Observer': record.observer,
             'Collection Date': record.collectionDate,
             'Species': record.species,
@@ -2389,11 +2863,15 @@
             'Longitude': record.location ? record.location.longitude : '',
             'Min Temp': record.weather ? record.weather.minTemp || '' : '',
             'Max Temp': record.weather ? record.weather.maxTemp || '' : '',
+            'Weather Source': record.weather ? record.weather.dataType || '' : '',
+            'Current Temp': record.weather?.autoWeather?.current?.temperature || '',
+            'Conditions': record.weather?.autoWeather?.current?.weatherDescription || '',
+            'Humidity': record.weather?.autoWeather?.current?.humidity || '',
+            'Wind Speed': record.weather?.autoWeather?.current?.windSpeed || '',
+            'Precipitation': record.weather?.autoWeather?.daily?.precipitation || '',
             'Fire History': record.siteHistory ? record.siteHistory.fire || '' : '',
             'Notes': record.siteHistory ? record.siteHistory.notes || '' : ''
         }));
-        
-        // Create CSV headers
         const headers = Object.keys(flatData[0]).join(',');
         const rows = flatData.map(row => 
             Object.values(row).map(v => 
@@ -2402,23 +2880,19 @@
                     : v
             ).join(',')
         );
-        
         const csv = [headers, ...rows].join('\n');
-        
         const blob = new Blob([csv], { type: 'text/csv' });
-        const url = window.URL.createObjectURL(blob);
+        const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
         a.download = `future_seeds_all_records_${new Date().toISOString().split('T')[0]}.csv`;
         a.click();
-        window.URL.revokeObjectURL(url);
-        
+        URL.revokeObjectURL(url);
         document.getElementById('outputBox').innerText = `✅ Exported ${savedRecords.length} records to CSV`;
     }
 
-    // Reset form
     function resetForm() {
-        document.getElementById('observer').value = savedObserver;
+        const currentObserver = document.getElementById('observer').value.trim();
         document.getElementById('obsDate').value = '2026-02-26';
         document.getElementById('siteName').value = '';
         document.getElementById('lat').value = '-42.88';
@@ -2448,6 +2922,15 @@
         document.getElementById('speciesSelect').value = 'Acacia verticillata';
         document.getElementById('regionSelect').value = 'south';
         
+        if (currentObserver) {
+            document.getElementById('observer').value = currentObserver;
+            localStorage.setItem(OBSERVER_KEY, currentObserver);
+            savedObserver = currentObserver;
+        } else if (savedObserver) {
+            document.getElementById('observer').value = savedObserver;
+        }
+        
+        lastWeatherData = null;
         selectedPhotos = [];
         document.getElementById('photoPreview').innerHTML = '';
         document.getElementById('photoCount').innerText = '0 photos selected';
@@ -2462,59 +2945,43 @@
             marker.setLatLng([-42.88, 147.33]);
             map.setView([-42.88, 147.33], 7);
         }
-        
-        document.getElementById('outputBox').innerText = '⏺ Form reset. Ready for new capture.';
-        document.querySelectorAll('.record-card').forEach(c => c.classList.remove('selected'));
     }
 
-    // Add event listeners for checkbox interactions
+    // Event listeners for checkboxes
     document.addEventListener('DOMContentLoaded', function() {
-        // Flowering checkboxes
         const floweringCheckboxes = ['bud', 'earlyFlower', 'fullFlower', 'petalFall', 'seedPod'];
         floweringCheckboxes.forEach(id => {
             document.getElementById(id).addEventListener('change', function() {
-                if (this.checked) {
-                    document.getElementById('floweringNone').checked = false;
-                }
+                if (this.checked) document.getElementById('floweringNone').checked = false;
             });
         });
 
-        // Pollinator checkboxes
         const pollinatorCheckboxes = ['honeybee', 'nativeBee', 'fly', 'beetle', 'wasp', 'butterfly'];
         pollinatorCheckboxes.forEach(id => {
             document.getElementById(id).addEventListener('change', function() {
-                if (this.checked) {
-                    document.getElementById('pollinatorsNone').checked = false;
-                }
+                if (this.checked) document.getElementById('pollinatorsNone').checked = false;
             });
         });
 
-        // Other insects textarea
         document.getElementById('otherInsects').addEventListener('input', function() {
-            if (this.value.trim() !== '') {
-                document.getElementById('pollinatorsNone').checked = false;
-            }
+            if (this.value.trim() !== '') document.getElementById('pollinatorsNone').checked = false;
         });
     });
 
     // Initialize on load
     window.onload = function() {
         initMap();
+        initializeSpeciesDropdown();
         updateSpeciesInfo();
         updateMonthDisplay();
         updateTempDisplay();
         displayRecords();
         updateStats();
+        updateStorageMeter();
         enableQuickRegionMode();
         updateFromRegion();
-        
-        // Load saved observer name
-        if (savedObserver) {
-            document.getElementById('observer').value = savedObserver;
-        }
-        
-        // Show field statistics in output box on load
-        showFieldStats();
+        if (savedObserver) document.getElementById('observer').value = savedObserver;
+        if (savedRecords.length > 0) document.getElementById('outputBox').innerText = `📊 Welcome back! You have ${savedRecords.length} saved record(s).`;
     };
 </script>
 </body>
