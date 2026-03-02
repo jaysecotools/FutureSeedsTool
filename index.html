@@ -1,3 +1,5 @@
+<!-- Seed maturity moved to Flowering & Pollinators card. Flowering and pollinator badges commented out to improve display. -->
+
 <!-- Developed by Jay Rowley for TasTAFE Future Seeds Program 2026 -->
 
 <!DOCTYPE html>
@@ -1138,7 +1140,7 @@
             🌱 FUTURE SEEDS PROGRAM 
             <span>DATA COLLECTOR</span>
         </h1>
-        <div class="program-badge">⚡ interactive map · quick region · camera ready · data import · auto weather · share with details <span class="new-badge">NEW</span></div>
+<!--        <div class="program-badge">⚡ interactive map · quick region · camera ready · data import · auto weather · share with details <span class="new-badge">NEW</span></div> -->
     </div>
 
     <!-- Instructions Toggle -->
@@ -1304,13 +1306,13 @@
             </div>
         </div>
 
-        <!-- TEMPLATE BUTTONS -->
+        <!-- TEMPLATE BUTTONS 
         <div class="template-buttons">
             <button class="template-btn" onclick="applyTemplate('postFire')">🔥 Post-fire Monitoring</button>
             <button class="template-btn" onclick="applyTemplate('peakFlower')">🌸 Peak Flowering</button>
             <button class="template-btn" onclick="applyTemplate('seedCollection')">🌱 Seed Collection</button>
             <button class="template-btn" onclick="applyTemplate('pollinatorSurvey')">🐝 Pollinator Survey</button>
-        </div>
+        </div> -->
 
         <div class="split-panel">
             <!-- LEFT: FLOWERING + POLLINATORS + PHOTOS -->
@@ -1361,6 +1363,19 @@
                             <textarea id="otherInsects" rows="2" placeholder="e.g., ants, thrips..."></textarea>
                         </div>
                     </div>
+
+                    <div style="margin-top: 2rem;">
+                        <div class="field">
+                            <label>🌱 Seed maturity <span class="optional-badge">optional</span></label>
+                            <select id="seedMaturity">
+                                <option value="" selected disabled>— select if known —</option>
+                                <option value="green">Green / immature</option>
+                                <option value="early">Early filling</option>
+                                <option value="mature">Mature / ready</option>
+                                <option value="dispersed">Already dispersed</option>
+                            </select>
+                        </div> 
+</div>
 
                     <!-- PHOTO SECTION - IMPROVED -->
                     <div class="photo-section">
@@ -1449,6 +1464,7 @@
                         ⏱️ Auto-loaded weather includes current conditions, humidity, wind, and precipitation
                     </div>
 
+<!-- MOVING THIS PART TO THE FLOWERING CARD
                     <div style="margin-top: 2rem;">
                         <div class="field">
                             <label>🌱 Seed maturity <span class="optional-badge">optional</span></label>
@@ -1459,7 +1475,7 @@
                                 <option value="mature">Mature / ready</option>
                                 <option value="dispersed">Already dispersed</option>
                             </select>
-                        </div>
+                        </div> -->
                         <div class="field" style="margin-top:15px;">
                             <label>🔥 Fire history <span class="optional-badge">optional</span></label>
                             <select id="fireHistory">
@@ -1477,7 +1493,7 @@
                     </div>
                 </div>
             </div>
-        </div>
+
 
         <!-- STORAGE WARNING -->
         <div id="storageWarning" class="storage-warning"></div>
@@ -1524,7 +1540,7 @@
             ⏺ Welcome to Future Seeds Data Collector! Fill out the form and click Save Record to begin.
         </div>
 
-        <div class="weather-credit">🌤️ Auto-weather powered by Open-Meteo (free, no API key) · Full weather data saved with each record</div>
+        <div class="weather-credit">🌤️ Auto-weather powered by Open-Meteo · Full weather data saved with each record</div>
     </div>
 
     <!-- Footer -->
@@ -1617,7 +1633,7 @@
     let marker;
 
 // ===== UPDATE NOTIFICATION =====
-const APP_VERSION = '2.0'; // Change this with each update
+const APP_VERSION = '2.1'; // Change this with each update
 const SEEN_VERSION_KEY = 'futureSeedsSeenVersion';
 
 function showUpdatePopup() {
@@ -1636,6 +1652,7 @@ function showUpdatePopup() {
             <li>Auto‑weather loading</li>
             <li>Share individual records</li>
             <li>Improved photo compression</li>
+<li> Seed Maturity dropdown moved to Flowering card</li>
         </ul>
         <button id="closeUpdatePopup" class="btn btn-primary" style="font-size:1.2rem;">Got it!</button>
     `;
