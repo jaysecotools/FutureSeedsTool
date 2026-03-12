@@ -1,10 +1,6 @@
-You're absolutely right! The weather should automatically show the current month, not a hardcoded value. Let me fix that - the month will now automatically update based on the current date.
-
-Here's the corrected code with the dynamic month display:
+Complete app code:
 
 HTML:
-
-```html
 <!DOCTYPE html>
 <html lang="en"><head>
     <meta charset="UTF-8">
@@ -103,7 +99,7 @@ HTML:
         <div class="selector-group">
             <label>🌿 Species:</label>
             <select id="speciesSelect">
-                <option value="Acacia verticillata"><i>Acacia verticillata</i> (Prickly Moses) — TEST SPECIES</option>
+                <option value="Acacia verticillata"><i>Acacia verticillata</i> (Prickly Moses)</option>
                 <option value="Acacia dealbata"><i>Acacia dealbata</i> (Silver Wattle)</option>
                 <option value="Banksia marginata"><i>Banksia marginata</i> (Silver Banksia)</option>
                 <option value="Leptospermum scoparium"><i>Leptospermum scoparium</i> (Manuka)</option>
@@ -362,11 +358,8 @@ HTML:
 </div>
 
 <script src="script.js" defer=""></script></body></html>
-```
 
-CSS (unchanged from your original):
-
-```css
+CSS:
 /* STYLES */
         * {
             box-sizing: border-box;
@@ -1212,7 +1205,13 @@ CSS (unchanged from your original):
             color: white;
             box-shadow: 0 6px 0 #5a4a2e;
         }
-        .btn-primary:hover, .btn-excel:hover, .btn-save:hover, .btn-csv:hover, .btn-import:hover {
+        .btn-share {
+            background: #4a90e2;
+            border-color: #f5bc3c;
+            color: white;
+            box-shadow: 0 6px 0 #2a5080;
+        }
+        .btn-primary:hover, .btn-excel:hover, .btn-save:hover, .btn-csv:hover, .btn-import:hover, .btn-share:hover {
             transform: translateY(-4px);
             box-shadow: 0 10px 0 #1f591f;
         }
@@ -1224,6 +1223,9 @@ CSS (unchanged from your original):
         }
         .btn-import:hover {
             background: #a5855a;
+        }
+        .btn-share:hover {
+            background: #5a9ef2;
         }
         .records-section {
             background: #e3d8b0;
@@ -1295,7 +1297,7 @@ CSS (unchanged from your original):
         }
         .records-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 1.2rem;
             max-height: 400px;
             overflow-y: auto;
@@ -1327,24 +1329,10 @@ CSS (unchanged from your original):
         .record-card.missing-required {
             border-left: 8px solid #d16b4b;
         }
-        .record-select {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            width: 20px;
-            height: 20px;
-            accent-color: #4a90e2;
-            cursor: pointer;
-            z-index: 10;
-        }
-        .record-select:hover {
-            transform: scale(1.2);
-        }
         .record-date {
             font-weight: 700;
             color: #2d741d;
             font-size: 1.1rem;
-            margin-right: 25px;
         }
         .record-species {
             color: #3f4f2b;
@@ -1546,28 +1534,7 @@ CSS (unchanged from your original):
     display: none !important;
 }
 
-/* Selection checkbox style */
-.record-select {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    width: 20px;
-    height: 20px;
-    accent-color: #4a90e2;
-    cursor: pointer;
-    z-index: 10;
-}
-.record-select:hover {
-    transform: scale(1.2);
-}
-.record-date {
-    margin-right: 25px;
-}
-```
-
-JavaScript:
-
-```javascript
+JS:
 // ==================== CONFIGURATION ====================
     const STORAGE_WARN_MB = 4;             // Warn when used >4MB
     const STORAGE_LIMIT_MB = 5;            // Approximate localStorage limit
@@ -1587,7 +1554,7 @@ JavaScript:
 
     // Default species list
     const defaultSpecies = [
-        { value: 'Acacia verticillata', display: '<i>Acacia verticillata</i> (Prickly Moses) — TEST SPECIES' },
+        { value: 'Acacia verticillata', display: '<i>Acacia verticillata</i> (Prickly Moses)' },
         { value: 'Acacia dealbata', display: '<i>Acacia dealbata</i> (Silver Wattle)' },
         { value: 'Banksia marginata', display: '<i>Banksia marginata</i> (Silver Banksia)' },
         { value: 'Leptospermum scoparium', display: '<i>Leptospermum scoparium</i> (Manuka)' },
@@ -2972,21 +2939,4 @@ window.toggleRecordSelection = toggleRecordSelection;
 window.selectRecord = selectRecord;
 window.editRecord = editRecord;
 window.deleteRecord = deleteRecord;
-```
 
-The key changes made:
-
-1. Removed Share App functions - Deleted shareData() and shareSingleRecord() functions, and removed the Share App button from the UI
-2. Added Export Selected feature:
-   · New "Export Selected to CSV" button in the action row
-   · Checkboxes on each record card
-   · selectedRecordIds Set to track selected records
-   · toggleRecordSelection() function to handle checkbox changes
-   · exportSelectedCSV() function to export only checked records
-   · Modified generateCSVString() to accept a records parameter
-3. Dynamic month display:
-   · Removed hardcoded "Feb 2026" and "March 2026"
-   · Month now updates based on the selected date or current date
-   · Default date is now today's date (auto-updates)
-   · Year dynamically shows the current year
-   · The weather panel shows the actual month of the selected date
