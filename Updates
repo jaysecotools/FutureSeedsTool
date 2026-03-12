@@ -1,8 +1,1548 @@
-I'll help you make the species selection list scrollable and searchable. This requires converting the dropdown to a more advanced select component. Here's the minimal change to achieve this:
+I'll rewrite the complete code with the enhanced species selector and your full species list. Here's the complete working code:
 
-Step 1: Add this CSS to your styles.css file (add at the end):
+HTML:
+
+```html
+<!DOCTYPE html>
+<html lang="en"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Future Seeds Program Data Collector</title>
+    <!-- Leaflet CSS and JS for mapping -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+<link rel="stylesheet" href="styles.css"></head>
+<body>
+<div class="card">
+    <div class="header">
+        <h1>
+            🌱 FUTURE SEEDS PROGRAM 
+            <span>DATA COLLECTOR</span>
+        </h1>
+    </div>
+
+    <!-- User Guide Button - Made more prominent -->
+    <div class="guide-toggle prominent" id="divine-handler-onclick-1773285837194-0">
+        <span>📖</span> USER GUIDE
+    </div>
+    <div class="guide-panel" id="guidePanel">
+        <div class="guide-grid">
+            <div class="guide-step">
+                <h3>📍 1. Choose Location <span class="required-badge">required</span></h3>
+                <ul>
+                    <li><strong>Quick Region:</strong> Use dropdown for broad area</li>
+                    <li><strong>Precise Map:</strong> Click map or use "My Location" for exact coordinates</li>
+                    <li><strong>Toggle Switch:</strong> Use "Switch to Map/Quick" button to change modes</li>
+                    <li>When using map, dropdown shows "📍 Map in use"</li>
+                    <li>Both methods store region + coordinates</li>
+                </ul>
+            </div>
+            <div class="guide-step">
+                <h3>👤 2. Observer Name <span class="required-badge">required · persists</span></h3>
+                <ul>
+                    <li>Enter your name (compulsory field)</li>
+                    <li>Name is saved and will auto-fill next time</li>
+                </ul>
+            </div>
+            <div class="guide-step">
+                <h3>📅 3. Date <span class="required-badge">required</span></h3>
+                <ul>
+                    <li>Select collection date</li>
+                    <li>Month auto-updates weather display</li>
+                </ul>
+            </div>
+            <div class="guide-step">
+                <h3>🌼 4. Flowering Stage <span class="required-badge">required</span></h3>
+                <ul>
+                    <li>Check all that apply, or check "None" if no flowering observed</li>
+                    <li>At least one stage or "None" must be selected</li>
+                </ul>
+            </div>
+            <div class="guide-step">
+                <h3>🐝 5. Pollinators <span class="required-badge">required</span></h3>
+                <ul>
+                    <li>Check all observed pollinators (insects + birds)</li>
+                    <li>Or check "None" if no pollinators observed</li>
+                    <li>"Other" field for additional species</li>
+                </ul>
+            </div>
+            <div class="guide-step">
+                <h3>🌡️ 6. Weather Data <span class="optional-badge">optional · auto-load</span></h3>
+                <ul>
+                    <li><strong>Auto-load weather:</strong> Click "🌤️ Auto-load Current Weather" button</li>
+                    <li>Uses Open-Meteo (free, no API key required)</li>
+                    <li>Automatically loads when you click the map or use "My Location"</li>
+                </ul>
+            </div>
+            <div class="guide-step">
+                <h3>🌱 7. Seed &amp; Fire <span class="optional-badge">optional</span></h3>
+                <ul>
+                    <li>Seed maturity</li>
+                    <li>Fire history</li>
+                    <li>Site notes for additional observations</li>
+                </ul>
+            </div>
+            <div class="guide-step">
+                <h3>💾 8. Save, Export &amp; Share</h3>
+                <ul>
+                    <li><strong>💾 Save:</strong> Store in browser - records appear below</li>
+                    <li><strong>📄 Export All to CSV:</strong> Download all data as CSV file</li>
+                    <li><strong>✅ Export Selected to CSV:</strong> Download only checked records</li>
+                    <li><strong>📂 Import CSV:</strong> Load previously exported CSV files</li>
+                    <li><strong>📧 Email Data as CSV:</strong> Send CSV data directly via email</li>
+                    <li><strong>✏️ Manage:</strong> Edit or delete existing records</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="region-bar">
+        <div class="selector-group">
+            <label>🌿 Species:</label>
+            <div class="species-select-container">
+                <select id="speciesSelect" style="display: none;">
+                    <!-- Options will be populated by JavaScript -->
+                </select>
+                <div class="species-dropdown" id="speciesDropdown">
+                    <div class="species-search">
+                        <input type="text" id="speciesSearchInput" placeholder="🔍 Search species..." autocomplete="off">
+                    </div>
+                    <div class="species-options" id="speciesOptions"></div>
+                </div>
+            </div>
+        </div>
+        <div class="location-options">
+            <label>📍 Quick Region <span class="required-badge">required</span>:</label>
+            <select id="regionSelect">
+                <option value="northWest">🌊 North West (Burnie/Devonport)</option>
+                <option value="north">🌲 North (Launceston)</option>
+                <option value="south" selected="">🏔️ South (Hobart)</option>
+                <option value="westCoast">🌧️ West Coast (Strahan/Queenstown)</option>
+                <option value="eastCoast">🏖️ East Coast (St Helens/Bicheno)</option>
+            </select>
+            <span class="map-in-use-badge" id="mapInUseBadge">📍 Map in use</span>
+            <span class="location-mode-indicator" id="locationMode">Quick Region</span>
+            <button class="location-mode-toggle" id="toggleLocationMode">
+                🔄 Switch to Map Mode
+            </button>
+        </div>
+    </div>
+
+    <div class="content">
+        <div class="current-conditions">
+            <div class="species-info" id="speciesDisplay">🌼 <i>Acacia verticillata</i> — Prickly Moses</div>
+            <div class="stats-panel" id="statsPanel">
+                <div class="stat-item">📊 Total: <span class="stat-value" id="totalRecordsStat">0</span></div>
+                <div class="stat-item">🌡️ Avg: <span class="stat-value" id="avgTempStat">-</span></div>
+                <div class="stat-item">💾 <span class="storage-meter" id="storageMeter">0 MB used</span></div>
+            </div>
+            <div class="month-indicator" id="currentMonthDisplay">📆 Loading ...</div>
+        </div>
+
+        <!-- MAP SECTION -->
+        <div class="map-section">
+            <div class="map-header">
+                <h3>
+                    🗺️ Precise Location Map <span class="required-badge">required if map used</span>
+                    <span class="info-badge" id="mapModeIndicator">Click map to activate</span>
+                </h3>
+                <div class="map-toggle">
+                    <button class="map-btn location-btn" id="divine-handler-onclick-1773285837194-2">
+                        📱 Use My Location
+                    </button>
+                    <button class="map-btn active" id="showMapBtn">Show Map</button>
+                    <button class="map-btn" id="hideMapBtn">Hide Map</button>
+                </div>
+            </div>
+            <div id="map" class="show"></div>
+            <div class="coord-display">
+                <div class="coord-item">
+                    <label>Latitude:</label>
+                    <input type="text" id="lat" value="-42.88" readonly="">
+                </div>
+                <div class="coord-item">
+                    <label>Longitude:</label>
+                    <input type="text" id="lon" value="147.33" readonly="">
+                </div>
+                <div class="coord-item">
+                    <label>Source:</label>
+                    <input type="text" id="coordSource" value="Quick Region (Hobart)" readonly="">
+                </div>
+            </div>
+            <div class="location-note" id="locationNote">
+                ⚡ Using Quick Region mode. Click map or use "My Location" for precise coordinates.
+            </div>
+        </div>
+
+        <div class="split-panel">
+            <!-- LEFT: FLOWERING + POLLINATORS -->
+            <div>
+                <div class="data-card">
+                    <h2>🌸 Flowering &amp; pollinators</h2>
+                    <div class="field-grid">
+                        <div class="field">
+                            <label>Observer <span class="required-badge">required · persists</span></label>
+                            <input type="text" id="observer" placeholder="e.g., Lee Smith" value="">
+                            <div class="persist-note">✓ Name will be saved for next session</div>
+                        </div>
+                        <div class="field">
+                            <label>Date <span class="required-badge">required</span></label>
+                            <input type="date" id="obsDate">
+                        </div>
+                        <div class="field">
+                            <label>Site name <span class="optional-badge">optional</span></label>
+                            <input type="text" id="siteName" placeholder="e.g., Hobart Rivulet" value="">
+                        </div>
+                    </div>
+
+                    <div style="margin: 1.8rem 0 1rem;">
+                        <label style="font-weight:800; color:#1f681f;">🌼 Flowering stage <span class="required-badge">required</span></label>
+                        <div class="checkbox-cluster">
+                            <div><input type="checkbox" id="bud"> Bud</div>
+                            <div><input type="checkbox" id="earlyFlower"> Early flower</div>
+                            <div><input type="checkbox" id="fullFlower"> Full flower</div>
+                            <div><input type="checkbox" id="petalFall"> Petal fall</div>
+                            <div><input type="checkbox" id="seedPod"> Seed pod</div>
+                            <div><input type="checkbox" id="floweringNone"> 🚫 None (no flowering observed)</div>
+                        </div>
+                    </div>
+
+                    <div style="margin: 1.5rem 0;">
+                        <label style="font-weight:800; color:#1f681f;">🐦 Pollinators <span class="required-badge">required</span></label>
+                        <div class="checkbox-cluster">
+                            <div><input type="checkbox" id="honeybee"> Honeybee</div>
+                            <div><input type="checkbox" id="nativeBee"> Native bee</div>
+                            <div><input type="checkbox" id="fly"> Fly</div>
+                            <div><input type="checkbox" id="beetle"> Beetle</div>
+                            <div><input type="checkbox" id="wasp"> Wasp</div>
+                            <div><input type="checkbox" id="butterfly"> Butterfly/moth</div>
+                            <div><input type="checkbox" id="birds"> 🐦 Birds</div>
+                            <div><input type="checkbox" id="pollinatorsNone"> 🚫 None (no pollinators observed)</div>
+                        </div>
+                        <div class="field" style="margin-top:15px;">
+                            <label>Other pollinators <span class="optional-badge">optional</span></label>
+                            <textarea id="otherPollinators" rows="2" placeholder="e.g., bats, lizards, other species..."></textarea>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 2rem;">
+                        <div class="field">
+                            <label>🌱 Seed maturity <span class="optional-badge">optional</span></label>
+                            <select id="seedMaturity">
+                                <option value="" selected="" disabled="">— select if known —</option>
+                                <option value="green">Green / immature</option>
+                                <option value="early">Early filling</option>
+                                <option value="mature">Mature / ready</option>
+                                <option value="dispersed">Already dispersed</option>
+                            </select>
+                        </div> 
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT: SEED + FIRE + WEATHER -->
+            <div>
+                <div class="data-card">
+                    <h2>🌡️ WEATHER DATA 
+                        <span class="optional-badge">optional</span>
+                        <span class="new-badge">AUTO WEATHER</span>
+                    </h2>
+                    
+                    <!-- AUTO WEATHER CONTROLS -->
+                    <div class="weather-controls">
+                        <button class="weather-auto-btn" id="autoWeatherBtn">
+                            <span>🌤️</span> Auto-load Current Weather
+                        </button>
+                        <span class="weather-source">
+                            Powered by Open-Meteo <span style="color: #4a90e2;">⚡ No API key required</span>
+                        </span>
+                    </div>
+                    
+                    <div class="weather-note">
+                        🔍 Click the button above to auto-load current weather data (saved with your record)
+                    </div>
+                    
+                    <div class="field-grid">
+                        <div class="field">
+                            <label>🌡️ Actual min temp (°C)</label>
+                            <input type="number" id="actualMinTemp" step="0.1" placeholder="e.g., 14.2" oninput="updateTempDisplay()">
+                        </div>
+                        <div class="field">
+                            <label>🌡️ Actual max temp (°C)</label>
+                            <input type="number" id="actualMaxTemp" step="0.1" placeholder="e.g., 23.1" oninput="updateTempDisplay()">
+                        </div>
+                        <div class="field">
+                            <label>📍 Weather source</label>
+                            <input type="text" id="bomStation" placeholder="e.g., Open-Meteo or BOM station">
+                        </div>
+                        <div class="field">
+                            <label>🆔 Station ID</label>
+                            <input type="text" id="stationId" placeholder="e.g., 094029">
+                        </div>
+                    </div>
+
+                    <div class="manual-temp-card" id="manualTempCard">
+                        <div class="temp-item"><span class="label">min</span><div class="value" id="displayMin">--°C</div></div>
+                        <div class="temp-item"><span class="label">max</span><div class="value" id="displayMax">--°C</div></div>
+                    </div>
+                    
+                    <div class="temp-note">
+                        ⏱️ Auto-loaded weather includes current conditions, humidity, wind, and precipitation
+                    </div>
+
+                    <div class="field" style="margin-top:15px;">
+                        <label>🔥 Fire history <span class="optional-badge">optional</span></label>
+                        <select id="fireHistory">
+                            <option value="" selected="" disabled="">— select if known —</option>
+                            <option value="none">No known fire</option>
+                            <option value="recent">Recent fire (&lt;2 yrs)</option>
+                            <option value="old">Old fire scar (&gt;5 yrs)</option>
+                            <option value="megafire">Mega-fire footprint</option>
+                        </select>
+                    </div>
+                    <div class="field" style="margin-top:15px;">
+                        <label>📝 Site notes <span class="optional-badge">optional</span></label>
+                        <textarea id="notes" rows="2" placeholder="plant health, fire damage, flowering density..."></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- STORAGE WARNING -->
+        <div id="storageWarning" class="storage-warning"></div>
+
+        <!-- WARNINGS PANEL -->
+        <div id="warningsPanel" class="warnings-panel" style="display: none;"></div>
+
+        <!-- ACTION BUTTONS -->
+        <div class="action-row">
+            <button class="btn" id="divine-handler-onclick-1773285837194-11">⟲ Reset</button>
+            <button class="btn btn-save" id="divine-handler-onclick-1773285837194-12">💾 Save Record</button>
+            <button class="btn btn-email" id="emailCsvBtn">📧 Email Data as CSV</button>
+            <button class="btn btn-csv" id="exportCsvBtn">📄 Export All to CSV</button>
+            <button class="btn btn-csv" id="exportSelectedCsvBtn" style="background: #4a90e2;">✅ Export Selected to CSV</button>
+        </div>
+        <div class="share-note" style="text-align: right; margin-top: -1rem; margin-bottom: 1rem;">
+            📧 Email button sends CSV file as attachment • ✅ Check records to export selected
+        </div>
+
+        <!-- RECORDS SECTION -->
+        <div class="records-section">
+            <div class="records-header">
+                <h3>📋 Saved Records</h3>
+                <div class="record-count" id="recordCount">0 records</div>
+                <div class="import-area">
+                    <label for="importFile" class="import-label">
+                        📂 Import Data (CSV)
+                        <input type="file" id="importFile" accept=".csv,text/csv">
+                    </label>
+                    <button class="btn" style="padding:8px 20px;" id="divine-handler-onclick-1773285837194-17">🗑️ Clear All</button>
+                </div>
+            </div>
+            <div style="font-size:0.8rem; color:#4a90e2; margin-bottom:10px; text-align:right;">
+                💡 Check boxes to select records for export
+            </div>
+            <div class="records-grid" id="recordsGrid">
+                <!-- Records will be populated here -->
+            </div>
+        </div>
+
+        <!-- OUTPUT PREVIEW -->
+        <div class="output-box" id="outputBox">
+            ⏺ Welcome to Future Seeds Data Collector! Fill out the form and click Save Record to begin.
+        </div>
+
+        <div class="weather-credit">🌤️ Auto-weather powered by Open-Meteo · Full weather data saved with each record</div>
+    </div>
+
+    <!-- Footer -->
+    <div style="background: #1a5830; color: #f6f9ed; padding: 1rem 2.5rem; text-align: center; border-top: 3px solid #f5c542; font-size: 0.9rem; border-radius: 0 0 36px 36px;">
+        <p>🌱 Future Seeds Program · Tasmania · Field Data Collection Tool · Now with Export Selected! <span class="new-badge">NEW</span></p>
+        <p style="font-size: 0.8rem; margin-top: 0.3rem; opacity: 0.8;">Developed by Jay Rowley for TasTAFE Future Seeds Program 2026</p>
+    </div>
+</div>
+
+<script src="script.js" defer=""></script></body></html>
+```
+
+CSS (styles.css):
 
 ```css
+/* STYLES */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+        }
+        body {
+            background: #174532;
+            padding: 2rem 1rem;
+            display: flex;
+            justify-content: center;
+        }
+        .card {
+            max-width: 1600px;
+            width: 100%;
+            background: #f6f9ed;
+            border-radius: 36px;
+            box-shadow: 0 25px 50px -12px #0b2f1a;
+            border: 3px solid #dbb15a;
+        }
+        .header {
+            background: #1a5830;
+            color: white;
+            padding: 2rem 2.5rem;
+            background: linear-gradient(145deg, #1f5c33, #124325);
+            border-bottom: 5px solid #f5c542;
+        }
+        .header h1 {
+            font-weight: 700;
+            font-size: 2.6rem;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .header h1 span {
+            background: #f0c34a;
+            font-size: 1.2rem;
+            padding: 0.4rem 1.8rem;
+            border-radius: 60px;
+            color: #1f4a1f;
+            font-weight: 700;
+        }
+        .program-badge {
+            font-size: 1rem;
+            margin-top: 0.5rem;
+            opacity: 0.9;
+        }
+        .new-badge {
+            background: #f0c34a;
+            color: #1f4a1f;
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 30px;
+            margin-left: 8px;
+            text-transform: uppercase;
+            animation: pulse 2s infinite;
+            display: inline-block;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); background: #ffd966; }
+            100% { transform: scale(1); }
+        }
+        .guide-toggle {
+            background: #3a7b4a;
+            color: white;
+            padding: 0.8rem 2.5rem;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 2px solid #f5c542;
+            transition: all 0.3s ease;
+        }
+        .guide-toggle:hover {
+            background: #469657;
+            transform: translateY(-2px);
+        }
+        .guide-toggle:active {
+            transform: translateY(0);
+        }
+        .guide-panel {
+            background: #f4fbe7;
+            padding: 2rem 2.5rem;
+            border-bottom: 3px solid #c5aa5a;
+            display: none;
+        }
+        .guide-panel.show {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .guide-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+        .guide-step {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 24px;
+            border-left: 8px solid #3c8d4a;
+            box-shadow: 0 4px 0 #a1b473;
+            transition: all 0.3s ease;
+        }
+        .guide-step:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 0 #a1b473;
+        }
+        .guide-step h3 {
+            color: #1e621e;
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+        }
+        .guide-step ul {
+            padding-left: 1.5rem;
+            color: #2f4d2f;
+        }
+        .guide-step li {
+            margin: 0.5rem 0;
+        }
+        .required-badge {
+            color: #d16b4b;
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin-left: 5px;
+            text-transform: uppercase;
+        }
+        .optional-badge {
+            color: #5a7344;
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin-left: 5px;
+            text-transform: uppercase;
+        }
+        .region-bar {
+            background: #31754a;
+            padding: 1rem 2.5rem;
+            display: flex;
+            align-items: center;
+            gap: 2.5rem;
+            flex-wrap: wrap;
+            border-bottom: 2px solid #edc150;
+        }
+        .selector-group {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .selector-group label {
+            font-weight: 700;
+            color: #fffde4;
+            text-transform: uppercase;
+            font-size: 0.95rem;
+        }
+        .selector-group select {
+            background: white;
+            border: none;
+            border-radius: 60px;
+            padding: 12px 36px 12px 22px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            min-width: 320px;
+            border: 3px solid #fdcd5a;
+            cursor: pointer;
+            font-style: italic;
+            transition: all 0.3s ease;
+        }
+        .selector-group select:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 0 #b38f3a;
+        }
+        .selector-group select:active {
+            transform: translateY(0);
+        }
+        .selector-group select option {
+            font-style: italic;
+        }
+        .location-options {
+            display: flex;
+            gap: 15px;
+            background: #22633a;
+            padding: 0.6rem 1.8rem;
+            border-radius: 60px;
+            align-items: center;
+            position: relative;
+            flex-wrap: wrap;
+        }
+        .location-options label {
+            color: #fcf1b5;
+            font-weight: 600;
+        }
+        .location-options select {
+            background: #fef7d6;
+            border-radius: 40px;
+            padding: 8px 28px 8px 16px;
+            border: 2px solid #eeb844;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            min-width: 220px;
+        }
+        .location-options select:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 0 #b38f3a;
+        }
+        .location-options select.map-active {
+            background: #e0e0e0;
+            border-color: #999999;
+            color: #666666;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        .location-mode-toggle {
+            background: #4a90e2;
+            color: white;
+            border: 2px solid #f5c542;
+            border-radius: 30px;
+            padding: 5px 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            white-space: nowrap;
+        }
+        .location-mode-toggle:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 0 #2a5080;
+        }
+        .location-mode-toggle:active {
+            transform: translateY(0);
+        }
+        .map-in-use-badge {
+            position: absolute;
+            right: 30px;
+            background: #d16b4b;
+            color: white;
+            padding: 2px 10px;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .map-in-use-badge.show {
+            opacity: 1;
+        }
+        .location-mode-indicator {
+            font-size: 0.8rem;
+            padding: 4px 10px;
+            border-radius: 30px;
+            background: #4a90e2;
+            color: white;
+            font-weight: 600;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+        .content {
+            padding: 2.5rem;
+        }
+        .current-conditions {
+            background: #deecbf;
+            border-radius: 32px;
+            padding: 1.5rem 2.5rem;
+            margin-bottom: 2rem;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 15px solid #e0aa3a;
+            border-right: 2px solid #b59849;
+            transition: all 0.3s ease;
+        }
+        .current-conditions:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 0 #9a833d;
+        }
+        .species-info {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #174d17;
+        }
+        .month-indicator {
+            background: #3e823e;
+            padding: 0.6rem 2.2rem;
+            border-radius: 60px;
+            color: #ffffc7;
+            font-weight: 700;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+        .month-indicator:hover {
+            transform: scale(1.02);
+        }
+        .stats-panel {
+            background: #f0e6c5;
+            border-radius: 60px;
+            padding: 0.5rem 1.5rem;
+            font-weight: 600;
+            color: #1f4f1f;
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .stat-value {
+            background: #528a44;
+            color: white;
+            padding: 0.2rem 0.8rem;
+            border-radius: 30px;
+            transition: all 0.3s ease;
+        }
+        .stat-value:hover {
+            transform: scale(1.05);
+        }
+        .map-section {
+            margin-bottom: 2rem;
+            background: #e8f0da;
+            border-radius: 32px;
+            padding: 1.5rem;
+            border: 3px solid #c1aa5a;
+            transition: all 0.3s ease;
+        }
+        .map-section:hover {
+            box-shadow: 0 8px 0 #9a833d;
+        }
+        .map-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .map-header h3 {
+            color: #1e611e;
+            font-size: 1.5rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .map-toggle {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        .map-btn {
+            background: white;
+            border: 3px solid #5e8f4a;
+            padding: 8px 20px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #265226;
+            transition: all 0.3s ease;
+        }
+        .map-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 0 #3a5f3a;
+        }
+        .map-btn:active {
+            transform: translateY(0);
+        }
+        .map-btn.active {
+            background: #3d973d;
+            border-color: #f5bc3c;
+            color: white;
+        }
+        .map-btn.location-btn {
+            background: #4a90e2;
+            border-color: #2a5080;
+            color: white;
+        }
+        .map-btn.location-btn:hover {
+            background: #5a9ef2;
+        }
+        #map {
+            height: 300px;
+            border-radius: 24px;
+            border: 3px solid #a5b87a;
+            margin-bottom: 1rem;
+            display: none;
+        }
+        #map.show {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .coord-display {
+            background: #f4fbe4;
+            padding: 1rem;
+            border-radius: 50px;
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            border: 2px solid #99aa66;
+        }
+        .coord-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .coord-item label {
+            font-weight: 700;
+            color: #1b581b;
+        }
+        .coord-item input {
+            background: white;
+            border: 2px solid #bcc987;
+            border-radius: 40px;
+            padding: 8px 16px;
+            width: 120px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .coord-item input:focus {
+            border-color: #479e47;
+            box-shadow: 0 0 0 5px #c6ec9e;
+            outline: none;
+            transform: scale(1.02);
+        }
+        .coord-item input:read-only {
+            background: #f0f0f0;
+            border-color: #cccccc;
+        }
+        .location-note {
+            background: #fdebb3;
+            padding: 0.5rem 1.5rem;
+            border-radius: 60px;
+            color: #1f4f1f;
+            font-weight: 600;
+            text-align: center;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+        .split-panel {
+            display: flex;
+            gap: 2.5rem;
+            flex-wrap: wrap;
+        }
+        .split-panel > div {
+            flex: 1 1 350px;
+        }
+        .data-card {
+            background: #f7ffee;
+            border-radius: 32px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 3px solid #c7d392;
+            box-shadow: 0 8px 0 #7a9865;
+            transition: all 0.3s ease;
+        }
+        .data-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 0 #7a9865;
+        }
+        .data-card h2 {
+            color: #1f6b1f;
+            font-weight: 700;
+            font-size: 1.9rem;
+            border-bottom: 4px dotted #c2d17e;
+            padding-bottom: 0.8rem;
+            margin-bottom: 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .field-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .field label {
+            font-weight: 800;
+            color: #1b591b;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .field input, .field select, .field textarea {
+            border: 3px solid #a5b77a;
+            border-radius: 50px;
+            padding: 12px 18px;
+            font-size: 1rem;
+            background: white;
+            transition: all 0.3s ease;
+        }
+        .field input:hover, .field select:hover, .field textarea:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 0 #7a9865;
+        }
+        .field input:focus, .field select:focus, .field textarea:focus {
+            border-color: #479e47;
+            box-shadow: 0 0 0 5px #c6ec9e;
+            outline: none;
+            transform: scale(1.02);
+        }
+        .field input::placeholder, .field select::placeholder, .field textarea::placeholder {
+            color: #999;
+            font-style: italic;
+            font-size: 0.9rem;
+        }
+        .field input:read-only, .field select:disabled, .field textarea:read-only {
+            background: #f0f0f0;
+            border-color: #cccccc;
+            color: #666;
+        }
+        .checkbox-cluster {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.2rem 2rem;
+            margin: 1.2rem 0 0.8rem;
+            padding: 1rem;
+            background: #e8f0da;
+            border-radius: 30px;
+        }
+        .checkbox-cluster div {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .checkbox-cluster input[type="checkbox"] {
+            width: 22px;
+            height: 22px;
+            accent-color: #3f9643;
+            transition: all 0.3s ease;
+        }
+        .checkbox-cluster input[type="checkbox"]:hover {
+            transform: scale(1.2);
+        }
+        .weather-panel {
+            background: #e3f0cf;
+            border-radius: 32px;
+            padding: 1.8rem;
+            margin: 1.5rem 0;
+            border: 3px solid #bfc868;
+            box-shadow: inset 0 2px 10px #f7ffd9, 0 7px 0 #61854b;
+            transition: all 0.3s ease;
+        }
+        .weather-panel:hover {
+            transform: translateY(-2px);
+            box-shadow: inset 0 2px 10px #f7ffd9, 0 9px 0 #61854b;
+        }
+        .weather-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.2rem;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+        .manual-temp-card {
+            background: #2d6d8a;
+            color: white;
+            border-radius: 80px;
+            padding: 1.5rem 2.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 2rem;
+            margin: 1.5rem 0;
+            border: 4px solid #fad971;
+            transition: all 0.3s ease;
+        }
+        .manual-temp-card:hover {
+            transform: scale(1.02);
+            box-shadow: 0 8px 0 #1a4a5a;
+        }
+        .temp-item {
+            text-align: center;
+        }
+        .temp-item .label {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            opacity: 0.9;
+        }
+        .temp-item .value {
+            font-size: 2.8rem;
+            font-weight: 800;
+            line-height: 1.2;
+        }
+        .temp-note {
+            background: #fdebb3;
+            padding: 0.5rem 1.5rem;
+            border-radius: 60px;
+            color: #1f4f1f;
+            font-weight: 600;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        .weather-controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+            background: #e8f0da;
+            padding: 1rem 1.5rem;
+            border-radius: 60px;
+        }
+        .weather-auto-btn {
+            background: #4a90e2;
+            color: white;
+            border: 3px solid #f5c542;
+            border-radius: 50px;
+            padding: 12px 25px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1rem;
+        }
+        .weather-auto-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 0 #2a5080;
+            background: #5a9ef2;
+        }
+        .weather-auto-btn:active {
+            transform: translateY(0);
+        }
+        .weather-auto-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .weather-auto-btn:disabled:hover {
+            transform: none;
+            box-shadow: none;
+        }
+        .weather-source {
+            font-size: 0.85rem;
+            color: #1f5c33;
+            background: white;
+            padding: 5px 15px;
+            border-radius: 30px;
+            display: inline-block;
+        }
+        .photo-section {
+            margin: 1.5rem 0;
+            padding: 1rem;
+            background: #e3f0cf;
+            border-radius: 24px;
+        }
+        .photo-preview {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            padding: 10px;
+            background: #d4e3b5;
+            border-radius: 20px;
+        }
+        .photo-preview-item {
+            position: relative;
+            width: 80px;
+            text-align: center;
+            animation: popIn 0.3s ease;
+        }
+        @keyframes popIn {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        .photo-preview-item img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 10px;
+            border: 2px solid #8ba35e;
+            transition: all 0.3s ease;
+        }
+        .photo-preview-item img:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        .photo-remove {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #d16b4b;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        .photo-remove:hover {
+            transform: scale(1.2);
+            background: #b85a3a;
+        }
+        .photo-size {
+            font-size: 0.7rem;
+            color: #555;
+            margin-top: 2px;
+        }
+        .storage-warning {
+            background: #ff9800;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 30px;
+            margin: 10px 0;
+            font-weight: 600;
+            display: none;
+            animation: pulse 2s infinite;
+        }
+        .storage-meter {
+            background: #e8f0da;
+            border-radius: 20px;
+            padding: 5px 10px;
+            margin: 5px 0;
+            font-size: 0.9rem;
+            display: inline-block;
+            border: 1px solid #7a9865;
+        }
+        .template-buttons {
+            display: flex;
+            gap: 10px;
+            margin: 1rem 0;
+            flex-wrap: wrap;
+        }
+        .template-btn {
+            background: #e9dba7;
+            border: 2px solid #9c8b4b;
+            padding: 8px 15px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #2f4f2f;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+        .template-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 0 #7a6a3a;
+            background: #f3e9b0;
+        }
+        .template-btn:active {
+            transform: translateY(0);
+        }
+        .action-row {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: flex-end;
+            margin: 2.5rem 0 1.8rem;
+            flex-wrap: wrap;
+        }
+        .btn {
+            background: white;
+            border: 4px solid #467a33;
+            padding: 14px 28px;
+            border-radius: 70px;
+            font-weight: 800;
+            color: #1f561f;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 1rem;
+        }
+        .btn:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 6px 0 #2d4f2d;
+            background: #e4fbcb;
+        }
+        .btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 0 #2d4f2d;
+        }
+        .btn-primary {
+            background: #32853a;
+            border-color: #f5bc3c;
+            color: white;
+            box-shadow: 0 6px 0 #1f591f;
+        }
+        .btn-excel {
+            background: #1f7c3c;
+            border-color: #f5bc3c;
+            color: white;
+            box-shadow: 0 6px 0 #175717;
+        }
+        .btn-save {
+            background: #c47e2e;
+            border-color: #f5bc3c;
+            color: white;
+            box-shadow: 0 6px 0 #7b4d1a;
+        }
+        .btn-csv {
+            background: #4a6b8a;
+            border-color: #f5bc3c;
+            color: white;
+            box-shadow: 0 6px 0 #2d4055;
+        }
+        .btn-import {
+            background: #8a6e4b;
+            border-color: #f5bc3c;
+            color: white;
+            box-shadow: 0 6px 0 #5a4a2e;
+        }
+        .btn-share {
+            background: #4a90e2;
+            border-color: #f5bc3c;
+            color: white;
+            box-shadow: 0 6px 0 #2a5080;
+        }
+        .btn-primary:hover, .btn-excel:hover, .btn-save:hover, .btn-csv:hover, .btn-import:hover, .btn-share:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 0 #1f591f;
+        }
+        .btn-save:hover {
+            background: #da973d;
+        }
+        .btn-csv:hover {
+            background: #5a7b9a;
+        }
+        .btn-import:hover {
+            background: #a5855a;
+        }
+        .btn-share:hover {
+            background: #5a9ef2;
+        }
+        .records-section {
+            background: #e3d8b0;
+            border-radius: 32px;
+            padding: 2rem;
+            margin-top: 2rem;
+            border: 3px solid #b7973a;
+            transition: all 0.3s ease;
+        }
+        .records-section:hover {
+            box-shadow: 0 8px 0 #8f7230;
+        }
+        .records-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .records-header h3 {
+            color: #2d571d;
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+        .record-count {
+            background: #528a44;
+            color: white;
+            padding: 0.4rem 1.5rem;
+            border-radius: 50px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .record-count:hover {
+            transform: scale(1.05);
+        }
+        .import-area {
+            background: #f0e6c5;
+            border-radius: 30px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .import-label {
+            background: #8a6e4b;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+        }
+        .import-label:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 0 #5a4a2e;
+            background: #9f825a;
+        }
+        .import-label:active {
+            transform: translateY(0);
+        }
+        #importFile {
+            display: none;
+        }
+        .records-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.2rem;
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 0.5rem 0.2rem;
+        }
+        .record-card {
+            background: white;
+            border-radius: 24px;
+            padding: 1.2rem;
+            border-left: 8px solid #4f8a4f;
+            box-shadow: 0 4px 0 #af9f5a;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        .record-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 0 #af9f5a;
+        }
+        .record-card:active {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 #af9f5a;
+        }
+        .record-card.selected {
+            border-left: 8px solid #e5a526;
+            background: #fff7df;
+            transform: scale(1.02);
+        }
+        .record-card.missing-required {
+            border-left: 8px solid #d16b4b;
+        }
+        .record-date {
+            font-weight: 700;
+            color: #2d741d;
+            font-size: 1.1rem;
+        }
+        .record-species {
+            color: #3f4f2b;
+            margin: 0.3rem 0;
+            font-style: italic;
+        }
+        .record-location {
+            color: #626e44;
+            font-size: 0.9rem;
+        }
+        .record-weather {
+            background: #e5f0ce;
+            border-radius: 30px;
+            padding: 0.3rem 0.8rem;
+            display: inline-block;
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+        .record-weather:hover {
+            transform: scale(1.05);
+        }
+        .record-photo-indicator {
+            color: #b35e1a;
+            font-size: 0.9rem;
+            margin-top: 0.3rem;
+        }
+        .record-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.8rem;
+            justify-content: flex-end;
+        }
+        .record-btn {
+            background: none;
+            border: 2px solid #8ba35e;
+            padding: 0.3rem 1rem;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.8rem;
+            transition: all 0.3s ease;
+        }
+        .record-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 2px 0 #6b834e;
+        }
+        .record-btn:active {
+            transform: translateY(0);
+        }
+        .record-btn.edit {
+            background: #edb84a;
+            border-color: #a57c2b;
+            color: #2d421d;
+        }
+        .record-btn.delete {
+            background: #d16b4b;
+            border-color: #994f34;
+            color: white;
+        }
+        .output-box {
+            background: #1e3b1a;
+            color: #e6ffb3;
+            padding: 1.8rem;
+            border-radius: 32px;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            font-size: 0.95rem;
+            border: 4px solid #d6b556;
+            margin-top: 1.8rem;
+            max-height: 400px;
+            overflow-y: auto;
+            transition: all 0.3s ease;
+        }
+        .output-box:hover {
+            transform: scale(1.01);
+            box-shadow: 0 8px 0 #a58d3a;
+        }
+        .weather-credit {
+            font-size: 0.9rem;
+            text-align: right;
+            color: #4b7137;
+            margin-top: 0.5rem;
+            font-weight: 600;
+        }
+        .weather-note {
+            background: #e9b53b;
+            color: #1d481d;
+            padding: 0.8rem;
+            border-radius: 50px;
+            text-align: center;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+        .weather-note:hover {
+            transform: scale(1.02);
+        }
+        .warnings-panel {
+            background: #ffecb3;
+            border: 3px solid #ffa000;
+            border-radius: 20px;
+            padding: 1rem;
+            margin: 1rem 0;
+            color: #b26500;
+            font-weight: 600;
+            animation: shake 0.5s ease;
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+        .camera-note {
+            font-size: 0.85rem;
+            color: #3a6b3a;
+            margin: 5px 0;
+            padding: 5px;
+            background: #e8f5e8;
+            border-radius: 20px;
+            text-align: center;
+        }
+        .info-badge {
+            background: #4a90e2;
+            color: white;
+            padding: 0.2rem 0.8rem;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-left: 10px;
+            transition: all 0.3s ease;
+        }
+        .persist-note {
+            font-size: 0.8rem;
+            color: #4a6b8a;
+            margin-top: 5px;
+            font-style: italic;
+        }
+        .share-note {
+            font-size: 0.8rem;
+            color: #4a90e2;
+            margin-top: 5px;
+            font-style: italic;
+        }
+/* Make User Guide button more prominent */
+.guide-toggle.prominent {
+    background: #f5c542;
+    color: #1a5830;
+    font-size: 1.2rem;
+    padding: 1rem 2.5rem;
+    border-bottom: 3px solid #b38f3a;
+    box-shadow: 0 4px 0 #7a6a3a;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.guide-toggle.prominent:hover {
+    background: #ffd966;
+    transform: translateY(-3px);
+    box-shadow: 0 7px 0 #7a6a3a;
+}
+
+.guide-toggle.prominent:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 0 #7a6a3a;
+}
+
+/* Email button style */
+.btn-email {
+    background: #d16b4b;
+    border-color: #f5bc3c;
+    color: white;
+    box-shadow: 0 6px 0 #994f34;
+}
+
+.btn-email:hover {
+    background: #e17b5b;
+    transform: translateY(-4px);
+    box-shadow: 0 10px 0 #994f34;
+}
+
+/* Bird checkbox style */
+.checkbox-cluster div:has(#birds) {
+    color: #2d6d8a;
+    font-weight: 600;
+}
+
+/* Import area enhancement */
+.import-label {
+    background: #4a6b8a;
+}
+
+.import-label:hover {
+    background: #5a7b9a;
+}
+
+/* Remove photo-related elements (these will be hidden by JS but keeping styles) */
+.photo-section, .camera-note, #photoCount, #photoPreview, [onclick*="openCamera"], [onclick*="clearAllPhotos"] {
+    display: none !important;
+}
+
 /* Enhanced species selector with search */
 .selector-group {
     position: relative;
@@ -109,56 +1649,172 @@ Step 1: Add this CSS to your styles.css file (add at the end):
 }
 ```
 
-Step 2: Replace the species select HTML section in your HTML file:
-
-Find this block:
-
-```html
-<div class="selector-group">
-    <label>🌿 Species:</label>
-    <select id="speciesSelect">
-        <option value="Acacia verticillata"><i>Acacia verticillata</i> (Prickly Moses)</option>
-        <option value="Acacia dealbata"><i>Acacia dealbata</i> (Silver Wattle)</option>
-        <option value="Banksia marginata"><i>Banksia marginata</i> (Silver Banksia)</option>
-        <option value="Leptospermum scoparium"><i>Leptospermum scoparium</i> (Manuka)</option>
-        <option value="Nothofagus cunninghamii"><i>Nothofagus cunninghamii</i> (Myrtle Beech)</option>
-    </select>
-</div>
-```
-
-Replace with:
-
-```html
-<div class="selector-group">
-    <label>🌿 Species:</label>
-    <div class="species-select-container">
-        <select id="speciesSelect" style="display: none;">
-            <!-- Options will be populated by JavaScript -->
-        </select>
-        <div class="species-dropdown" id="speciesDropdown">
-            <div class="species-search">
-                <input type="text" id="speciesSearchInput" placeholder="🔍 Search species..." autocomplete="off">
-            </div>
-            <div class="species-options" id="speciesOptions"></div>
-        </div>
-    </div>
-</div>
-```
-
-Step 3: Add this JavaScript at the end of your script.js file (before the last closing brace if any):
+JavaScript (script.js):
 
 ```javascript
-// ========== ENHANCED SPECIES SELECTOR ==========
-// Extended species list (you can add more later)
-const fullSpeciesList = [
-    { value: 'Acacia verticillata', display: '<i>Acacia verticillata</i> (Prickly Moses)' },
-    { value: 'Acacia dealbata', display: '<i>Acacia dealbata</i> (Silver Wattle)' },
-    { value: 'Banksia marginata', display: '<i>Banksia marginata</i> (Silver Banksia)' },
-    { value: 'Leptospermum scoparium', display: '<i>Leptospermum scoparium</i> (Manuka)' },
-    { value: 'Nothofagus cunninghamii', display: '<i>Nothofagus cunninghamii</i> (Myrtle Beech)' }
-];
+// ==================== CONFIGURATION ====================
+    const STORAGE_WARN_MB = 4;             // Warn when used >4MB
+    const STORAGE_LIMIT_MB = 5;            // Approximate localStorage limit
 
-// For now, use the same list - you can expand it later
+    // Month display names
+    const monthDisplayNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+    // Local storage keys
+    const STORAGE_KEY = 'futureSeedsRecords';
+    const OBSERVER_KEY = 'futureSeedsObserver';
+
+    // Load records from localStorage
+    let savedRecords = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+
+    // Load saved observer name
+    let savedObserver = localStorage.getItem(OBSERVER_KEY) || '';
+
+    // Full species list with all species (80+ species)
+    const fullSpeciesList = [
+        { value: 'Acacia dealbata', display: '<i>Acacia dealbata</i> (Silver Wattle)' },
+        { value: 'Acacia genistifolia', display: '<i>Acacia genistifolia</i>' },
+        { value: 'Acacia mearnsii', display: '<i>Acacia mearnsii</i> (Black Wattle)' },
+        { value: 'Acacia melanoxylon', display: '<i>Acacia melanoxylon</i> (Blackwood)' },
+        { value: 'Acacia mucronata', display: '<i>Acacia mucronata</i>' },
+        { value: 'Acacia riceana', display: '<i>Acacia riceana</i>' },
+        { value: 'Acacia stricta', display: '<i>Acacia stricta</i>' },
+        { value: 'Acacia verticillata', display: '<i>Acacia verticillata</i> (Prickly Moses)' },
+        { value: 'Acacia terminalis', display: '<i>Acacia terminalis</i>' },
+        { value: 'Allocasuarina crassa', display: '<i>Allocasuarina crassa</i> (Rare)' },
+        { value: 'Allocasuarina littoralis', display: '<i>Allocasuarina littoralis</i>' },
+        { value: 'Allocasuarina monilifera', display: '<i>Allocasuarina monilifera</i>' },
+        { value: 'Allocasuarina verticillata', display: '<i>Allocasuarina verticillata</i>' },
+        { value: 'Argentipalium dealbatum', display: '<i>Argentipalium dealbatum</i>' },
+        { value: 'Banksia marginata', display: '<i>Banksia marginata</i> (Silver Banksia)' },
+        { value: 'Bedfordia salicina', display: '<i>Bedfordia salicina</i>' },
+        { value: 'Beyeria viscosa', display: '<i>Beyeria viscosa</i>' },
+        { value: 'Bursaria spinosa', display: '<i>Bursaria spinosa</i>' },
+        { value: 'Melaleuca pallidus', display: '<i>Melaleuca pallidus</i>' },
+        { value: 'Juncus pallidus', display: '<i>Juncus pallidus</i>' },
+        { value: 'Carex appressa', display: '<i>Carex appressa</i>' },
+        { value: 'Carex fascicularis', display: '<i>Carex fascicularis</i> (Semi common)' },
+        { value: 'Cassinia aculeata', display: '<i>Cassinia aculeata</i>' },
+        { value: 'Chrysocephalum apiculatum', display: '<i>Chrysocephalum apiculatum</i>' },
+        { value: 'Coprosma quadrifida', display: '<i>Coprosma quadrifida</i>' },
+        { value: 'Correa reflexa', display: '<i>Correa reflexa</i>' },
+        { value: 'Craspedia glauca', display: '<i>Craspedia glauca</i>' },
+        { value: 'Daviesia latifolia', display: '<i>Daviesia latifolia</i>' },
+        { value: 'Dianella tasmanica', display: '<i>Dianella tasmanica</i>' },
+        { value: 'Dodonaea filiformis', display: '<i>Dodonaea filiformis</i> (Semi Common)' },
+        { value: 'Dodonaea viscosa', display: '<i>Dodonaea viscosa</i>' },
+        { value: 'Eucalyptus amygdalina', display: '<i>Eucalyptus amygdalina</i>' },
+        { value: 'Eucalyptus coccifera', display: '<i>Eucalyptus coccifera</i> (Semi Common)' },
+        { value: 'Eucalyptus tasmaniensis', display: '<i>Eucalyptus tasmaniensis</i>' },
+        { value: 'Eucalyptus perinniana', display: '<i>Eucalyptus perinniana</i>' },
+        { value: 'Eucalyptus radiata', display: '<i>Eucalyptus radiata</i>' },
+        { value: 'Eucalyptus cordata', display: '<i>Eucalyptus cordata</i>' },
+        { value: 'Eucalyptus urnigera', display: '<i>Eucalyptus urnigera</i>' },
+        { value: 'Eucalyptus vernicosa', display: '<i>Eucalyptus vernicosa</i>' },
+        { value: 'Eucalyptus archeri', display: '<i>Eucalyptus archeri</i>' },
+        { value: 'Eucalyptus johnstonii', display: '<i>Eucalyptus johnstonii</i>' },
+        { value: 'Eucalyptus barberi', display: '<i>Eucalyptus barberi</i>' },
+        { value: 'Eucalyptus globulus', display: '<i>Eucalyptus globulus</i>' },
+        { value: 'Eucalyptus nitida', display: '<i>Eucalyptus nitida</i> (Common)' },
+        { value: 'Eucalyptus obliqua', display: '<i>Eucalyptus obliqua</i>' },
+        { value: 'Eucalyptus ovata', display: '<i>Eucalyptus ovata</i>' },
+        { value: 'Eucalyptus pauciflora', display: '<i>Eucalyptus pauciflora</i>' },
+        { value: 'Eucalyptus pulchella', display: '<i>Eucalyptus pulchella</i>' },
+        { value: 'Eucalyptus regnans', display: '<i>Eucalyptus regnans</i>' },
+        { value: 'Eucalyptus tenuiramis', display: '<i>Eucalyptus tenuiramis</i>' },
+        { value: 'Eucalyptus viminalis', display: '<i>Eucalyptus viminalis</i>' },
+        { value: 'Eucryphia lucida', display: '<i>Eucryphia lucida</i>' },
+        { value: 'Ficinia nodosa', display: '<i>Ficinia nodosa</i>' },
+        { value: 'Grevillea australis', display: '<i>Grevillea australis</i>' },
+        { value: 'Hakea epiglottis', display: '<i>Hakea epiglottis</i>' },
+        { value: 'Hakea lissosperma', display: '<i>Hakea lissosperma</i>' },
+        { value: 'Hakea macrocarpa', display: '<i>Hakea macrocarpa</i>' },
+        { value: 'Hakea nodosa', display: '<i>Hakea nodosa</i>' },
+        { value: 'Hakea sericea', display: '<i>Hakea sericea</i>' },
+        { value: 'Lasiopetalum macrophyllum', display: '<i>Lasiopetalum macrophyllum</i> (Semi Common/Coastal)' },
+        { value: 'Leptospermum lanigerum', display: '<i>Leptospermum lanigerum</i>' },
+        { value: 'Leptospermum rupestre', display: '<i>Leptospermum rupestre</i>' },
+        { value: 'Leptospermum scoparium', display: '<i>Leptospermum scoparium</i> (Manuka)' },
+        { value: 'Linum marginale', display: '<i>Linum marginale</i>' },
+        { value: 'Lomandra longifolia', display: '<i>Lomandra longifolia</i>' },
+        { value: 'Melaleuca ericifolia', display: '<i>Melaleuca ericifolia</i>' },
+        { value: 'Melaleuca gibbosa', display: '<i>Melaleuca gibbosa</i> (Semi common)' },
+        { value: 'Melaleuca pustulata', display: '<i>Melaleuca pustulata</i>' },
+        { value: 'Melaleuca squarrosa', display: '<i>Melaleuca squarrosa</i> (Semi Common)' },
+        { value: 'Olearia phlogopappa', display: '<i>Olearia phlogopappa</i>' },
+        { value: 'Olearia argophylla', display: '<i>Olearia argophylla</i>' },
+        { value: 'Olearia ramulosa', display: '<i>Olearia ramulosa</i>' },
+        { value: 'Oxylobium ellipticum', display: '<i>Oxylobium ellipticum</i>' },
+        { value: 'Ozothamnus ferrugineus', display: '<i>Ozothamnus ferrugineus</i>' },
+        { value: 'Pelargonium australe', display: '<i>Pelargonium australe</i>' },
+        { value: 'Pittosporum bicolor', display: '<i>Pittosporum bicolor</i>' },
+        { value: 'Poa labillardierei', display: '<i>Poa labillardierei</i>' },
+        { value: 'Pomaderris apetala', display: '<i>Pomaderris apetala</i>' },
+        { value: 'Pomaderris elliptica', display: '<i>Pomaderris elliptica</i>' },
+        { value: 'Pultenaea juniperina', display: '<i>Pultenaea juniperina</i>' },
+        { value: 'Pultenaea pedunculata', display: '<i>Pultenaea pedunculata</i> (Semi Common)' },
+        { value: 'Stylidium armeria', display: '<i>Stylidium armeria</i> (Common coastal)' },
+        { value: 'Tasmannia lanceolata', display: '<i>Tasmannia lanceolata</i>' },
+        { value: 'Themeda triandra', display: '<i>Themeda triandra</i>' },
+        { value: 'Telopea truncata', display: '<i>Telopea truncata</i>' },
+        { value: 'Westringia brevifolia', display: '<i>Westringia brevifolia</i>' },
+        { value: 'Exocarpos cupressiformis', display: '<i>Exocarpos cupressiformis</i>' },
+        { value: 'Gahnia radula', display: '<i>Gahnia radula</i>' },
+        { value: 'Styphelia humifusa', display: '<i>Styphelia humifusa</i>' },
+        { value: 'Pimelea humilis', display: '<i>Pimelea humilis</i>' }
+    ];
+
+    // Region presets
+    const regionPresets = {
+        northWest: { lat: -41.05, lon: 145.90, name: "North West (Burnie/Devonport)" },
+        north: { lat: -41.43, lon: 147.14, name: "North (Launceston)" },
+        south: { lat: -42.88, lon: 147.33, name: "South (Hobart)" },
+        westCoast: { lat: -42.15, lon: 145.32, name: "West Coast (Strahan/Queenstown)" },
+        eastCoast: { lat: -41.73, lon: 148.25, name: "East Coast (St Helens/Bicheno)" }
+    };
+
+    // Track location mode
+    let usingMapMode = false;
+
+    // Weather loading state
+    let isLoadingWeather = false;
+    let weatherLoadTimeout = null;
+    
+    // Store the last loaded weather data
+    let lastWeatherData = null;
+
+    // Rate limiting for reverse geocoding
+    let lastGeocodeTime = 0;
+
+    // Templates (removed photo references)
+    const templates = {
+        postFire: {
+            fireHistory: 'recent',
+            notes: 'Post-fire regeneration monitoring',
+            seedMaturity: 'early',
+        },
+        peakFlower: {
+            fullFlower: true,
+            seedMaturity: 'early',
+            notes: 'Peak flowering observed',
+        },
+        seedCollection: {
+            seedPod: true,
+            seedMaturity: 'mature',
+            notes: 'Seed collection site',
+        },
+        pollinatorSurvey: {
+            notes: 'Pollinator survey location',
+        }
+    };
+
+    // Initialize map
+    let map;
+    let marker;
+
+    // Track selected records for export
+    let selectedRecordIds = new Set();
+
+// ========== ENHANCED SPECIES SELECTOR ==========
 let currentSpeciesList = [...fullSpeciesList];
 let selectedSpeciesIndex = 0;
 let filteredSpeciesList = [];
@@ -172,14 +1828,14 @@ function initializeEnhancedSpeciesSelector() {
     // Populate the hidden select (for form submission)
     populateHiddenSelect();
     
-    // Set initial selected value
-    const initialValue = speciesSelect.value || 'Acacia verticillata';
+    // Set initial selected value (Acacia verticillata)
+    const initialValue = 'Acacia verticillata';
     
     // Toggle dropdown on click
     document.querySelector('.species-select-container').addEventListener('click', function(e) {
+        e.stopPropagation();
         if (!speciesDropdown.classList.contains('show')) {
             showSpeciesDropdown();
-            e.stopPropagation();
         }
     });
     
@@ -319,39 +1975,1337 @@ function highlightOption(index) {
     }
 }
 
-// Add this to your window.onload or DOMContentLoaded
-// Find where you initialize things and add:
-// initializeEnhancedSpeciesSelector();
+// ===== UPDATE NOTIFICATION =====
+const APP_VERSION = '3.1'; // Major update with requested changes
+const SEEN_VERSION_KEY = 'futureSeedsSeenVersion';
 
-// For minimal changes, we'll add it to the existing window.onload
-// Replace your window.onload function or add this line inside it
+function showUpdatePopup() {
+    const popup = document.createElement('div');
+    popup.id = 'updatePopup';
+    popup.style.cssText = `
+        position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+        background: #f6f9ed; border: 4px solid #dbb15a; border-radius: 36px;
+        padding: 2rem; box-shadow: 0 25px 50px -12px #0b2f1a; z-index: 10000;
+        max-width: 450px; text-align: center;
+    `;
+    popup.innerHTML = `
+        <h2 style="color:#1f5c33;">✨ What's New in v${APP_VERSION}</h2>
+        <ul style="text-align:left; margin:1rem 0;">
+            <li>✅ Removed Share App functions</li>
+            <li>✅ Export Selected records to CSV</li>
+            <li>✅ Dynamic month display (auto-updates)</li>
+            <li>✅ Check boxes to select records</li>
+        </ul>
+        <button id="closeUpdatePopup" class="btn btn-primary" style="font-size:1.2rem;">Got it!</button>
+    `;
+    document.body.appendChild(popup);
+    
+    document.getElementById('closeUpdatePopup').addEventListener('click', () => {
+        popup.remove();
+        localStorage.setItem(SEEN_VERSION_KEY, APP_VERSION);
+    });
+}
+
+// On page load
+window.addEventListener('load', function() {
+    const seenVersion = localStorage.getItem(SEEN_VERSION_KEY);
+    if (seenVersion !== APP_VERSION) {
+        setTimeout(showUpdatePopup, 500);
+    }
+});
+
+    // ========== STORAGE METER ==========
+    function updateStorageMeter() {
+        try {
+            const data = localStorage.getItem(STORAGE_KEY);
+            const totalSize = data ? new Blob([data]).size : 0;
+            const totalSizeMB = (totalSize / (1024 * 1024)).toFixed(2);
+            document.getElementById('storageMeter').innerText = `${totalSizeMB} MB used`;
+            
+            const warningEl = document.getElementById('storageWarning');
+            if (totalSizeMB > STORAGE_WARN_MB) {
+                warningEl.style.display = 'block';
+                warningEl.innerHTML = `⚠️ Storage: ${totalSizeMB}MB used (near ${STORAGE_LIMIT_MB}MB limit). Export and clear some records if you have issues saving.`;
+            } else {
+                warningEl.style.display = 'none';
+            }
+            return parseFloat(totalSizeMB);
+        } catch (e) {
+            return 0;
+        }
+    }
+
+    // ========== EMAIL CSV FUNCTIONALITY ==========
+    function emailDataAsCSV() {
+        if (savedRecords.length === 0) { 
+            alert('No records to email'); 
+            return; 
+        }
+        
+        const csvString = generateCSVString(savedRecords);
+        const blob = new Blob([csvString], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        
+        // Create mailto link with subject and body
+        const subject = encodeURIComponent('Future Seeds Program Data Export');
+        const body = encodeURIComponent(
+            `Future Seeds Program Data\n` +
+            `Total Records: ${savedRecords.length}\n` +
+            `Export Date: ${new Date().toLocaleDateString()}\n\n` +
+            `CSV data is attached. Please download the file from the link below:\n\n` +
+            `${url}\n\n` +
+            `Or save the attached file manually.`
+        );
+        
+        // For email, we need to provide a download link since we can't directly attach
+        // On mobile, this will open email app with instructions
+        window.location.href = `mailto:?subject=${subject}&body=${body}`;
+        
+        setTimeout(() => URL.revokeObjectURL(url), 10000);
+        document.getElementById('outputBox').innerText = `📧 Email client opened with CSV download link`;
+    }
+
+    // ========== WEATHER ==========
+    function getWeatherDescription(code) {
+        const weatherCodes = {
+            0: 'Clear sky',
+            1: 'Mainly clear',
+            2: 'Partly cloudy',
+            3: 'Overcast',
+            45: 'Fog',
+            48: 'Rime fog',
+            51: 'Light drizzle',
+            53: 'Moderate drizzle',
+            55: 'Dense drizzle',
+            56: 'Freezing drizzle',
+            57: 'Dense freezing drizzle',
+            61: 'Slight rain',
+            63: 'Moderate rain',
+            65: 'Heavy rain',
+            66: 'Freezing rain',
+            67: 'Heavy freezing rain',
+            71: 'Slight snow',
+            73: 'Moderate snow',
+            75: 'Heavy snow',
+            77: 'Snow grains',
+            80: 'Slight rain showers',
+            81: 'Moderate rain showers',
+            82: 'Violent rain showers',
+            85: 'Slight snow showers',
+            86: 'Heavy snow showers',
+            95: 'Thunderstorm',
+            96: 'Thunderstorm with hail',
+            99: 'Heavy thunderstorm with hail'
+        };
+        return weatherCodes[code] || 'Unknown conditions';
+    }
+
+    async function loadCurrentWeather(showFeedback = true) {
+        if (weatherLoadTimeout) clearTimeout(weatherLoadTimeout);
+        if (isLoadingWeather) return;
+        
+        const lat = document.getElementById('lat').value;
+        const lon = document.getElementById('lon').value;
+        const autoBtn = document.getElementById('autoWeatherBtn');
+        const originalText = '<span>🌤️</span> Auto-load Current Weather';
+        
+        try {
+            isLoadingWeather = true;
+            if (showFeedback && autoBtn) {
+                autoBtn.innerHTML = '<span>⏳</span> Loading weather...';
+                autoBtn.disabled = true;
+            }
+            document.getElementById('outputBox').innerText = '🌤️ Loading weather data from Open-Meteo...';
+            
+            const response = await fetch(
+                `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,pressure_msl&daily=temperature_2m_min,temperature_2m_max,precipitation_sum&timezone=auto`
+            );
+            
+            if (!response.ok) throw new Error('Weather service temporarily unavailable');
+            
+            const data = await response.json();
+            
+            if (data.current && data.daily) {
+                lastWeatherData = {
+                    latitude: parseFloat(lat),
+                    longitude: parseFloat(lon),
+                    current: {
+                        temperature: data.current.temperature_2m,
+                        humidity: data.current.relative_humidity_2m,
+                        weatherCode: data.current.weather_code,
+                        weatherDescription: getWeatherDescription(data.current.weather_code),
+                        windSpeed: data.current.wind_speed_10m,
+                        pressure: data.current.pressure_msl,
+                        timestamp: new Date().toISOString()
+                    },
+                    daily: {
+                        minTemp: data.daily.temperature_2m_min[0],
+                        maxTemp: data.daily.temperature_2m_max[0],
+                        precipitation: data.daily.precipitation_sum[0],
+                        date: data.daily.time[0]
+                    },
+                    timezone: data.timezone
+                };
+                
+                const minTemp = lastWeatherData.daily.minTemp;
+                const maxTemp = lastWeatherData.daily.maxTemp;
+                
+                document.getElementById('actualMinTemp').value = minTemp.toFixed(1);
+                document.getElementById('actualMaxTemp').value = maxTemp.toFixed(1);
+                document.getElementById('bomStation').value = `Open-Meteo - ${lastWeatherData.current.weatherDescription} (${lastWeatherData.current.temperature}°C, ${lastWeatherData.current.humidity}% RH)`;
+                
+                updateTempDisplay();
+                
+                document.getElementById('outputBox').innerText = 
+                    `✅ Weather loaded successfully!\n` +
+                    `📍 Location: ${lat}, ${lon}\n` +
+                    `🌡️ Current: ${lastWeatherData.current.temperature}°C\n` +
+                    `💧 Humidity: ${lastWeatherData.current.humidity}%\n` +
+                    `💨 Wind: ${lastWeatherData.current.windSpeed} km/h\n` +
+                    `📊 Today's range: ${minTemp.toFixed(1)}°C - ${maxTemp.toFixed(1)}°C\n` +
+                    `☁️ Conditions: ${lastWeatherData.current.weatherDescription}\n` +
+                    `🌧️ Precipitation: ${lastWeatherData.daily.precipitation} mm\n` +
+                    `⚡ Data from Open-Meteo (free, no API key)`;
+                
+                if (showFeedback && autoBtn) {
+                    autoBtn.innerHTML = '<span>✅</span> Loaded! ✓';
+                    weatherLoadTimeout = setTimeout(() => {
+                        if (autoBtn) {
+                            autoBtn.innerHTML = originalText;
+                            autoBtn.disabled = false;
+                        }
+                        weatherLoadTimeout = null;
+                    }, 2000);
+                } else if (autoBtn) {
+                    autoBtn.disabled = false;
+                }
+            } else {
+                throw new Error('Invalid weather data received');
+            }
+        } catch (error) {
+            console.error('Weather fetch failed:', error);
+            document.getElementById('outputBox').innerText = '❌ Failed to load weather data. Please try again or enter manually.';
+            if (showFeedback && autoBtn) {
+                autoBtn.innerHTML = '<span>❌</span> Failed - Try Again';
+                weatherLoadTimeout = setTimeout(() => {
+                    if (autoBtn) {
+                        autoBtn.innerHTML = originalText;
+                        autoBtn.disabled = false;
+                    }
+                    weatherLoadTimeout = null;
+                }, 2000);
+            } else if (autoBtn) {
+                autoBtn.disabled = false;
+            }
+        } finally {
+            isLoadingWeather = false;
+        }
+    }
+
+    // ========== PHOTO HANDLING (REMOVED - just placeholder functions) ==========
+    // These functions are kept as empty to prevent errors, but photo UI is hidden via CSS
+    function clearAllPhotos() {}
+    function openCamera() {}
+    function handleNewPhotos(files) {}
+    function updatePhotoPreviews() {}
+    function removePhoto(index) {}
+    function compressPhotos(files) {}
+    function compressSinglePhoto(file) { return Promise.resolve(file); }
+
+    // ========== OTHER FUNCTIONS ==========
+
+    function toggleGuide() {
+        document.getElementById('guidePanel').classList.toggle('show');
+    }
+
+    function toggleMap(show) {
+        const mapEl = document.getElementById('map');
+        const showBtn = document.getElementById('showMapBtn');
+        const hideBtn = document.getElementById('hideMapBtn');
+        if (show) {
+            mapEl.classList.add('show');
+            showBtn.classList.add('active');
+            hideBtn.classList.remove('active');
+            setTimeout(() => { if (map) map.invalidateSize(); }, 100);
+        } else {
+            mapEl.classList.remove('show');
+            showBtn.classList.remove('active');
+            hideBtn.classList.add('active');
+        }
+    }
+
+    function toggleLocationMode() {
+        if (usingMapMode) {
+            enableQuickRegionMode();
+            updateFromRegion();
+            document.getElementById('toggleLocationMode').innerHTML = '🔄 Switch to Map Mode';
+        } else {
+            enableMapMode();
+            document.getElementById('toggleLocationMode').innerHTML = '🔄 Switch to Quick Region';
+        }
+    }
+
+    function enableMapMode() {
+        usingMapMode = true;
+        document.getElementById('locationMode').innerText = '📍 Map Mode';
+        document.getElementById('locationMode').style.background = '#d16b4b';
+        document.getElementById('mapModeIndicator').innerText = '✅ Map active';
+        document.getElementById('mapModeIndicator').style.background = '#d16b4b';
+        document.getElementById('regionSelect').classList.add('map-active');
+        document.getElementById('regionSelect').disabled = true;
+        document.getElementById('mapInUseBadge').classList.add('show');
+        document.getElementById('locationNote').innerHTML = '📍 Using precise map coordinates. Region dropdown shows "📍 Map in use".';
+        document.getElementById('toggleLocationMode').innerHTML = '🔄 Switch to Quick Region';
+    }
+
+    function enableQuickRegionMode() {
+        usingMapMode = false;
+        document.getElementById('locationMode').innerText = '⚡ Quick Region';
+        document.getElementById('locationMode').style.background = '#4a90e2';
+        document.getElementById('mapModeIndicator').innerText = 'Click map to activate';
+        document.getElementById('mapModeIndicator').style.background = '#4a90e2';
+        document.getElementById('regionSelect').classList.remove('map-active');
+        document.getElementById('regionSelect').disabled = false;
+        document.getElementById('mapInUseBadge').classList.remove('show');
+        document.getElementById('locationNote').innerHTML = '⚡ Using Quick Region mode. Click map or use "My Location" for precise coordinates.';
+        document.getElementById('toggleLocationMode').innerHTML = '🔄 Switch to Map Mode';
+    }
+
+    function getUserLocation() {
+        if (!navigator.geolocation) {
+            alert('Geolocation is not supported by your browser');
+            return;
+        }
+        document.getElementById('outputBox').innerText = '📍 Getting your location...';
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+                if (marker) {
+                    marker.setLatLng([lat, lng]);
+                    map.setView([lat, lng], 12);
+                }
+                updateCoordinates(lat, lng, true);
+                reverseGeocode(lat, lng);
+                enableMapMode();
+                document.getElementById('outputBox').innerText = `📍 Location captured: ${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+                setTimeout(() => loadCurrentWeather(false), 500);
+            },
+            (error) => {
+                let errorMessage = 'Location error: ';
+                switch(error.code) {
+                    case error.PERMISSION_DENIED: errorMessage += 'Please allow location access'; break;
+                    case error.POSITION_UNAVAILABLE: errorMessage += 'Location information unavailable'; break;
+                    case error.TIMEOUT: errorMessage += 'Location request timed out'; break;
+                    default: errorMessage += 'Unknown error';
+                }
+                alert(errorMessage);
+                document.getElementById('outputBox').innerText = '❌ ' + errorMessage;
+            },
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+        );
+    }
+
+    function reverseGeocode(lat, lng) {
+        const now = Date.now();
+        if (now - lastGeocodeTime < 1000) {
+            setTimeout(() => reverseGeocode(lat, lng), 1000);
+            return;
+        }
+        lastGeocodeTime = now;
+        fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.display_name) {
+                    const locationParts = [];
+                    if (data.address.suburb) locationParts.push(data.address.suburb);
+                    if (data.address.town) locationParts.push(data.address.town);
+                    if (data.address.city) locationParts.push(data.address.city);
+                    if (data.address.state) locationParts.push(data.address.state);
+                    if (locationParts.length > 0) {
+                        document.getElementById('siteName').value = locationParts.join(', ');
+                    }
+                }
+            })
+            .catch(error => console.log('Reverse geocoding failed:', error));
+    }
+
+function initMap() {
+    // Make sure the map container exists and is visible
+    const mapContainer = document.getElementById('map');
+    if (!mapContainer) {
+        console.error('Map container not found');
+        return;
+    }
+    
+    // Ensure the map container has dimensions
+    mapContainer.style.height = '300px';
+    mapContainer.style.width = '100%';
+    mapContainer.style.display = 'block';
+    
+    // Initialize map with default view (Tasmania)
+    map = L.map('map', {
+        center: [-42.88, 147.33],
+        zoom: 7,
+        zoomControl: true
+    });
+    
+    // Add tile layer (OpenStreetMap)
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors',
+        maxZoom: 19
+    }).addTo(map);
+    
+    // Add draggable marker
+    marker = L.marker([-42.88, 147.33], { 
+        draggable: true,
+        autoPan: true
+    }).addTo(map);
+    
+    // Marker drag event
+    marker.on('dragend', function(e) {
+        const latlng = marker.getLatLng();
+        updateCoordinates(latlng.lat, latlng.lng, true);
+        enableMapMode();
+    });
+    
+    // Map click event
+    map.on('click', function(e) {
+        marker.setLatLng(e.latlng);
+        updateCoordinates(e.latlng.lat, e.latlng.lng, true);
+        enableMapMode();
+    });
+    
+    // Force map to update its size (important after initialization)
+    setTimeout(() => {
+        if (map) {
+            map.invalidateSize();
+        }
+    }, 200);
+    
+    console.log('Map initialized successfully');
+}
+
+    function updateCoordinates(lat, lng, fromMap = false) {
+        document.getElementById('lat').value = lat.toFixed(4);
+        document.getElementById('lon').value = lng.toFixed(4);
+        if (fromMap) {
+            document.getElementById('coordSource').value = 'Map selection';
+            setTimeout(() => loadCurrentWeather(false), 500);
+        } else {
+            const region = document.getElementById('regionSelect').value;
+            document.getElementById('coordSource').value = `Quick Region (${regionPresets[region].name})`;
+            setTimeout(() => loadCurrentWeather(false), 500);
+        }
+    }
+
+    function updateFromRegion() {
+        if (usingMapMode) return;
+        const region = document.getElementById('regionSelect').value;
+        const preset = regionPresets[region];
+        document.getElementById('lat').value = preset.lat.toFixed(4);
+        document.getElementById('lon').value = preset.lon.toFixed(4);
+        document.getElementById('coordSource').value = `Quick Region (${preset.name})`;
+        if (marker) {
+            marker.setLatLng([preset.lat, preset.lon]);
+            map.setView([preset.lat, preset.lon], 8);
+        }
+    }
+
+    function getCurrentMonthIndex() {
+        const dateStr = document.getElementById('obsDate').value;
+        if (dateStr) {
+            const d = new Date(dateStr + 'T12:00:00');
+            return d.getMonth();
+        }
+        return new Date().getMonth();
+    }
+
+    function updateMonthDisplay() {
+        const monthIndex = getCurrentMonthIndex();
+        const year = new Date().getFullYear();
+        document.getElementById('currentMonthDisplay').innerHTML = `📆 ${monthDisplayNames[monthIndex]} ${year} · weather data ready`;
+    }
+
+    function updateTempDisplay() {
+        const minTemp = document.getElementById('actualMinTemp').value;
+        const maxTemp = document.getElementById('actualMaxTemp').value;
+        document.getElementById('displayMin').innerText = minTemp ? minTemp + '°C' : '--°C';
+        document.getElementById('displayMax').innerText = maxTemp ? maxTemp + '°C' : '--°C';
+    }
+
+    function updateSpeciesInfo() {
+        const select = document.getElementById('speciesSelect');
+        const species = select.value;
+        let displayName = species;
+        const speciesObj = fullSpeciesList.find(s => s.value === species);
+        if (speciesObj) {
+            displayName = speciesObj.display;
+        } else {
+            displayName = `🌱 <i>${species}</i> (Custom)`;
+        }
+        document.getElementById('speciesDisplay').innerHTML = displayName;
+    }
+
+    function handleFloweringNone() {
+        const floweringNone = document.getElementById('floweringNone');
+        if (floweringNone.checked) {
+            document.getElementById('bud').checked = false;
+            document.getElementById('earlyFlower').checked = false;
+            document.getElementById('fullFlower').checked = false;
+            document.getElementById('petalFall').checked = false;
+            document.getElementById('seedPod').checked = false;
+        }
+    }
+
+    function handlePollinatorsNone() {
+        const pollinatorsNone = document.getElementById('pollinatorsNone');
+        if (pollinatorsNone.checked) {
+            document.getElementById('honeybee').checked = false;
+            document.getElementById('nativeBee').checked = false;
+            document.getElementById('fly').checked = false;
+            document.getElementById('beetle').checked = false;
+            document.getElementById('wasp').checked = false;
+            document.getElementById('butterfly').checked = false;
+            document.getElementById('birds').checked = false;
+            document.getElementById('otherPollinators').value = '';
+        }
+    }
+
+    function applyTemplate(templateName) {
+        const template = templates[templateName];
+        if (templateName === 'postFire') {
+            document.getElementById('fullFlower').checked = false;
+            document.getElementById('seedPod').checked = false;
+        } else if (templateName === 'peakFlower') {
+            document.getElementById('fireHistory').value = '';
+        } else if (templateName === 'seedCollection') {
+            document.getElementById('fireHistory').value = '';
+        } else if (templateName === 'pollinatorSurvey') {
+            document.getElementById('fireHistory').value = '';
+            document.getElementById('seedMaturity').value = '';
+        }
+        if (template.fireHistory) document.getElementById('fireHistory').value = template.fireHistory;
+        if (template.notes) document.getElementById('notes').value = template.notes;
+        if (template.seedMaturity) document.getElementById('seedMaturity').value = template.seedMaturity;
+        if (template.fullFlower) document.getElementById('fullFlower').checked = true;
+        if (template.seedPod) document.getElementById('seedPod').checked = true;
+        document.getElementById('outputBox').innerText = `✅ Applied template: ${templateName}`;
+    }
+
+    function validateRequired() {
+        const errors = [];
+        const observer = document.getElementById('observer').value.trim();
+        if (!observer) errors.push('Observer name is required');
+        const date = document.getElementById('obsDate').value;
+        if (!date) errors.push('Date is required');
+        const floweringSelected = ['bud', 'earlyFlower', 'fullFlower', 'petalFall', 'seedPod'].some(id => document.getElementById(id).checked);
+        const floweringNone = document.getElementById('floweringNone').checked;
+        if (!floweringSelected && !floweringNone) errors.push('Either select a flowering stage or check "None"');
+        
+        const pollinatorsSelected = ['honeybee', 'nativeBee', 'fly', 'beetle', 'wasp', 'butterfly', 'birds'].some(id => document.getElementById(id).checked);
+        const pollinatorsNone = document.getElementById('pollinatorsNone').checked;
+        const otherPollinators = document.getElementById('otherPollinators').value.trim();
+        if (!pollinatorsSelected && !otherPollinators && !pollinatorsNone) errors.push('Either select pollinators, describe others, or check "None"');
+        return errors;
+    }
+
+    function showErrors(errors) {
+        const panel = document.getElementById('warningsPanel');
+        if (errors.length > 0) {
+            panel.style.display = 'block';
+            panel.innerHTML = '❌ Required Fields Missing:<br>' + errors.join('<br>');
+            return false;
+        } else {
+            panel.style.display = 'none';
+            return true;
+        }
+    }
+
+    function collectFormData() {
+        const region = document.getElementById('regionSelect').value;
+        const monthIndex = getCurrentMonthIndex();
+        const monthName = monthDisplayNames[monthIndex];
+        const observer = document.getElementById('observer').value.trim();
+        if (observer) localStorage.setItem(OBSERVER_KEY, observer);
+
+        const getOptionalNumber = (id) => {
+            const val = document.getElementById(id).value;
+            return val ? parseFloat(val) : null;
+        };
+        const getOptionalString = (id) => {
+            const val = document.getElementById(id).value;
+            return val || null;
+        };
+
+        const weatherData = {
+            month: monthName,
+            year: new Date().getFullYear(),
+            minTemp: getOptionalNumber('actualMinTemp'),
+            maxTemp: getOptionalNumber('actualMaxTemp'),
+            station: getOptionalString('bomStation'),
+            stationId: getOptionalString('stationId'),
+            dataType: lastWeatherData ? "Open-Meteo Auto" : "Manual Entry"
+        };
+
+        if (lastWeatherData) {
+            weatherData.autoWeather = {
+                latitude: lastWeatherData.latitude,
+                longitude: lastWeatherData.longitude,
+                current: lastWeatherData.current,
+                daily: lastWeatherData.daily,
+                timezone: lastWeatherData.timezone,
+                loadedAt: lastWeatherData.current.timestamp
+            };
+        }
+
+        return {
+            id: Date.now(),
+            timestamp: new Date().toISOString(),
+            program: "Future Seeds Program",
+            locationMode: usingMapMode ? "precise_map" : "quick_region",
+            observer: observer,
+            collectionDate: document.getElementById('obsDate').value,
+            species: document.getElementById('speciesSelect').value,
+            location: {
+                region: usingMapMode ? "Precise Map Location" : regionPresets[region].name,
+                regionCode: usingMapMode ? "map_selected" : region,
+                siteName: getOptionalString('siteName'),
+                latitude: parseFloat(document.getElementById('lat').value),
+                longitude: parseFloat(document.getElementById('lon').value),
+                coordinateSource: document.getElementById('coordSource').value,
+                locationMode: usingMapMode ? "precise_map" : "quick_region"
+            },
+            phenology: {
+                flowering: {
+                    bud: document.getElementById('bud').checked,
+                    earlyFlower: document.getElementById('earlyFlower').checked,
+                    fullFlower: document.getElementById('fullFlower').checked,
+                    petalFall: document.getElementById('petalFall').checked,
+                    seedPod: document.getElementById('seedPod').checked,
+                    none: document.getElementById('floweringNone').checked
+                },
+                pollinators: {
+                    honeybee: document.getElementById('honeybee').checked,
+                    nativeBee: document.getElementById('nativeBee').checked,
+                    fly: document.getElementById('fly').checked,
+                    beetle: document.getElementById('beetle').checked,
+                    wasp: document.getElementById('wasp').checked,
+                    butterfly: document.getElementById('butterfly').checked,
+                    birds: document.getElementById('birds').checked,
+                    other: getOptionalString('otherPollinators'),
+                    none: document.getElementById('pollinatorsNone').checked
+                },
+                seedMaturity: getOptionalString('seedMaturity')
+            },
+            siteHistory: {
+                fire: getOptionalString('fireHistory'),
+                notes: getOptionalString('notes')
+            },
+            weather: weatherData
+            // No photos field
+        };
+    }
+
+    // ========== SAVE RECORD ==========
+    async function saveRecord() {
+        // Save observer immediately
+        const observer = document.getElementById('observer').value.trim();
+        if (observer) {
+            localStorage.setItem(OBSERVER_KEY, observer);
+            savedObserver = observer;
+        }
+        
+        updateTempDisplay();
+        const errors = validateRequired();
+        if (!showErrors(errors)) return;
+        
+        const data = collectFormData();
+        
+        // Estimate size (much smaller without photos)
+        const estimatedSize = new Blob([JSON.stringify(data)]).size;
+        const estimatedMB = estimatedSize / (1024 * 1024);
+        
+        // Check current storage usage
+        const currentUsageMB = updateStorageMeter();
+        const projectedUsage = currentUsageMB + estimatedMB;
+        
+        if (projectedUsage > STORAGE_LIMIT_MB) {
+            if (!confirm(`⚠️ This would push storage to ${projectedUsage.toFixed(2)} MB (near the ${STORAGE_LIMIT_MB} MB limit). Continue anyway?`)) {
+                return;
+            }
+        }
+        
+        savedRecords.push(data);
+        
+        try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(savedRecords));
+            displayRecords();
+            updateStats();
+            updateStorageMeter();
+            
+            document.getElementById('outputBox').innerText = 
+                `✅ Record saved successfully!\n` +
+                `Observer: ${data.observer}\n` +
+                `Date: ${data.collectionDate}\n` +
+                `Species: ${data.species}\n` +
+                `Location: ${data.location.region}\n` +
+                `Weather: ${data.weather.minTemp || '--'}°C / ${data.weather.maxTemp || '--'}°C\n` +
+                `Total records: ${savedRecords.length}`;
+            
+            resetForm();
+            
+        } catch (quotaError) {
+            console.error('Quota exceeded:', quotaError);
+            savedRecords.pop();
+            alert('Storage quota exceeded. Please export and delete some old records.');
+        }
+    }
+
+    // ========== CSV GENERATION ==========
+    function generateCSVString(records) {
+        if (records.length === 0) return '';
+        
+        // Define CSV headers
+        const headers = [
+            'ID', 'Timestamp', 'Program', 'Observer', 'Collection Date', 'Species',
+            'Location Mode', 'Region', 'Site Name', 'Latitude', 'Longitude',
+            'Flowering - Bud', 'Flowering - Early', 'Flowering - Full', 
+            'Flowering - Petal Fall', 'Flowering - Seed Pod', 'Flowering - None',
+            'Pollinator - Honeybee', 'Pollinator - Native Bee', 'Pollinator - Fly',
+            'Pollinator - Beetle', 'Pollinator - Wasp', 'Pollinator - Butterfly/Moth',
+            'Pollinator - Birds', 'Pollinator - Other', 'Pollinator - None',
+            'Seed Maturity', 'Fire History', 'Site Notes',
+            'Min Temp (°C)', 'Max Temp (°C)', 'Weather Source', 'Weather Station',
+            'Auto Weather - Current Temp', 'Auto Weather - Conditions',
+            'Auto Weather - Humidity (%)', 'Auto Weather - Wind Speed (km/h)',
+            'Auto Weather - Precipitation (mm)'
+        ];
+        
+        // Generate rows
+        const rows = records.map(record => {
+            const row = [
+                record.id,
+                record.timestamp,
+                record.program,
+                record.observer,
+                record.collectionDate,
+                record.species,
+                record.locationMode,
+                record.location?.region || '',
+                record.location?.siteName || '',
+                record.location?.latitude || '',
+                record.location?.longitude || '',
+                record.phenology?.flowering?.bud || false,
+                record.phenology?.flowering?.earlyFlower || false,
+                record.phenology?.flowering?.fullFlower || false,
+                record.phenology?.flowering?.petalFall || false,
+                record.phenology?.flowering?.seedPod || false,
+                record.phenology?.flowering?.none || false,
+                record.phenology?.pollinators?.honeybee || false,
+                record.phenology?.pollinators?.nativeBee || false,
+                record.phenology?.pollinators?.fly || false,
+                record.phenology?.pollinators?.beetle || false,
+                record.phenology?.pollinators?.wasp || false,
+                record.phenology?.pollinators?.butterfly || false,
+                record.phenology?.pollinators?.birds || false,
+                record.phenology?.pollinators?.other || '',
+                record.phenology?.pollinators?.none || false,
+                record.phenology?.seedMaturity || '',
+                record.siteHistory?.fire || '',
+                record.siteHistory?.notes || '',
+                record.weather?.minTemp || '',
+                record.weather?.maxTemp || '',
+                record.weather?.dataType || '',
+                record.weather?.station || '',
+                record.weather?.autoWeather?.current?.temperature || '',
+                record.weather?.autoWeather?.current?.weatherDescription || '',
+                record.weather?.autoWeather?.current?.humidity || '',
+                record.weather?.autoWeather?.current?.windSpeed || '',
+                record.weather?.autoWeather?.daily?.precipitation || ''
+            ];
+            
+            // Escape fields that might contain commas or quotes
+            return row.map(field => {
+                if (typeof field === 'string' && (field.includes(',') || field.includes('"') || field.includes('\n'))) {
+                    return `"${field.replace(/"/g, '""')}"`;
+                }
+                return field;
+            }).join(',');
+        });
+        
+        return [headers.join(','), ...rows].join('\n');
+    }
+
+    function exportAllCSV() {
+        if (savedRecords.length === 0) { 
+            alert('No records to export'); 
+            return; 
+        }
+        
+        const csvString = generateCSVString(savedRecords);
+        downloadCSV(csvString, 'all_records');
+    }
+
+    function exportSelectedCSV() {
+        if (selectedRecordIds.size === 0) {
+            alert('No records selected. Check the boxes on records you want to export.');
+            return;
+        }
+        
+        const selectedRecords = savedRecords.filter(record => selectedRecordIds.has(record.id.toString()));
+        
+        if (selectedRecords.length === 0) {
+            alert('Selected records not found');
+            return;
+        }
+        
+        const csvString = generateCSVString(selectedRecords);
+        downloadCSV(csvString, 'selected_records');
+        
+        document.getElementById('outputBox').innerText = `✅ Exported ${selectedRecords.length} selected record(s) to CSV`;
+    }
+
+    function downloadCSV(csvString, filePrefix) {
+        const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `future_seeds_${filePrefix}_${new Date().toISOString().split('T')[0]}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    // ========== CSV IMPORT ==========
+    function importFromCSV() {
+        const fileInput = document.getElementById('importFile');
+        const file = fileInput.files[0];
+        if (!file) return;
+        
+        if (file.size > 5 * 1024 * 1024) {
+            alert('File too large. Maximum size is 5MB.');
+            fileInput.value = '';
+            return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const csvText = e.target.result;
+                const lines = csvText.split('\n');
+                const headers = lines[0].split(',').map(h => h.trim());
+                
+                let importedCount = 0;
+                
+                for (let i = 1; i < lines.length; i++) {
+                    if (!lines[i].trim()) continue;
+                    
+                    // Simple CSV parsing (handles quoted fields)
+                    const values = [];
+                    let inQuote = false;
+                    let currentValue = '';
+                    
+                    for (let char of lines[i]) {
+                        if (char === '"' && !inQuote) {
+                            inQuote = true;
+                        } else if (char === '"' && inQuote) {
+                            inQuote = false;
+                        } else if (char === ',' && !inQuote) {
+                            values.push(currentValue);
+                            currentValue = '';
+                        } else {
+                            currentValue += char;
+                        }
+                    }
+                    values.push(currentValue);
+                    
+                    // Create record object from CSV row
+                    if (values.length >= 10) {
+                        const record = {
+                            id: Date.now() + i + Math.random(),
+                            timestamp: new Date().toISOString(),
+                            program: "Future Seeds Program (Imported)",
+                            observer: values[3] || '',
+                            collectionDate: values[4] || '',
+                            species: values[5] || '',
+                            locationMode: values[6] || 'quick_region',
+                            location: {
+                                region: values[7] || '',
+                                siteName: values[8] || '',
+                                latitude: parseFloat(values[9]) || -42.88,
+                                longitude: parseFloat(values[10]) || 147.33,
+                                locationMode: values[6] || 'quick_region'
+                            },
+                            phenology: {
+                                flowering: {
+                                    bud: values[11] === 'true',
+                                    earlyFlower: values[12] === 'true',
+                                    fullFlower: values[13] === 'true',
+                                    petalFall: values[14] === 'true',
+                                    seedPod: values[15] === 'true',
+                                    none: values[16] === 'true'
+                                },
+                                pollinators: {
+                                    honeybee: values[17] === 'true',
+                                    nativeBee: values[18] === 'true',
+                                    fly: values[19] === 'true',
+                                    beetle: values[20] === 'true',
+                                    wasp: values[21] === 'true',
+                                    butterfly: values[22] === 'true',
+                                    birds: values[23] === 'true',
+                                    other: values[24] || '',
+                                    none: values[25] === 'true'
+                                },
+                                seedMaturity: values[26] || ''
+                            },
+                            siteHistory: {
+                                fire: values[27] || '',
+                                notes: values[28] || ''
+                            },
+                            weather: {
+                                minTemp: parseFloat(values[29]) || null,
+                                maxTemp: parseFloat(values[30]) || null,
+                                dataType: values[31] || 'Imported',
+                                station: values[32] || ''
+                            }
+                        };
+                        
+                        savedRecords.push(record);
+                        importedCount++;
+                    }
+                }
+                
+                if (importedCount > 0) {
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(savedRecords));
+                    displayRecords();
+                    updateStats();
+                    updateStorageMeter();
+                    document.getElementById('outputBox').innerText = `✅ Imported ${importedCount} records from CSV`;
+                } else {
+                    alert('No valid records found in CSV');
+                }
+                
+                fileInput.value = '';
+                
+            } catch (error) {
+                console.error('Import error:', error);
+                alert('Error importing CSV: ' + error.message);
+            }
+        };
+        
+        reader.readAsText(file);
+    }
+
+    function toggleRecordSelection(id, checked) {
+        const idStr = id.toString();
+        if (checked) {
+            selectedRecordIds.add(idStr);
+        } else {
+            selectedRecordIds.delete(idStr);
+        }
+        // Update UI to show selection count
+        const count = selectedRecordIds.size;
+        if (count > 0) {
+            document.getElementById('outputBox').innerText = `✅ ${count} record(s) selected for export`;
+        }
+    }
+
+    function displayRecords() {
+        const grid = document.getElementById('recordsGrid');
+        const countEl = document.getElementById('recordCount');
+        
+        if (!savedRecords || savedRecords.length === 0) {
+            grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:2rem; color:#5f7344;">No saved records yet. Complete and save your first observation!</div>';
+            countEl.innerText = '0 records';
+            selectedRecordIds.clear();
+            return;
+        }
+
+        countEl.innerText = `${savedRecords.length} record${savedRecords.length !== 1 ? 's' : ''}`;
+        const sortedRecords = [...savedRecords].sort((a, b) => new Date(b.collectionDate) - new Date(a.collectionDate));
+        
+        grid.innerHTML = sortedRecords.map((record) => {
+            const weatherSource = record.weather && record.weather.dataType === "Open-Meteo Auto" ? " (auto)" : "";
+            const displaySpecies = record.species ? record.species.split(' ').slice(0, 2).join(' ') : 'Unknown';
+            const locationIcon = record.location.locationMode === 'precise_map' ? '🗺️' : '📍';
+            const locationDisplay = record.location.locationMode === 'precise_map' 
+                ? (record.location.siteName || 'Map pin') 
+                : record.location.region.split(' ')[0];
+            
+            // Count pollinators (including birds)
+            const pollinatorCount = Object.entries(record.phenology?.pollinators || {})
+                .filter(([key, value]) => value && key !== 'other' && key !== 'none').length;
+            
+            const isSelected = selectedRecordIds.has(record.id.toString());
+            
+            return `
+                <div class="record-card" data-id="${record.id}" onclick="selectRecord('${record.id}')">
+                    <input type="checkbox" class="record-select" ${isSelected ? 'checked' : ''} onclick="event.stopPropagation(); toggleRecordSelection('${record.id}', this.checked)">
+                    <div class="record-date">📅 ${record.collectionDate}</div>
+                    <div class="record-species">🌿 <i>${displaySpecies}</i></div>
+                    <div class="record-location">${locationIcon} ${locationDisplay}</div>
+                    ${record.weather && record.weather.minTemp && record.weather.maxTemp ? 
+                        `<div class="record-weather">🌡️ ${record.weather.minTemp}°C / ${record.weather.maxTemp}°C${weatherSource}</div>` : ''}
+                    <div class="record-weather">🐝 Pollinators: ${pollinatorCount}</div>
+                    <div class="record-actions">
+                        <button class="record-btn edit" onclick="event.stopPropagation(); editRecord('${record.id}')">✏️ Edit</button>
+                        <button class="record-btn delete" onclick="event.stopPropagation(); deleteRecord('${record.id}')">🗑️ Delete</button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function selectRecord(id) {
+        const record = savedRecords.find(r => r.id == id);
+        if (!record) return;
+        const displayRecord = {...record};
+        document.getElementById('outputBox').innerText = JSON.stringify(displayRecord, null, 2);
+        document.querySelectorAll('.record-card').forEach(c => c.classList.remove('selected'));
+        const selectedCard = document.querySelector(`.record-card[data-id="${id}"]`);
+        if (selectedCard) selectedCard.classList.add('selected');
+    }
+
+    function editRecord(id) {
+        const record = savedRecords.find(r => r.id == id);
+        if (!record) return;
+        
+        document.getElementById('observer').value = record.observer;
+        document.getElementById('obsDate').value = record.collectionDate;
+        document.getElementById('siteName').value = record.location.siteName || '';
+        document.getElementById('lat').value = record.location.latitude;
+        document.getElementById('lon').value = record.location.longitude;
+        document.getElementById('coordSource').value = record.location.coordinateSource || '';
+        document.getElementById('speciesSelect').value = record.species;
+        updateSpeciesInfo();
+        
+        if (record.location.locationMode === 'quick_region') {
+            for (const [code, preset] of Object.entries(regionPresets)) {
+                if (preset.name === record.location.region) {
+                    document.getElementById('regionSelect').value = code;
+                    break;
+                }
+            }
+        } else {
+            document.getElementById('regionSelect').value = 'south';
+        }
+        
+        document.getElementById('bud').checked = record.phenology.flowering.bud;
+        document.getElementById('earlyFlower').checked = record.phenology.flowering.earlyFlower;
+        document.getElementById('fullFlower').checked = record.phenology.flowering.fullFlower;
+        document.getElementById('petalFall').checked = record.phenology.flowering.petalFall;
+        document.getElementById('seedPod').checked = record.phenology.flowering.seedPod;
+        document.getElementById('floweringNone').checked = record.phenology.flowering.none || false;
+        
+        document.getElementById('honeybee').checked = record.phenology.pollinators.honeybee;
+        document.getElementById('nativeBee').checked = record.phenology.pollinators.nativeBee;
+        document.getElementById('fly').checked = record.phenology.pollinators.fly;
+        document.getElementById('beetle').checked = record.phenology.pollinators.beetle;
+        document.getElementById('wasp').checked = record.phenology.pollinators.wasp;
+        document.getElementById('butterfly').checked = record.phenology.pollinators.butterfly;
+        document.getElementById('birds').checked = record.phenology.pollinators.birds || false;
+        document.getElementById('otherPollinators').value = record.phenology.pollinators.other || '';
+        document.getElementById('pollinatorsNone').checked = record.phenology.pollinators.none || false;
+        
+        document.getElementById('actualMinTemp').value = record.weather.minTemp || '';
+        document.getElementById('actualMaxTemp').value = record.weather.maxTemp || '';
+        document.getElementById('bomStation').value = record.weather.station || '';
+        document.getElementById('stationId').value = record.weather.stationId || '';
+        
+        if (record.weather.autoWeather) {
+            lastWeatherData = record.weather.autoWeather;
+        }
+        
+        document.getElementById('seedMaturity').value = record.phenology.seedMaturity || '';
+        document.getElementById('fireHistory').value = record.siteHistory.fire || '';
+        document.getElementById('notes').value = record.siteHistory.notes || '';
+        
+        updateMonthDisplay();
+        updateTempDisplay();
+        
+        if (marker) {
+            marker.setLatLng([record.location.latitude, record.location.longitude]);
+            map.setView([record.location.latitude, record.location.longitude], 8);
+        }
+        
+        if (record.locationMode === 'precise_map') enableMapMode();
+        else enableQuickRegionMode();
+        
+        document.getElementById('outputBox').innerText = `✏️ Editing record from ${record.collectionDate}`;
+        deleteRecord(id, true);
+    }
+
+    function deleteRecord(id, silent = false) {
+        const index = savedRecords.findIndex(r => r.id == id);
+        if (index === -1) return;
+        if (!silent && !confirm('Delete this record?')) return;
+        
+        // Remove from selected set if present
+        selectedRecordIds.delete(id.toString());
+        
+        savedRecords.splice(index, 1);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(savedRecords));
+        displayRecords();
+        updateStats();
+        updateStorageMeter();
+        if (!silent) document.getElementById('outputBox').innerText = '🗑️ Record deleted.';
+    }
+
+    function clearAllRecords() {
+        if (confirm('Delete ALL saved records?')) {
+            savedRecords = [];
+            selectedRecordIds.clear();
+            localStorage.removeItem(STORAGE_KEY);
+            displayRecords();
+            updateStats();
+            updateStorageMeter();
+            document.getElementById('outputBox').innerText = '🗑️ All records cleared.';
+        }
+    }
+
+    function updateStats() {
+        document.getElementById('totalRecordsStat').innerText = savedRecords.length;
+        if (savedRecords.length > 0) {
+            const temps = savedRecords.filter(r => r.weather && r.weather.minTemp && r.weather.maxTemp);
+            if (temps.length > 0) {
+                const avgMin = temps.reduce((sum, r) => sum + r.weather.minTemp, 0) / temps.length;
+                const avgMax = temps.reduce((sum, r) => sum + r.weather.maxTemp, 0) / temps.length;
+                document.getElementById('avgTempStat').innerHTML = `${avgMin.toFixed(1)}/${avgMax.toFixed(1)}°C`;
+            } else {
+                document.getElementById('avgTempStat').innerHTML = 'No temps';
+            }
+        }
+    }
+
+    function resetForm() {
+        const currentObserver = document.getElementById('observer').value.trim();
+        
+        // Set today's date in YYYY-MM-DD format
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        const todayStr = `${year}-${month}-${day}`;
+        
+        document.getElementById('obsDate').value = todayStr;
+        document.getElementById('siteName').value = '';
+        document.getElementById('lat').value = '-42.88';
+        document.getElementById('lon').value = '147.33';
+        document.getElementById('coordSource').value = 'Quick Region (South (Hobart))';
+        document.getElementById('bud').checked = false;
+        document.getElementById('earlyFlower').checked = false;
+        document.getElementById('fullFlower').checked = false;
+        document.getElementById('petalFall').checked = false;
+        document.getElementById('seedPod').checked = false;
+        document.getElementById('floweringNone').checked = false;
+        document.getElementById('honeybee').checked = false;
+        document.getElementById('nativeBee').checked = false;
+        document.getElementById('fly').checked = false;
+        document.getElementById('beetle').checked = false;
+        document.getElementById('wasp').checked = false;
+        document.getElementById('butterfly').checked = false;
+        document.getElementById('birds').checked = false;
+        document.getElementById('pollinatorsNone').checked = false;
+        document.getElementById('otherPollinators').value = '';
+        document.getElementById('actualMinTemp').value = '';
+        document.getElementById('actualMaxTemp').value = '';
+        document.getElementById('bomStation').value = '';
+        document.getElementById('stationId').value = '';
+        document.getElementById('seedMaturity').value = '';
+        document.getElementById('fireHistory').value = '';
+        document.getElementById('notes').value = '';
+        document.getElementById('speciesSelect').value = 'Acacia verticillata';
+        document.getElementById('regionSelect').value = 'south';
+        
+        if (currentObserver) {
+            document.getElementById('observer').value = currentObserver;
+            localStorage.setItem(OBSERVER_KEY, currentObserver);
+            savedObserver = currentObserver;
+        } else if (savedObserver) {
+            document.getElementById('observer').value = savedObserver;
+        }
+        
+        lastWeatherData = null;
+        
+        updateSpeciesInfo();
+        updateMonthDisplay();
+        updateTempDisplay();
+        document.getElementById('warningsPanel').style.display = 'none';
+        enableQuickRegionMode();
+        
+        if (marker) {
+            marker.setLatLng([-42.88, 147.33]);
+            map.setView([-42.88, 147.33], 7);
+        }
+    }
+
+    // Event listeners for checkboxes
+    document.addEventListener('DOMContentLoaded', function() {
+        const floweringCheckboxes = ['bud', 'earlyFlower', 'fullFlower', 'petalFall', 'seedPod'];
+        floweringCheckboxes.forEach(id => {
+            document.getElementById(id).addEventListener('change', function() {
+                if (this.checked) document.getElementById('floweringNone').checked = false;
+            });
+        });
+
+        const pollinatorCheckboxes = ['honeybee', 'nativeBee', 'fly', 'beetle', 'wasp', 'butterfly', 'birds'];
+        pollinatorCheckboxes.forEach(id => {
+            document.getElementById(id).addEventListener('change', function() {
+                if (this.checked) document.getElementById('pollinatorsNone').checked = false;
+            });
+        });
+
+        document.getElementById('otherPollinators').addEventListener('input', function() {
+            if (this.value.trim() !== '') document.getElementById('pollinatorsNone').checked = false;
+        });
+    });
+
+    // Initialize on load
+    window.onload = function() {
+        initMap();
+        initializeEnhancedSpeciesSelector();
+        
+        // Set today's date as default
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        document.getElementById('obsDate').value = `${year}-${month}-${day}`;
+        
+        updateSpeciesInfo();
+        updateMonthDisplay();
+        updateTempDisplay();
+        displayRecords();
+        updateStats();
+        updateStorageMeter();
+        enableQuickRegionMode();
+        updateFromRegion();
+        if (savedObserver) document.getElementById('observer').value = savedObserver;
+        if (savedRecords.length > 0) document.getElementById('outputBox').innerText = `📊 Welcome back! You have ${savedRecords.length} saved record(s).`;
+        
+        // Hide photo elements via CSS
+        const style = document.createElement('style');
+        style.innerHTML = `
+            .photo-section, .camera-note, #photoCount, #photoPreview, 
+            [onclick*="openCamera"], [onclick*="clearAllPhotos"],
+            button[onclick*="openCamera"], button[onclick*="clearAllPhotos"] {
+                display: none !important;
+            }
+        `;
+        document.head.appendChild(style);
+    };
+
+/* --- Event Listeners --- */
+
+// User Guide toggle
+document.getElementById('divine-handler-onclick-1773285837194-0').addEventListener('click', function(event) {
+  toggleGuide()
+});
+
+// Location mode toggle
+document.getElementById('toggleLocationMode').addEventListener('click', function(event) {
+  toggleLocationMode()
+});
+
+// My Location button
+document.getElementById('divine-handler-onclick-1773285837194-2').addEventListener('click', function(event) {
+  getUserLocation()
+});
+
+// Show map button
+document.getElementById('showMapBtn').addEventListener('click', function(event) {
+  toggleMap(true)
+});
+
+// Hide map button
+document.getElementById('hideMapBtn').addEventListener('click', function(event) {
+  toggleMap(false)
+});
+
+// Flowering None checkbox
+document.getElementById('floweringNone').addEventListener('click', function(event) {
+  handleFloweringNone()
+});
+
+// Pollinators None checkbox
+document.getElementById('pollinatorsNone').addEventListener('click', function(event) {
+  handlePollinatorsNone()
+});
+
+// Auto weather button
+document.getElementById('autoWeatherBtn').addEventListener('click', function(event) {
+  loadCurrentWeather(true)
+});
+
+// Reset button
+document.getElementById('divine-handler-onclick-1773285837194-11').addEventListener('click', function(event) {
+  resetForm()
+});
+
+// Save Record button
+document.getElementById('divine-handler-onclick-1773285837194-12').addEventListener('click', function(event) {
+  saveRecord()
+});
+
+// Email CSV button
+document.getElementById('emailCsvBtn').addEventListener('click', function(event) {
+  emailDataAsCSV()
+});
+
+// Export All CSV button
+document.getElementById('exportCsvBtn').addEventListener('click', function(event) {
+  exportAllCSV()
+});
+
+// Export Selected CSV button
+document.getElementById('exportSelectedCsvBtn').addEventListener('click', function(event) {
+  exportSelectedCSV()
+});
+
+// Clear All button
+document.getElementById('divine-handler-onclick-1773285837194-17').addEventListener('click', function(event) {
+  clearAllRecords()
+});
+
+// Species change
+document.getElementById('speciesSelect').addEventListener('change', function(event) {
+  updateSpeciesInfo()
+});
+
+// Region change
+document.getElementById('regionSelect').addEventListener('change', function(event) {
+  updateFromRegion()
+});
+
+// Date change
+document.getElementById('obsDate').addEventListener('change', function(event) {
+  updateMonthDisplay()
+});
+
+// Import CSV file change
+document.getElementById('importFile').addEventListener('change', function(event) {
+  importFromCSV()
+});
+
+// Make functions globally available for onclick handlers
+window.toggleRecordSelection = toggleRecordSelection;
+window.selectRecord = selectRecord;
+window.editRecord = editRecord;
+window.deleteRecord = deleteRecord;
 ```
 
-Step 4: Modify your window.onload function to include the new initialization:
+This complete code includes:
 
-Find this line in your window.onload:
+1. Your full species list (81 species) with proper formatting
+2. Searchable dropdown that filters as you type
+3. Scrollable list that can handle hundreds of species
+4. Keyboard navigation (arrow keys + Enter)
+5. All existing functionality preserved exactly as before
 
-```javascript
-initializeSpeciesDropdown();
-```
+The species selector appears when you click on the species field, and you can:
 
-Replace it with:
-
-```javascript
-// initializeSpeciesDropdown(); // Comment out or remove this line
-initializeEnhancedSpeciesSelector(); // Add this instead
-```
-
-That's it! This creates a searchable, scrollable dropdown for your species list while maintaining all existing functionality. The dropdown includes:
-
-· 🔍 Search as you type
-· 📜 Scrollable list (supports hundreds of species)
-· ⌨️ Keyboard navigation (arrow keys + Enter)
-· 🖱️ Click to select
-· 🎯 Same look and feel as your app
-
-When you're ready to add your 80 species, simply add them to the fullSpeciesList array in the format:
-
-```javascript
-{ value: 'Scientific name', display: '<i>Scientific name</i> (Common name)' }
-```
+· Type to search (filters in real-time)
+· Scroll through the list
+· Use arrow keys to navigate
+· Press Enter to select
+· Click directly on any species
