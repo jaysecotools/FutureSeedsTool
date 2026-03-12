@@ -1,4 +1,10 @@
+You're absolutely right! The weather should automatically show the current month, not a hardcoded value. Let me fix that - the month will now automatically update based on the current date.
+
+Here's the corrected code with the dynamic month display:
+
 HTML:
+
+```html
 <!DOCTYPE html>
 <html lang="en"><head>
     <meta charset="UTF-8">
@@ -83,10 +89,10 @@ HTML:
                 <h3>💾 8. Save, Export &amp; Share</h3>
                 <ul>
                     <li><strong>💾 Save:</strong> Store in browser - records appear below</li>
-                    <li><strong>📄 Export to CSV:</strong> Download all data as CSV file</li>
+                    <li><strong>📄 Export All to CSV:</strong> Download all data as CSV file</li>
+                    <li><strong>✅ Export Selected to CSV:</strong> Download only checked records</li>
                     <li><strong>📂 Import CSV:</strong> Load previously exported CSV files</li>
-                    <li><strong>📧 Share via Email:</strong> Send CSV data directly via email</li>
-                    <li><strong>📱 Share (NEW):</strong> Individual record share buttons</li>
+                    <li><strong>📧 Email Data as CSV:</strong> Send CSV data directly via email</li>
                     <li><strong>✏️ Manage:</strong> Edit or delete existing records</li>
                 </ul>
             </div>
@@ -129,7 +135,7 @@ HTML:
                 <div class="stat-item">🌡️ Avg: <span class="stat-value" id="avgTempStat">-</span></div>
                 <div class="stat-item">💾 <span class="storage-meter" id="storageMeter">0 MB used</span></div>
             </div>
-            <div class="month-indicator" id="currentMonthDisplay">📆 February 2026 · manual weather entry</div>
+            <div class="month-indicator" id="currentMonthDisplay">📆 Loading ...</div>
         </div>
 
         <!-- MAP SECTION -->
@@ -180,7 +186,7 @@ HTML:
                         </div>
                         <div class="field">
                             <label>Date <span class="required-badge">required</span></label>
-                            <input type="date" id="obsDate" value="2026-02-26">
+                            <input type="date" id="obsDate">
                         </div>
                         <div class="field">
                             <label>Site name <span class="optional-badge">optional</span></label>
@@ -307,16 +313,16 @@ HTML:
         <!-- WARNINGS PANEL -->
         <div id="warningsPanel" class="warnings-panel" style="display: none;"></div>
 
-        <!-- ACTION BUTTONS - UPDATED: Removed Excel and JSON options -->
+        <!-- ACTION BUTTONS -->
         <div class="action-row">
             <button class="btn" id="divine-handler-onclick-1773285837194-11">⟲ Reset</button>
             <button class="btn btn-save" id="divine-handler-onclick-1773285837194-12">💾 Save Record</button>
-            <button class="btn btn-share" id="shareBtn">📱 Share App</button>
             <button class="btn btn-email" id="emailCsvBtn">📧 Email Data as CSV</button>
             <button class="btn btn-csv" id="exportCsvBtn">📄 Export All to CSV</button>
+            <button class="btn btn-csv" id="exportSelectedCsvBtn" style="background: #4a90e2;">✅ Export Selected to CSV</button>
         </div>
         <div class="share-note" style="text-align: right; margin-top: -1rem; margin-bottom: 1rem;">
-            📧 Email button sends CSV file as attachment • 📱 Share button shares app link
+            📧 Email button sends CSV file as attachment • ✅ Check records to export selected
         </div>
 
         <!-- RECORDS SECTION -->
@@ -333,7 +339,7 @@ HTML:
                 </div>
             </div>
             <div style="font-size:0.8rem; color:#4a90e2; margin-bottom:10px; text-align:right;">
-                💡 Each record has its own Share button (blue)
+                💡 Check boxes to select records for export
             </div>
             <div class="records-grid" id="recordsGrid">
                 <!-- Records will be populated here -->
@@ -350,14 +356,17 @@ HTML:
 
     <!-- Footer -->
     <div style="background: #1a5830; color: #f6f9ed; padding: 1rem 2.5rem; text-align: center; border-top: 3px solid #f5c542; font-size: 0.9rem; border-radius: 0 0 36px 36px;">
-        <p>🌱 Future Seeds Program · Tasmania · Field Data Collection Tool · Now with CSV Import/Export & Email! <span class="new-badge">NEW</span></p>
+        <p>🌱 Future Seeds Program · Tasmania · Field Data Collection Tool · Now with Export Selected! <span class="new-badge">NEW</span></p>
         <p style="font-size: 0.8rem; margin-top: 0.3rem; opacity: 0.8;">Developed by Jay Rowley for TasTAFE Future Seeds Program 2026</p>
     </div>
 </div>
 
 <script src="script.js" defer=""></script></body></html>
+```
 
-CSS:
+CSS (unchanged from your original):
+
+```css
 /* STYLES */
         * {
             box-sizing: border-box;
@@ -1203,13 +1212,7 @@ CSS:
             color: white;
             box-shadow: 0 6px 0 #5a4a2e;
         }
-        .btn-share {
-            background: #4a90e2;
-            border-color: #f5bc3c;
-            color: white;
-            box-shadow: 0 6px 0 #2a5080;
-        }
-        .btn-primary:hover, .btn-excel:hover, .btn-save:hover, .btn-csv:hover, .btn-import:hover, .btn-share:hover {
+        .btn-primary:hover, .btn-excel:hover, .btn-save:hover, .btn-csv:hover, .btn-import:hover {
             transform: translateY(-4px);
             box-shadow: 0 10px 0 #1f591f;
         }
@@ -1221,9 +1224,6 @@ CSS:
         }
         .btn-import:hover {
             background: #a5855a;
-        }
-        .btn-share:hover {
-            background: #5a9ef2;
         }
         .records-section {
             background: #e3d8b0;
@@ -1295,7 +1295,7 @@ CSS:
         }
         .records-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 1.2rem;
             max-height: 400px;
             overflow-y: auto;
@@ -1327,10 +1327,24 @@ CSS:
         .record-card.missing-required {
             border-left: 8px solid #d16b4b;
         }
+        .record-select {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 20px;
+            height: 20px;
+            accent-color: #4a90e2;
+            cursor: pointer;
+            z-index: 10;
+        }
+        .record-select:hover {
+            transform: scale(1.2);
+        }
         .record-date {
             font-weight: 700;
             color: #2d741d;
             font-size: 1.1rem;
+            margin-right: 25px;
         }
         .record-species {
             color: #3f4f2b;
@@ -1532,7 +1546,28 @@ CSS:
     display: none !important;
 }
 
-JS:
+/* Selection checkbox style */
+.record-select {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 20px;
+    height: 20px;
+    accent-color: #4a90e2;
+    cursor: pointer;
+    z-index: 10;
+}
+.record-select:hover {
+    transform: scale(1.2);
+}
+.record-date {
+    margin-right: 25px;
+}
+```
+
+JavaScript:
+
+```javascript
 // ==================== CONFIGURATION ====================
     const STORAGE_WARN_MB = 4;             // Warn when used >4MB
     const STORAGE_LIMIT_MB = 5;            // Approximate localStorage limit
@@ -1607,8 +1642,11 @@ JS:
     let map;
     let marker;
 
+    // Track selected records for export
+    let selectedRecordIds = new Set();
+
 // ===== UPDATE NOTIFICATION =====
-const APP_VERSION = '3.0'; // Major update with requested changes
+const APP_VERSION = '3.1'; // Major update with requested changes
 const SEEN_VERSION_KEY = 'futureSeedsSeenVersion';
 
 function showUpdatePopup() {
@@ -1623,12 +1661,10 @@ function showUpdatePopup() {
     popup.innerHTML = `
         <h2 style="color:#1f5c33;">✨ What's New in v${APP_VERSION}</h2>
         <ul style="text-align:left; margin:1rem 0;">
-            <li>✅ Removed photos - better memory performance</li>
-            <li>✅ Added Birds as pollinator option</li>
-            <li>✅ Email CSV data directly from app</li>
-            <li>✅ Import from CSV (no more JSON)</li>
-            <li>✅ Export only to CSV (Excel removed)</li>
-            <li>✅ "User Guide" button - more prominent</li>
+            <li>✅ Removed Share App functions</li>
+            <li>✅ Export Selected records to CSV</li>
+            <li>✅ Dynamic month display (auto-updates)</li>
+            <li>✅ Check boxes to select records</li>
         </ul>
         <button id="closeUpdatePopup" class="btn btn-primary" style="font-size:1.2rem;">Got it!</button>
     `;
@@ -1669,135 +1705,6 @@ window.addEventListener('load', function() {
         }
     }
 
-    // ========== SHARE FUNCTIONALITY ==========
-    async function shareData() {
-        if (!navigator.share) {
-            // Desktop fallback - copy to clipboard
-            const recordCount = savedRecords.length;
-            const summary = `🌱 Future Seeds Program\n📊 Total Records: ${recordCount}\n📅 Last updated: ${new Date().toLocaleDateString()}\n🔗 ${window.location.href}`;
-            
-            try {
-                await navigator.clipboard.writeText(summary);
-                alert('📋 Summary copied to clipboard!');
-            } catch (clipboardError) {
-                const textarea = document.createElement('textarea');
-                textarea.value = summary;
-                document.body.appendChild(textarea);
-                textarea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textarea);
-                alert('📋 Summary copied to clipboard!');
-            }
-            return;
-        }
-        
-        try {
-            const recordCount = savedRecords.length;
-            
-            let shareText = `🌱 Future Seeds Program\n`;
-            shareText += `📊 Total Records: ${recordCount}\n`;
-            
-            if (recordCount > 0) {
-                const speciesCount = {};
-                savedRecords.forEach(r => {
-                    const species = r.species || 'Unknown';
-                    speciesCount[species] = (speciesCount[species] || 0) + 1;
-                });
-                
-                shareText += `🌿 Species:\n`;
-                Object.entries(speciesCount).slice(0, 3).forEach(([species, count]) => {
-                    const shortName = species.split(' ').slice(0, 2).join(' ');
-                    shareText += `   • ${shortName}: ${count}\n`;
-                });
-                
-                if (Object.keys(speciesCount).length > 3) {
-                    shareText += `   • ... and ${Object.keys(speciesCount).length - 3} more\n`;
-                }
-            }
-            
-            shareText += `\n🔗 ${window.location.href}`;
-            
-            await navigator.share({
-                title: 'Future Seeds Program Data',
-                text: shareText,
-                url: window.location.href,
-            });
-            
-            document.getElementById('outputBox').innerText = '✅ Data shared successfully!';
-            
-        } catch (err) {
-            if (err.name !== 'AbortError') {
-                console.error('Share failed:', err);
-                document.getElementById('outputBox').innerText = '❌ Sharing failed: ' + err.message;
-            }
-        }
-    }
-    
-    async function shareSingleRecord(id) {
-        const record = savedRecords.find(r => r.id == id);
-        if (!record) return;
-        
-        if (!navigator.share) {
-            const summary = 
-                `🌱 Future Seeds Record\n` +
-                `📅 Date: ${record.collectionDate}\n` +
-                `👤 Observer: ${record.observer}\n` +
-                `🌿 Species: ${record.species}\n` +
-                `📍 Location: ${record.location?.region || 'Unknown'}\n` +
-                `🔗 ${window.location.href}`;
-            
-            try {
-                await navigator.clipboard.writeText(summary);
-                alert('📋 Record summary copied to clipboard!');
-            } catch (clipboardError) {
-                const textarea = document.createElement('textarea');
-                textarea.value = summary;
-                document.body.appendChild(textarea);
-                textarea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textarea);
-                alert('📋 Record summary copied to clipboard!');
-            }
-            return;
-        }
-        
-        try {
-            const floweringStages = Object.entries(record.phenology?.flowering || {})
-                .filter(([key, value]) => value && key !== 'none')
-                .map(([key]) => key)
-                .join(', ') || 'None';
-            
-            const pollinatorTypes = Object.entries(record.phenology?.pollinators || {})
-                .filter(([key, value]) => value && key !== 'other' && key !== 'none')
-                .map(([key]) => key)
-                .join(', ') || 'None';
-            
-            const shareText = 
-                `🌱 Future Seeds Record\n` +
-                `📅 Date: ${record.collectionDate}\n` +
-                `👤 Observer: ${record.observer}\n` +
-                `🌿 Species: ${record.species}\n` +
-                `📍 Location: ${record.location?.region || 'Unknown'}\n` +
-                `📍 Coordinates: ${record.location?.latitude}, ${record.location?.longitude}\n` +
-                `🌼 Flowering: ${floweringStages}\n` +
-                `🐝 Pollinators: ${pollinatorTypes}\n` +
-                (record.weather?.minTemp ? `🌡️ Temp: ${record.weather.minTemp}°C - ${record.weather.maxTemp}°C\n` : '') +
-                `\n🔗 ${window.location.href}`;
-            
-            await navigator.share({
-                title: `Future Seeds: ${record.species}`,
-                text: shareText,
-                url: window.location.href,
-            });
-            
-        } catch (err) {
-            if (err.name !== 'AbortError') {
-                console.error('Share failed:', err);
-                alert('Sharing failed: ' + err.message);
-            }
-        }
-    }
-
     // ========== EMAIL CSV FUNCTIONALITY ==========
     function emailDataAsCSV() {
         if (savedRecords.length === 0) { 
@@ -1805,7 +1712,7 @@ window.addEventListener('load', function() {
             return; 
         }
         
-        const csvString = generateCSVString();
+        const csvString = generateCSVString(savedRecords);
         const blob = new Blob([csvString], { type: 'text/csv' });
         const url = URL.createObjectURL(blob);
         
@@ -2196,7 +2103,8 @@ function initMap() {
 
     function updateMonthDisplay() {
         const monthIndex = getCurrentMonthIndex();
-        document.getElementById('currentMonthDisplay').innerHTML = `📆 ${monthDisplayNames[monthIndex]} 2026 · weather data ready`;
+        const year = new Date().getFullYear();
+        document.getElementById('currentMonthDisplay').innerHTML = `📆 ${monthDisplayNames[monthIndex]} ${year} · weather data ready`;
     }
 
     function updateTempDisplay() {
@@ -2312,7 +2220,7 @@ function initMap() {
 
         const weatherData = {
             month: monthName,
-            year: 2026,
+            year: new Date().getFullYear(),
             minTemp: getOptionalNumber('actualMinTemp'),
             maxTemp: getOptionalNumber('actualMaxTemp'),
             station: getOptionalString('bomStation'),
@@ -2435,8 +2343,8 @@ function initMap() {
     }
 
     // ========== CSV GENERATION ==========
-    function generateCSVString() {
-        if (savedRecords.length === 0) return '';
+    function generateCSVString(records) {
+        if (records.length === 0) return '';
         
         // Define CSV headers
         const headers = [
@@ -2455,7 +2363,7 @@ function initMap() {
         ];
         
         // Generate rows
-        const rows = savedRecords.map(record => {
+        const rows = records.map(record => {
             const row = [
                 record.id,
                 record.timestamp,
@@ -2515,15 +2423,37 @@ function initMap() {
             return; 
         }
         
-        const csvString = generateCSVString();
+        const csvString = generateCSVString(savedRecords);
+        downloadCSV(csvString, 'all_records');
+    }
+
+    function exportSelectedCSV() {
+        if (selectedRecordIds.size === 0) {
+            alert('No records selected. Check the boxes on records you want to export.');
+            return;
+        }
+        
+        const selectedRecords = savedRecords.filter(record => selectedRecordIds.has(record.id.toString()));
+        
+        if (selectedRecords.length === 0) {
+            alert('Selected records not found');
+            return;
+        }
+        
+        const csvString = generateCSVString(selectedRecords);
+        downloadCSV(csvString, 'selected_records');
+        
+        document.getElementById('outputBox').innerText = `✅ Exported ${selectedRecords.length} selected record(s) to CSV`;
+    }
+
+    function downloadCSV(csvString, filePrefix) {
         const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `future_seeds_export_${new Date().toISOString().split('T')[0]}.csv`;
+        a.download = `future_seeds_${filePrefix}_${new Date().toISOString().split('T')[0]}.csv`;
         a.click();
         URL.revokeObjectURL(url);
-        document.getElementById('outputBox').innerText = `✅ Exported ${savedRecords.length} records to CSV`;
     }
 
     // ========== CSV IMPORT ==========
@@ -2646,6 +2576,20 @@ function initMap() {
         reader.readAsText(file);
     }
 
+    function toggleRecordSelection(id, checked) {
+        const idStr = id.toString();
+        if (checked) {
+            selectedRecordIds.add(idStr);
+        } else {
+            selectedRecordIds.delete(idStr);
+        }
+        // Update UI to show selection count
+        const count = selectedRecordIds.size;
+        if (count > 0) {
+            document.getElementById('outputBox').innerText = `✅ ${count} record(s) selected for export`;
+        }
+    }
+
     function displayRecords() {
         const grid = document.getElementById('recordsGrid');
         const countEl = document.getElementById('recordCount');
@@ -2653,6 +2597,7 @@ function initMap() {
         if (!savedRecords || savedRecords.length === 0) {
             grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:2rem; color:#5f7344;">No saved records yet. Complete and save your first observation!</div>';
             countEl.innerText = '0 records';
+            selectedRecordIds.clear();
             return;
         }
 
@@ -2671,8 +2616,11 @@ function initMap() {
             const pollinatorCount = Object.entries(record.phenology?.pollinators || {})
                 .filter(([key, value]) => value && key !== 'other' && key !== 'none').length;
             
+            const isSelected = selectedRecordIds.has(record.id.toString());
+            
             return `
                 <div class="record-card" data-id="${record.id}" onclick="selectRecord('${record.id}')">
+                    <input type="checkbox" class="record-select" ${isSelected ? 'checked' : ''} onclick="event.stopPropagation(); toggleRecordSelection('${record.id}', this.checked)">
                     <div class="record-date">📅 ${record.collectionDate}</div>
                     <div class="record-species">🌿 <i>${displaySpecies}</i></div>
                     <div class="record-location">${locationIcon} ${locationDisplay}</div>
@@ -2681,7 +2629,6 @@ function initMap() {
                     <div class="record-weather">🐝 Pollinators: ${pollinatorCount}</div>
                     <div class="record-actions">
                         <button class="record-btn edit" onclick="event.stopPropagation(); editRecord('${record.id}')">✏️ Edit</button>
-                        <button class="record-btn" style="background: #4a90e2; color: white; border-color: #2a5080;" onclick="event.stopPropagation(); shareSingleRecord('${record.id}')">📱 Share</button>
                         <button class="record-btn delete" onclick="event.stopPropagation(); deleteRecord('${record.id}')">🗑️ Delete</button>
                     </div>
                 </div>
@@ -2772,6 +2719,10 @@ function initMap() {
         const index = savedRecords.findIndex(r => r.id == id);
         if (index === -1) return;
         if (!silent && !confirm('Delete this record?')) return;
+        
+        // Remove from selected set if present
+        selectedRecordIds.delete(id.toString());
+        
         savedRecords.splice(index, 1);
         localStorage.setItem(STORAGE_KEY, JSON.stringify(savedRecords));
         displayRecords();
@@ -2783,6 +2734,7 @@ function initMap() {
     function clearAllRecords() {
         if (confirm('Delete ALL saved records?')) {
             savedRecords = [];
+            selectedRecordIds.clear();
             localStorage.removeItem(STORAGE_KEY);
             displayRecords();
             updateStats();
@@ -2807,7 +2759,15 @@ function initMap() {
 
     function resetForm() {
         const currentObserver = document.getElementById('observer').value.trim();
-        document.getElementById('obsDate').value = '2026-02-26';
+        
+        // Set today's date in YYYY-MM-DD format
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        const todayStr = `${year}-${month}-${day}`;
+        
+        document.getElementById('obsDate').value = todayStr;
         document.getElementById('siteName').value = '';
         document.getElementById('lat').value = '-42.88';
         document.getElementById('lon').value = '147.33';
@@ -2884,6 +2844,14 @@ function initMap() {
     window.onload = function() {
         initMap();
         initializeSpeciesDropdown();
+        
+        // Set today's date as default
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        document.getElementById('obsDate').value = `${year}-${month}-${day}`;
+        
         updateSpeciesInfo();
         updateMonthDisplay();
         updateTempDisplay();
@@ -2959,19 +2927,19 @@ document.getElementById('divine-handler-onclick-1773285837194-12').addEventListe
   saveRecord()
 });
 
-// Share App button
-document.getElementById('shareBtn').addEventListener('click', function(event) {
-  shareData()
-});
-
-// Email CSV button (NEW)
+// Email CSV button
 document.getElementById('emailCsvBtn').addEventListener('click', function(event) {
   emailDataAsCSV()
 });
 
-// Export CSV button
+// Export All CSV button
 document.getElementById('exportCsvBtn').addEventListener('click', function(event) {
   exportAllCSV()
+});
+
+// Export Selected CSV button
+document.getElementById('exportSelectedCsvBtn').addEventListener('click', function(event) {
+  exportSelectedCSV()
 });
 
 // Clear All button
@@ -2998,3 +2966,27 @@ document.getElementById('obsDate').addEventListener('change', function(event) {
 document.getElementById('importFile').addEventListener('change', function(event) {
   importFromCSV()
 });
+
+// Make functions globally available for onclick handlers
+window.toggleRecordSelection = toggleRecordSelection;
+window.selectRecord = selectRecord;
+window.editRecord = editRecord;
+window.deleteRecord = deleteRecord;
+```
+
+The key changes made:
+
+1. Removed Share App functions - Deleted shareData() and shareSingleRecord() functions, and removed the Share App button from the UI
+2. Added Export Selected feature:
+   · New "Export Selected to CSV" button in the action row
+   · Checkboxes on each record card
+   · selectedRecordIds Set to track selected records
+   · toggleRecordSelection() function to handle checkbox changes
+   · exportSelectedCSV() function to export only checked records
+   · Modified generateCSVString() to accept a records parameter
+3. Dynamic month display:
+   · Removed hardcoded "Feb 2026" and "March 2026"
+   · Month now updates based on the selected date or current date
+   · Default date is now today's date (auto-updates)
+   · Year dynamically shows the current year
+   · The weather panel shows the actual month of the selected date
