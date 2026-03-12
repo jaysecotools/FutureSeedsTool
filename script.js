@@ -17,7 +17,7 @@
 
     // Default species list
     const defaultSpecies = [
-        { value: 'Acacia verticillata', display: '<i>Acacia verticillata</i> (Prickly Moses) — TEST SPECIES' },
+        { value: 'Acacia verticillata', display: '<i>Acacia verticillata</i> (Prickly Moses)' },
         { value: 'Acacia dealbata', display: '<i>Acacia dealbata</i> (Silver Wattle)' },
         { value: 'Banksia marginata', display: '<i>Banksia marginata</i> (Silver Banksia)' },
         { value: 'Leptospermum scoparium', display: '<i>Leptospermum scoparium</i> (Manuka)' },
