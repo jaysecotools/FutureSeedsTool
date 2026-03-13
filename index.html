@@ -92,33 +92,44 @@
         </div>
     </div>
 
-    <div class="region-bar">
-        <div class="selector-group">
-            <label>🌿 Species:</label>
-            <select id="speciesSelect">
-                <option value="Acacia verticillata"><i>Acacia verticillata</i> (Prickly Moses)</option>
-                <option value="Acacia dealbata"><i>Acacia dealbata</i> (Silver Wattle)</option>
-                <option value="Banksia marginata"><i>Banksia marginata</i> (Silver Banksia)</option>
-                <option value="Leptospermum scoparium"><i>Leptospermum scoparium</i> (Manuka)</option>
-                <option value="Nothofagus cunninghamii"><i>Nothofagus cunninghamii</i> (Myrtle Beech)</option>
+<div class="region-bar">
+    <div class="selector-group">
+        <label>🌿 Species:</label>
+        <div class="species-select-container">
+            <!-- This is the visible button that shows the selected species -->
+            <div class="species-select-button" id="speciesSelectButton">
+                <span id="selectedSpeciesDisplay"><i>Acacia verticillata</i> (Prickly Moses)</span>
+                <span class="dropdown-arrow">▼</span>
+            </div>
+            <!-- Hidden select for form submission -->
+            <select id="speciesSelect" style="display: none;">
+                <!-- Options will be populated by JavaScript -->
             </select>
-        </div>
-        <div class="location-options">
-            <label>📍 Quick Region <span class="required-badge">required</span>:</label>
-            <select id="regionSelect">
-                <option value="northWest">🌊 North West (Burnie/Devonport)</option>
-                <option value="north">🌲 North (Launceston)</option>
-                <option value="south" selected="">🏔️ South (Hobart)</option>
-                <option value="westCoast">🌧️ West Coast (Strahan/Queenstown)</option>
-                <option value="eastCoast">🏖️ East Coast (St Helens/Bicheno)</option>
-            </select>
-            <span class="map-in-use-badge" id="mapInUseBadge">📍 Map in use</span>
-            <span class="location-mode-indicator" id="locationMode">Quick Region</span>
-            <button class="location-mode-toggle" id="toggleLocationMode">
-                🔄 Switch to Map Mode
-            </button>
+            <!-- Dropdown for searching -->
+            <div class="species-dropdown" id="speciesDropdown">
+                <div class="species-search">
+                    <input type="text" id="speciesSearchInput" placeholder="🔍 Search species..." autocomplete="off">
+                </div>
+                <div class="species-options" id="speciesOptions"></div>
+            </div>
         </div>
     </div>
+    <div class="location-options">
+        <label>📍 Quick Region <span class="required-badge">required</span>:</label>
+        <select id="regionSelect">
+            <option value="northWest">🌊 North West (Burnie/Devonport)</option>
+            <option value="north">🌲 North (Launceston)</option>
+            <option value="south" selected="">🏔️ South (Hobart)</option>
+            <option value="westCoast">🌧️ West Coast (Strahan/Queenstown)</option>
+            <option value="eastCoast">🏖️ East Coast (St Helens/Bicheno)</option>
+        </select>
+        <span class="map-in-use-badge" id="mapInUseBadge">📍 Map in use</span>
+        <span class="location-mode-indicator" id="locationMode">Quick Region</span>
+        <button class="location-mode-toggle" id="toggleLocationMode">
+            🔄 Switch to Map Mode
+        </button>
+    </div>
+</div>
 
     <div class="content">
         <div class="current-conditions">
@@ -246,7 +257,7 @@
                             <span>🌤️</span> Auto-load Current Weather
                         </button>
                         <span class="weather-source">
-                            Powered by Open-Meteo <span style="color: #4a90e2;">⚡ No API key required</span>
+                            Powered by Open-Meteo <span style="color: #4a90e2;"</span>
                         </span>
                     </div>
                     
@@ -349,8 +360,8 @@
 
     <!-- Footer -->
     <div style="background: #1a5830; color: #f6f9ed; padding: 1rem 2.5rem; text-align: center; border-top: 3px solid #f5c542; font-size: 0.9rem; border-radius: 0 0 36px 36px;">
-        <p>🌱 Future Seeds Program · Tasmania · Field Data Collection Tool · Now with Export Selected! <span class="new-badge">NEW</span></p>
-        <p style="font-size: 0.8rem; margin-top: 0.3rem; opacity: 0.8;">Developed by Jay Rowley for TasTAFE Future Seeds Program 2026</p>
+        <p>🌱 Future Seeds Program · Tasmania · Field Data Collection Tool · Now with full Priority Species list! <span class="new-badge">NEW</span></p>
+        <p style="font-size: 0.8rem; margin-top: 0.3rem; opacity: 0.8;">Developed by Jay Rowley for TasTAFE Future Seeds Program 2026 · Version 4.0</p>
     </div>
 </div>
 
