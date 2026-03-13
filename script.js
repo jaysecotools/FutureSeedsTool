@@ -15,13 +15,98 @@
     // Load saved observer name
     let savedObserver = localStorage.getItem(OBSERVER_KEY) || '';
 
-    // Default species list
-    const defaultSpecies = [
-        { value: 'Acacia verticillata', display: '<i>Acacia verticillata</i> (Prickly Moses)' },
+    // Full species list with all species (80+ species)
+    const fullSpeciesList = [
         { value: 'Acacia dealbata', display: '<i>Acacia dealbata</i> (Silver Wattle)' },
+        { value: 'Acacia genistifolia', display: '<i>Acacia genistifolia</i>' },
+        { value: 'Acacia mearnsii', display: '<i>Acacia mearnsii</i> (Black Wattle)' },
+        { value: 'Acacia melanoxylon', display: '<i>Acacia melanoxylon</i> (Blackwood)' },
+        { value: 'Acacia mucronata', display: '<i>Acacia mucronata</i>' },
+        { value: 'Acacia riceana', display: '<i>Acacia riceana</i>' },
+        { value: 'Acacia stricta', display: '<i>Acacia stricta</i>' },
+        { value: 'Acacia verticillata', display: '<i>Acacia verticillata</i> (Prickly Moses)' },
+        { value: 'Acacia terminalis', display: '<i>Acacia terminalis</i>' },
+        { value: 'Allocasuarina crassa', display: '<i>Allocasuarina crassa</i> (Rare)' },
+        { value: 'Allocasuarina littoralis', display: '<i>Allocasuarina littoralis</i>' },
+        { value: 'Allocasuarina monilifera', display: '<i>Allocasuarina monilifera</i>' },
+        { value: 'Allocasuarina verticillata', display: '<i>Allocasuarina verticillata</i>' },
+        { value: 'Argentipalium dealbatum', display: '<i>Argentipalium dealbatum</i>' },
         { value: 'Banksia marginata', display: '<i>Banksia marginata</i> (Silver Banksia)' },
+        { value: 'Bedfordia salicina', display: '<i>Bedfordia salicina</i>' },
+        { value: 'Beyeria viscosa', display: '<i>Beyeria viscosa</i>' },
+        { value: 'Bursaria spinosa', display: '<i>Bursaria spinosa</i>' },
+        { value: 'Melaleuca pallidus', display: '<i>Melaleuca pallidus</i>' },
+        { value: 'Juncus pallidus', display: '<i>Juncus pallidus</i>' },
+        { value: 'Carex appressa', display: '<i>Carex appressa</i>' },
+        { value: 'Carex fascicularis', display: '<i>Carex fascicularis</i> (Semi common)' },
+        { value: 'Cassinia aculeata', display: '<i>Cassinia aculeata</i>' },
+        { value: 'Chrysocephalum apiculatum', display: '<i>Chrysocephalum apiculatum</i>' },
+        { value: 'Coprosma quadrifida', display: '<i>Coprosma quadrifida</i>' },
+        { value: 'Correa reflexa', display: '<i>Correa reflexa</i>' },
+        { value: 'Craspedia glauca', display: '<i>Craspedia glauca</i>' },
+        { value: 'Daviesia latifolia', display: '<i>Daviesia latifolia</i>' },
+        { value: 'Dianella tasmanica', display: '<i>Dianella tasmanica</i>' },
+        { value: 'Dodonaea filiformis', display: '<i>Dodonaea filiformis</i> (Semi Common)' },
+        { value: 'Dodonaea viscosa', display: '<i>Dodonaea viscosa</i>' },
+        { value: 'Eucalyptus amygdalina', display: '<i>Eucalyptus amygdalina</i>' },
+        { value: 'Eucalyptus coccifera', display: '<i>Eucalyptus coccifera</i> (Semi Common)' },
+        { value: 'Eucalyptus tasmaniensis', display: '<i>Eucalyptus tasmaniensis</i>' },
+        { value: 'Eucalyptus perinniana', display: '<i>Eucalyptus perinniana</i>' },
+        { value: 'Eucalyptus radiata', display: '<i>Eucalyptus radiata</i>' },
+        { value: 'Eucalyptus cordata', display: '<i>Eucalyptus cordata</i>' },
+        { value: 'Eucalyptus urnigera', display: '<i>Eucalyptus urnigera</i>' },
+        { value: 'Eucalyptus vernicosa', display: '<i>Eucalyptus vernicosa</i>' },
+        { value: 'Eucalyptus archeri', display: '<i>Eucalyptus archeri</i>' },
+        { value: 'Eucalyptus johnstonii', display: '<i>Eucalyptus johnstonii</i>' },
+        { value: 'Eucalyptus barberi', display: '<i>Eucalyptus barberi</i>' },
+        { value: 'Eucalyptus globulus', display: '<i>Eucalyptus globulus</i>' },
+        { value: 'Eucalyptus nitida', display: '<i>Eucalyptus nitida</i> (Common)' },
+        { value: 'Eucalyptus obliqua', display: '<i>Eucalyptus obliqua</i>' },
+        { value: 'Eucalyptus ovata', display: '<i>Eucalyptus ovata</i>' },
+        { value: 'Eucalyptus pauciflora', display: '<i>Eucalyptus pauciflora</i>' },
+        { value: 'Eucalyptus pulchella', display: '<i>Eucalyptus pulchella</i>' },
+        { value: 'Eucalyptus regnans', display: '<i>Eucalyptus regnans</i>' },
+        { value: 'Eucalyptus tenuiramis', display: '<i>Eucalyptus tenuiramis</i>' },
+        { value: 'Eucalyptus viminalis', display: '<i>Eucalyptus viminalis</i>' },
+        { value: 'Eucryphia lucida', display: '<i>Eucryphia lucida</i>' },
+        { value: 'Ficinia nodosa', display: '<i>Ficinia nodosa</i>' },
+        { value: 'Grevillea australis', display: '<i>Grevillea australis</i>' },
+        { value: 'Hakea epiglottis', display: '<i>Hakea epiglottis</i>' },
+        { value: 'Hakea lissosperma', display: '<i>Hakea lissosperma</i>' },
+        { value: 'Hakea macrocarpa', display: '<i>Hakea macrocarpa</i>' },
+        { value: 'Hakea nodosa', display: '<i>Hakea nodosa</i>' },
+        { value: 'Hakea sericea', display: '<i>Hakea sericea</i>' },
+        { value: 'Lasiopetalum macrophyllum', display: '<i>Lasiopetalum macrophyllum</i> (Semi Common/Coastal)' },
+        { value: 'Leptospermum lanigerum', display: '<i>Leptospermum lanigerum</i>' },
+        { value: 'Leptospermum rupestre', display: '<i>Leptospermum rupestre</i>' },
         { value: 'Leptospermum scoparium', display: '<i>Leptospermum scoparium</i> (Manuka)' },
-        { value: 'Nothofagus cunninghamii', display: '<i>Nothofagus cunninghamii</i> (Myrtle Beech)' }
+        { value: 'Linum marginale', display: '<i>Linum marginale</i>' },
+        { value: 'Lomandra longifolia', display: '<i>Lomandra longifolia</i>' },
+        { value: 'Melaleuca ericifolia', display: '<i>Melaleuca ericifolia</i>' },
+        { value: 'Melaleuca gibbosa', display: '<i>Melaleuca gibbosa</i> (Semi common)' },
+        { value: 'Melaleuca pustulata', display: '<i>Melaleuca pustulata</i>' },
+        { value: 'Melaleuca squarrosa', display: '<i>Melaleuca squarrosa</i> (Semi Common)' },
+        { value: 'Olearia phlogopappa', display: '<i>Olearia phlogopappa</i>' },
+        { value: 'Olearia argophylla', display: '<i>Olearia argophylla</i>' },
+        { value: 'Olearia ramulosa', display: '<i>Olearia ramulosa</i>' },
+        { value: 'Oxylobium ellipticum', display: '<i>Oxylobium ellipticum</i>' },
+        { value: 'Ozothamnus ferrugineus', display: '<i>Ozothamnus ferrugineus</i>' },
+        { value: 'Pelargonium australe', display: '<i>Pelargonium australe</i>' },
+        { value: 'Pittosporum bicolor', display: '<i>Pittosporum bicolor</i>' },
+        { value: 'Poa labillardierei', display: '<i>Poa labillardierei</i>' },
+        { value: 'Pomaderris apetala', display: '<i>Pomaderris apetala</i>' },
+        { value: 'Pomaderris elliptica', display: '<i>Pomaderris elliptica</i>' },
+        { value: 'Pultenaea juniperina', display: '<i>Pultenaea juniperina</i>' },
+        { value: 'Pultenaea pedunculata', display: '<i>Pultenaea pedunculata</i> (Semi Common)' },
+        { value: 'Stylidium armeria', display: '<i>Stylidium armeria</i> (Common coastal)' },
+        { value: 'Tasmannia lanceolata', display: '<i>Tasmannia lanceolata</i>' },
+        { value: 'Themeda triandra', display: '<i>Themeda triandra</i>' },
+        { value: 'Telopea truncata', display: '<i>Telopea truncata</i>' },
+        { value: 'Westringia brevifolia', display: '<i>Westringia brevifolia</i>' },
+        { value: 'Exocarpos cupressiformis', display: '<i>Exocarpos cupressiformis</i>' },
+        { value: 'Gahnia radula', display: '<i>Gahnia radula</i>' },
+        { value: 'Styphelia humifusa', display: '<i>Styphelia humifusa</i>' },
+        { value: 'Pimelea humilis', display: '<i>Pimelea humilis</i>' }
     ];
 
     // Region presets
@@ -75,8 +160,205 @@
     // Track selected records for export
     let selectedRecordIds = new Set();
 
+// ========== ENHANCED SPECIES SELECTOR ==========
+let currentSpeciesList = [...fullSpeciesList];
+let selectedSpeciesIndex = 0;
+let filteredSpeciesList = [];
+
+function initializeEnhancedSpeciesSelector() {
+    const speciesSelect = document.getElementById('speciesSelect');
+    const speciesDropdown = document.getElementById('speciesDropdown');
+    const speciesSelectButton = document.getElementById('speciesSelectButton');
+    const speciesSearchInput = document.getElementById('speciesSearchInput');
+    const speciesOptions = document.getElementById('speciesOptions');
+    const selectedSpeciesDisplay = document.getElementById('selectedSpeciesDisplay');
+    
+    // Populate the hidden select (for form submission)
+    populateHiddenSelect();
+    
+    // Set initial selected value (Acacia verticillata)
+    const initialValue = 'Acacia verticillata';
+    
+    // Find the display text for the initial value
+    const initialSpecies = fullSpeciesList.find(s => s.value === initialValue);
+    if (initialSpecies) {
+        // Strip HTML tags for display
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = initialSpecies.display;
+        selectedSpeciesDisplay.textContent = tempDiv.textContent || tempDiv.innerText || initialSpecies.display;
+    }
+    
+    // Toggle dropdown on button click
+    speciesSelectButton.addEventListener('click', function(e) {
+        e.stopPropagation();
+        if (!speciesDropdown.classList.contains('show')) {
+            showSpeciesDropdown();
+        } else {
+            speciesDropdown.classList.remove('show');
+        }
+    });
+    
+    // Search functionality
+    speciesSearchInput.addEventListener('input', function() {
+        filterSpecies(this.value);
+    });
+    
+    // Keyboard navigation
+    speciesSearchInput.addEventListener('keydown', function(e) {
+        handleSpeciesKeyboard(e);
+    });
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.species-select-container')) {
+            speciesDropdown.classList.remove('show');
+        }
+    });
+    
+    // Initialize with all species
+    filterSpecies('');
+    
+    // Set initial selected value
+    updateSelectedSpecies(initialValue);
+}
+
+function populateHiddenSelect() {
+    const select = document.getElementById('speciesSelect');
+    select.innerHTML = '';
+    currentSpeciesList.forEach(species => {
+        const option = document.createElement('option');
+        option.value = species.value;
+        option.innerHTML = species.display;
+        select.appendChild(option);
+    });
+}
+
+function showSpeciesDropdown() {
+    const dropdown = document.getElementById('speciesDropdown');
+    dropdown.classList.add('show');
+    document.getElementById('speciesSearchInput').focus();
+    document.getElementById('speciesSearchInput').select();
+}
+
+function filterSpecies(searchTerm) {
+    const searchLower = searchTerm.toLowerCase();
+    filteredSpeciesList = currentSpeciesList.filter(species => 
+        species.value.toLowerCase().includes(searchLower) || 
+        species.display.toLowerCase().includes(searchLower)
+    );
+    renderSpeciesOptions();
+}
+
+function renderSpeciesOptions() {
+    const container = document.getElementById('speciesOptions');
+    const currentValue = document.getElementById('speciesSelect').value;
+    
+    if (filteredSpeciesList.length === 0) {
+        container.innerHTML = '<div class="no-results">No matching species found</div>';
+        return;
+    }
+    
+    // Reset selected index if out of bounds
+    if (selectedSpeciesIndex >= filteredSpeciesList.length) {
+        selectedSpeciesIndex = 0;
+    }
+    
+    container.innerHTML = filteredSpeciesList.map((species, index) => {
+        const isSelected = species.value === currentValue;
+        const isHighlighted = index === selectedSpeciesIndex;
+        const classes = ['species-option'];
+        if (isSelected) classes.push('selected');
+        if (isHighlighted) classes.push('highlighted');
+        
+        return `<div class="${classes.join(' ')}" data-value="${species.value}" data-index="${index}">${species.display}</div>`;
+    }).join('');
+    
+    // Add click handlers to options
+    document.querySelectorAll('.species-option').forEach(option => {
+        option.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const value = this.dataset.value;
+            updateSelectedSpecies(value);
+            document.getElementById('speciesDropdown').classList.remove('show');
+        });
+    });
+}
+
+function updateSelectedSpecies(value) {
+    const select = document.getElementById('speciesSelect');
+    const selectedSpeciesDisplay = document.getElementById('selectedSpeciesDisplay');
+    
+    // Update hidden select
+    select.value = value;
+    
+    // Update display text
+    const species = fullSpeciesList.find(s => s.value === value);
+    if (species) {
+        // Strip HTML tags for display in the button
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = species.display;
+        selectedSpeciesDisplay.textContent = tempDiv.textContent || tempDiv.innerText || species.display;
+    }
+    
+    // Trigger change event
+    const event = new Event('change', { bubbles: true });
+    select.dispatchEvent(event);
+    
+    // Update display
+    updateSpeciesInfo();
+}
+
+function handleSpeciesKeyboard(e) {
+    const options = document.querySelectorAll('.species-option:not(.no-results)');
+    
+    switch(e.key) {
+        case 'ArrowDown':
+            e.preventDefault();
+            if (options.length > 0) {
+                selectedSpeciesIndex = Math.min(selectedSpeciesIndex + 1, options.length - 1);
+                highlightOption(selectedSpeciesIndex);
+            }
+            break;
+            
+        case 'ArrowUp':
+            e.preventDefault();
+            if (options.length > 0) {
+                selectedSpeciesIndex = Math.max(selectedSpeciesIndex - 1, 0);
+                highlightOption(selectedSpeciesIndex);
+            }
+            break;
+            
+        case 'Enter':
+            e.preventDefault();
+            if (options.length > 0 && options[selectedSpeciesIndex]) {
+                const value = options[selectedSpeciesIndex].dataset.value;
+                updateSelectedSpecies(value);
+                document.getElementById('speciesDropdown').classList.remove('show');
+            }
+            break;
+            
+        case 'Escape':
+            document.getElementById('speciesDropdown').classList.remove('show');
+            break;
+    }
+}
+
+function highlightOption(index) {
+    // Remove highlight from all
+    document.querySelectorAll('.species-option').forEach(opt => {
+        opt.classList.remove('highlighted');
+    });
+    
+    // Add highlight to current
+    const option = document.querySelector(`.species-option[data-index="${index}"]`);
+    if (option) {
+        option.classList.add('highlighted');
+        option.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }
+}
+
 // ===== UPDATE NOTIFICATION =====
-const APP_VERSION = '3.1'; // Major update with requested changes
+const APP_VERSION = '4.0'; // Major update with requested changes
 const SEEN_VERSION_KEY = 'futureSeedsSeenVersion';
 
 function showUpdatePopup() {
@@ -91,8 +373,9 @@ function showUpdatePopup() {
     popup.innerHTML = `
         <h2 style="color:#1f5c33;">✨ What's New in v${APP_VERSION}</h2>
         <ul style="text-align:left; margin:1rem 0;">
-            <li>✅ Removed Share App functions</li>
-            <li>✅ Export Selected records to CSV</li>
+            <li>✅ All priority species added</li>
+            <li>✅ Searchable species selector</li>
+            <li>✅ Smart search option to type into search</li>
             <li>✅ Dynamic month display (auto-updates)</li>
             <li>✅ Check boxes to select records</li>
         </ul>
@@ -313,16 +596,6 @@ window.addEventListener('load', function() {
     function compressSinglePhoto(file) { return Promise.resolve(file); }
 
     // ========== OTHER FUNCTIONS ==========
-    function initializeSpeciesDropdown() {
-        const select = document.getElementById('speciesSelect');
-        select.innerHTML = '';
-        defaultSpecies.forEach(species => {
-            const option = document.createElement('option');
-            option.value = species.value;
-            option.innerHTML = species.display;
-            select.appendChild(option);
-        });
-    }
 
     function toggleGuide() {
         document.getElementById('guidePanel').classList.toggle('show');
@@ -548,9 +821,9 @@ function initMap() {
         const select = document.getElementById('speciesSelect');
         const species = select.value;
         let displayName = species;
-        const defaultSpeciesObj = defaultSpecies.find(s => s.value === species);
-        if (defaultSpeciesObj) {
-            displayName = defaultSpeciesObj.display;
+        const speciesObj = fullSpeciesList.find(s => s.value === species);
+        if (speciesObj) {
+            displayName = speciesObj.display;
         } else {
             displayName = `🌱 <i>${species}</i> (Custom)`;
         }
@@ -1273,7 +1546,7 @@ function initMap() {
     // Initialize on load
     window.onload = function() {
         initMap();
-        initializeSpeciesDropdown();
+        initializeEnhancedSpeciesSelector();
         
         // Set today's date as default
         const today = new Date();
