@@ -1,1 +1,10 @@
-
+<div class="guide-step">
+    <h3>🌿 1. Species Selection <span class="required-badge">required</span></h3>
+    <ul>
+        <li><strong>Click</strong> on the species box to open the dropdown</li>
+        <li><strong>Type</strong> to search through 80+ species</li>
+        <li><strong>Scroll</strong> through the list or use arrow keys</li>
+        <li><strong>Press Enter</strong> or click to select your species</li>
+        <li>Scientific names with common names in parentheses</li>
+    </ul>
+</div>
