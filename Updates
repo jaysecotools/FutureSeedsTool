@@ -1,394 +1,51 @@
-You're right! The species selection box is missing. The issue is that the original HTML had the species select inside a div with class "selector-group", but in the new version, I accidentally hid the select element and the dropdown isn't appearing properly. Let me fix this:
-
-Replace the region-bar section in your HTML (around line 65-90) with this corrected version:
-
-```html
-<div class="region-bar">
-    <div class="selector-group">
-        <label>🌿 Species:</label>
-        <div class="species-select-container">
-            <!-- This is the visible button that shows the selected species -->
-            <div class="species-select-button" id="speciesSelectButton">
-                <span id="selectedSpeciesDisplay"><i>Acacia verticillata</i> (Prickly Moses)</span>
-                <span class="dropdown-arrow">▼</span>
-            </div>
-            <!-- Hidden select for form submission -->
-            <select id="speciesSelect" style="display: none;">
-                <!-- Options will be populated by JavaScript -->
-            </select>
-            <!-- Dropdown for searching -->
-            <div class="species-dropdown" id="speciesDropdown">
-                <div class="species-search">
-                    <input type="text" id="speciesSearchInput" placeholder="🔍 Search species..." autocomplete="off">
-                </div>
-                <div class="species-options" id="speciesOptions"></div>
-            </div>
-        </div>
-    </div>
-    <div class="location-options">
-        <label>📍 Quick Region <span class="required-badge">required</span>:</label>
-        <select id="regionSelect">
-            <option value="northWest">🌊 North West (Burnie/Devonport)</option>
-            <option value="north">🌲 North (Launceston)</option>
-            <option value="south" selected="">🏔️ South (Hobart)</option>
-            <option value="westCoast">🌧️ West Coast (Strahan/Queenstown)</option>
-            <option value="eastCoast">🏖️ East Coast (St Helens/Bicheno)</option>
-        </select>
-        <span class="map-in-use-badge" id="mapInUseBadge">📍 Map in use</span>
-        <span class="location-mode-indicator" id="locationMode">Quick Region</span>
-        <button class="location-mode-toggle" id="toggleLocationMode">
-            🔄 Switch to Map Mode
-        </button>
-    </div>
-</div>
-```
-
-And add this CSS at the end of your styles.css:
+Good catch! The map controls have a higher z-index than the dropdown. Here's the fix - add this CSS at the end of your styles.css file:
 
 ```css
-/* Species selector button */
-.species-select-button {
-    background: white;
-    border: 3px solid #fdcd5a;
-    border-radius: 60px;
-    padding: 12px 45px 12px 22px;
-    font-size: 1.1rem;
-    font-weight: 600;
-    min-width: 320px;
-    cursor: pointer;
-    font-style: italic;
-    transition: all 0.3s ease;
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.species-select-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 0 #b38f3a;
-}
-
-.species-select-button:active {
-    transform: translateY(0);
-}
-
-.dropdown-arrow {
-    position: absolute;
-    right: 15px;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 0.8rem;
-    color: #666;
-    pointer-events: none;
-}
-
-#selectedSpeciesDisplay {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    max-width: 280px;
-    display: inline-block;
-}
-
+/* Fix z-index issues */
 .species-select-container {
     position: relative;
-    width: 100%;
-    min-width: 320px;
+    z-index: 2000; /* Higher than map controls */
 }
 
 .species-dropdown {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    background: white;
-    border: 3px solid #fdcd5a;
-    border-radius: 24px;
-    margin-top: 5px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    z-index: 2001; /* Even higher when open */
+}
+
+/* Keep map controls at a lower z-index */
+.leaflet-control-container {
     z-index: 1000;
-    display: none;
-    max-height: 400px;
-    overflow-y: auto;
+    position: relative;
 }
 
-.species-dropdown.show {
-    display: block;
-    animation: slideDown 0.2s ease;
+/* Ensure the map itself doesn't block the dropdown */
+.leaflet-pane {
+    z-index: 1;
 }
 
-.species-search {
-    padding: 12px;
-    border-bottom: 2px solid #e0e0e0;
-    position: sticky;
-    top: 0;
-    background: white;
-    border-radius: 24px 24px 0 0;
+.leaflet-control {
+    z-index: 1000;
 }
 
-.species-search input {
-    width: 100%;
-    padding: 12px 18px;
-    border: 2px solid #a5b77a;
-    border-radius: 50px;
-    font-size: 1rem;
-    outline: none;
-    transition: all 0.3s ease;
+.leaflet-top {
+    z-index: 1000;
 }
 
-.species-search input:focus {
-    border-color: #479e47;
-    box-shadow: 0 0 0 5px #c6ec9e;
-    transform: scale(1.02);
+.leaflet-bottom {
+    z-index: 1000;
 }
 
-.species-options {
-    max-height: 300px;
-    overflow-y: auto;
-    padding: 8px 0;
-}
-
-.species-option {
-    padding: 10px 18px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    font-style: italic;
-    border-bottom: 1px solid #f0f0f0;
-}
-
-.species-option:hover {
-    background: #e8f0da;
-    transform: translateX(5px);
-}
-
-.species-option.selected {
-    background: #1a5830;
-    color: white;
-}
-
-.species-option.highlighted {
-    background: #f5c542;
-    color: #1a5830;
-}
-
-.no-results {
-    padding: 20px;
-    text-align: center;
-    color: #666;
-    font-style: italic;
+/* Adjust dropdown position to be closer to the button */
+.species-dropdown {
+    margin-top: 2px; /* Reduce from 5px to 2px */
+    max-height: 350px; /* Slightly reduce height if needed */
 }
 ```
 
-And update the initializeEnhancedSpeciesSelector function in your JavaScript (replace the existing function with this one):
+This CSS fix:
 
-```javascript
-// ========== ENHANCED SPECIES SELECTOR ==========
-let currentSpeciesList = [...fullSpeciesList];
-let selectedSpeciesIndex = 0;
-let filteredSpeciesList = [];
+1. Increases the dropdown's z-index to 2000-2001 so it appears above the map controls
+2. Keeps map controls at a lower z-index (1000) so they stay behind the dropdown
+3. Reduces the margin between the button and dropdown from 5px to 2px, making it drop down less
+4. Ensures all map layers and controls stay behind the species selector
 
-function initializeEnhancedSpeciesSelector() {
-    const speciesSelect = document.getElementById('speciesSelect');
-    const speciesDropdown = document.getElementById('speciesDropdown');
-    const speciesSelectButton = document.getElementById('speciesSelectButton');
-    const speciesSearchInput = document.getElementById('speciesSearchInput');
-    const speciesOptions = document.getElementById('speciesOptions');
-    const selectedSpeciesDisplay = document.getElementById('selectedSpeciesDisplay');
-    
-    // Populate the hidden select (for form submission)
-    populateHiddenSelect();
-    
-    // Set initial selected value (Acacia verticillata)
-    const initialValue = 'Acacia verticillata';
-    
-    // Find the display text for the initial value
-    const initialSpecies = fullSpeciesList.find(s => s.value === initialValue);
-    if (initialSpecies) {
-        // Strip HTML tags for display
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = initialSpecies.display;
-        selectedSpeciesDisplay.textContent = tempDiv.textContent || tempDiv.innerText || initialSpecies.display;
-    }
-    
-    // Toggle dropdown on button click
-    speciesSelectButton.addEventListener('click', function(e) {
-        e.stopPropagation();
-        if (!speciesDropdown.classList.contains('show')) {
-            showSpeciesDropdown();
-        } else {
-            speciesDropdown.classList.remove('show');
-        }
-    });
-    
-    // Search functionality
-    speciesSearchInput.addEventListener('input', function() {
-        filterSpecies(this.value);
-    });
-    
-    // Keyboard navigation
-    speciesSearchInput.addEventListener('keydown', function(e) {
-        handleSpeciesKeyboard(e);
-    });
-    
-    // Close dropdown when clicking outside
-    document.addEventListener('click', function(e) {
-        if (!e.target.closest('.species-select-container')) {
-            speciesDropdown.classList.remove('show');
-        }
-    });
-    
-    // Initialize with all species
-    filterSpecies('');
-    
-    // Set initial selected value
-    updateSelectedSpecies(initialValue);
-}
-
-function populateHiddenSelect() {
-    const select = document.getElementById('speciesSelect');
-    select.innerHTML = '';
-    currentSpeciesList.forEach(species => {
-        const option = document.createElement('option');
-        option.value = species.value;
-        option.innerHTML = species.display;
-        select.appendChild(option);
-    });
-}
-
-function showSpeciesDropdown() {
-    const dropdown = document.getElementById('speciesDropdown');
-    dropdown.classList.add('show');
-    document.getElementById('speciesSearchInput').focus();
-    document.getElementById('speciesSearchInput').select();
-}
-
-function filterSpecies(searchTerm) {
-    const searchLower = searchTerm.toLowerCase();
-    filteredSpeciesList = currentSpeciesList.filter(species => 
-        species.value.toLowerCase().includes(searchLower) || 
-        species.display.toLowerCase().includes(searchLower)
-    );
-    renderSpeciesOptions();
-}
-
-function renderSpeciesOptions() {
-    const container = document.getElementById('speciesOptions');
-    const currentValue = document.getElementById('speciesSelect').value;
-    
-    if (filteredSpeciesList.length === 0) {
-        container.innerHTML = '<div class="no-results">No matching species found</div>';
-        return;
-    }
-    
-    // Reset selected index if out of bounds
-    if (selectedSpeciesIndex >= filteredSpeciesList.length) {
-        selectedSpeciesIndex = 0;
-    }
-    
-    container.innerHTML = filteredSpeciesList.map((species, index) => {
-        const isSelected = species.value === currentValue;
-        const isHighlighted = index === selectedSpeciesIndex;
-        const classes = ['species-option'];
-        if (isSelected) classes.push('selected');
-        if (isHighlighted) classes.push('highlighted');
-        
-        return `<div class="${classes.join(' ')}" data-value="${species.value}" data-index="${index}">${species.display}</div>`;
-    }).join('');
-    
-    // Add click handlers to options
-    document.querySelectorAll('.species-option').forEach(option => {
-        option.addEventListener('click', function(e) {
-            e.stopPropagation();
-            const value = this.dataset.value;
-            updateSelectedSpecies(value);
-            document.getElementById('speciesDropdown').classList.remove('show');
-        });
-    });
-}
-
-function updateSelectedSpecies(value) {
-    const select = document.getElementById('speciesSelect');
-    const selectedSpeciesDisplay = document.getElementById('selectedSpeciesDisplay');
-    
-    // Update hidden select
-    select.value = value;
-    
-    // Update display text
-    const species = fullSpeciesList.find(s => s.value === value);
-    if (species) {
-        // Strip HTML tags for display in the button
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = species.display;
-        selectedSpeciesDisplay.textContent = tempDiv.textContent || tempDiv.innerText || species.display;
-    }
-    
-    // Trigger change event
-    const event = new Event('change', { bubbles: true });
-    select.dispatchEvent(event);
-    
-    // Update display
-    updateSpeciesInfo();
-}
-
-function handleSpeciesKeyboard(e) {
-    const options = document.querySelectorAll('.species-option:not(.no-results)');
-    
-    switch(e.key) {
-        case 'ArrowDown':
-            e.preventDefault();
-            if (options.length > 0) {
-                selectedSpeciesIndex = Math.min(selectedSpeciesIndex + 1, options.length - 1);
-                highlightOption(selectedSpeciesIndex);
-            }
-            break;
-            
-        case 'ArrowUp':
-            e.preventDefault();
-            if (options.length > 0) {
-                selectedSpeciesIndex = Math.max(selectedSpeciesIndex - 1, 0);
-                highlightOption(selectedSpeciesIndex);
-            }
-            break;
-            
-        case 'Enter':
-            e.preventDefault();
-            if (options.length > 0 && options[selectedSpeciesIndex]) {
-                const value = options[selectedSpeciesIndex].dataset.value;
-                updateSelectedSpecies(value);
-                document.getElementById('speciesDropdown').classList.remove('show');
-            }
-            break;
-            
-        case 'Escape':
-            document.getElementById('speciesDropdown').classList.remove('show');
-            break;
-    }
-}
-
-function highlightOption(index) {
-    // Remove highlight from all
-    document.querySelectorAll('.species-option').forEach(opt => {
-        opt.classList.remove('highlighted');
-    });
-    
-    // Add highlight to current
-    const option = document.querySelector(`.species-option[data-index="${index}"]`);
-    if (option) {
-        option.classList.add('highlighted');
-        option.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-    }
-}
-```
-
-This fixes the issue by:
-
-1. Adding a visible button that shows the currently selected species
-2. Keeping the hidden select for form submission
-3. Making the dropdown appear when you click the button
-4. Properly displaying the selected species in the button
-
-Now you should see a nice-looking species selector in the top section that looks like a normal dropdown but expands into a searchable list when clicked!
+The dropdown will now appear above the map controls instead of being hidden behind them, and it will be positioned slightly closer to the button.
