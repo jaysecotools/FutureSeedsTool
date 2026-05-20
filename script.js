@@ -732,7 +732,7 @@ function initMap() {
     // Ensure the map container has dimensions
     mapContainer.style.height = '300px';
     mapContainer.style.width = '100%';
-    mapContainer.style.display = 'block';
+  //  mapContainer.style.display = 'block';
     
     // Initialize map with default view (Tasmania)
     map = L.map('map', {
