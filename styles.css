@@ -10,21 +10,25 @@
             display: flex;
             justify-content: center;
         }
-        .card {
-            max-width: 1600px;
-            width: 100%;
-            background: #f6f9ed;
-            border-radius: 36px;
-            box-shadow: 0 25px 50px -12px #0b2f1a;
-            border: 3px solid #dbb15a;
-        }
-        .header {
-            background: #1a5830;
-            color: white;
-            padding: 2rem 2.5rem;
-            background: linear-gradient(145deg, #1f5c33, #124325);
-            border-bottom: 5px solid #f5c542;
-        }
+
+.card {
+    max-width: 1600px;
+    width: 100%;
+    background: #f6f9ed;
+    border-radius: 36px;  /* Keep this */
+    box-shadow: 0 25px 50px -12px #0b2f1a;
+    border: 3px solid #dbb15a;
+    overflow: hidden;  /* ADD THIS - clips children to the rounded corners */
+}
+
+.header {
+    background: #1a5830;
+    color: white;
+    padding: 2rem 2.5rem;
+    background: linear-gradient(145deg, #1f5c33, #124325);
+    border-bottom: 5px solid #f5c542;
+    border-radius: 33px 33px 0 0;  /* ADD THIS - slightly smaller than card's 36px */
+}
         .header h1 {
             font-weight: 700;
             font-size: 2.6rem;
@@ -34,6 +38,7 @@
             gap: 20px;
             flex-wrap: wrap;
         }
+
         .header h1 span {
             background: #f0c34a;
             font-size: 1.2rem;
