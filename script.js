@@ -601,21 +601,29 @@ window.addEventListener('load', function() {
         document.getElementById('guidePanel').classList.toggle('show');
     }
 
-    function toggleMap(show) {
-        const mapEl = document.getElementById('map');
-        const showBtn = document.getElementById('showMapBtn');
-        const hideBtn = document.getElementById('hideMapBtn');
-        if (show) {
-            mapEl.classList.add('show');
-            showBtn.classList.add('active');
-            hideBtn.classList.remove('active');
-            setTimeout(() => { if (map) map.invalidateSize(); }, 100);
-        } else {
-            mapEl.classList.remove('show');
-            showBtn.classList.remove('active');
-            hideBtn.classList.add('active');
-        }
+function toggleMap(show) {
+    const mapEl = document.getElementById('map');
+    const showBtn = document.getElementById('showMapBtn');
+    const hideBtn = document.getElementById('hideMapBtn');
+    
+    if (show) {
+        mapEl.classList.add('show');  // Add class to show
+        showBtn.classList.add('active');
+        hideBtn.classList.remove('active');
+        // Force Leaflet to recalculate its size after the map becomes visible
+        setTimeout(() => { 
+            if (map) {
+                map.invalidateSize();
+                // Also force the map to center properly
+                map.setView(map.getCenter(), map.getZoom());
+            }
+        }, 100);
+    } else {
+        mapEl.classList.remove('show');  // Remove class to hide
+        showBtn.classList.remove('active');
+        hideBtn.classList.add('active');
     }
+}
 
     function toggleLocationMode() {
         if (usingMapMode) {
