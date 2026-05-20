@@ -1,206 +1,2333 @@
+html:
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Future Seeds Program · Tasmania Phenology Hub v5.0</title>
-    <!-- Leaflet CSS & JS -->
+    <title>Future Seeds Program · Tasmania Phenology Hub</title>
+    <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            background: linear-gradient(145deg, #123d24, #1a4f2e);
-            padding: 2rem 1rem;
-            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
-        }
-        .card {
-            max-width: 1600px;
-            margin: 0 auto;
-            background: #fefae6;
-            border-radius: 48px;
-            box-shadow: 0 30px 45px -15px #0b2a18;
-            overflow: hidden;
-            border: 1px solid #e9c87a;
-        }
-        .header {
-            background: linear-gradient(135deg, #1b6133, #0f4522);
-            padding: 2rem 2.5rem;
-            border-bottom: 6px solid #f5c542;
-        }
-        .header h1 { color: white; font-size: 2.4rem; font-weight: 800; display: flex; align-items: center; flex-wrap: wrap; gap: 18px; }
-        .header h1 span { background: #f5c542; color: #1b4d1b; font-size: 1.2rem; font-weight: 700; padding: 0.3rem 1.5rem; border-radius: 60px; }
-        .guide-toggle.prominent {
-            background: #f5c542; color: #1c542c; font-weight: 800; font-size: 1.3rem;
-            padding: 1rem 2rem; cursor: pointer; display: flex; align-items: center; gap: 12px;
-            border-bottom: 3px solid #c49f3a; transition: 0.2s; text-transform: uppercase;
-        }
-        .guide-toggle.prominent:hover { background: #ffde8a; transform: translateY(-2px); box-shadow: 0 6px 0 #9c741c; }
-        .guide-panel { background: #fcf9e1; display: none; padding: 2rem; border-bottom: 3px solid #e3bc6a; }
-        .guide-panel.show { display: block; animation: slideDown 0.3s ease; }
-        @keyframes slideDown { from { opacity: 0; transform: translateY(-12px); } to { opacity: 1; transform: translateY(0); } }
-        .guide-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 1.5rem; }
-        .guide-step { background: white; border-radius: 28px; padding: 1.3rem; border-left: 8px solid #419c41; box-shadow: 0 5px 0 #cdb066; }
-        .guide-step h3 { color: #1f601f; margin-bottom: 0.8rem; }
-        .required-badge { color: #d16b4b; font-size: 0.7rem; font-weight: 700; margin-left: 6px; }
-        .optional-badge { color: #5e7842; font-size: 0.7rem; font-weight: 700; margin-left: 6px; }
-        .new-badge { background: #f0c34a; color: #1f4a1f; font-size: 0.7rem; padding: 2px 8px; border-radius: 30px; margin-left: 8px; }
-        .region-bar { background: #2b6a41; padding: 1rem 2rem; display: flex; flex-wrap: wrap; align-items: center; gap: 2rem; border-bottom: 2px solid #f2cd6e; }
-        .selector-group { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
-        .selector-group label { color: #fff5cf; font-weight: 700; }
-        .species-select-container { position: relative; min-width: 320px; }
-        .species-select-button {
-            background: white; border: 3px solid #fdcd5a; border-radius: 60px; padding: 12px 48px 12px 22px;
-            font-size: 1rem; font-weight: 600; cursor: pointer; font-style: italic; white-space: nowrap;
-            overflow: hidden; text-overflow: ellipsis; position: relative;
-        }
-        .species-select-button:hover { transform: translateY(-2px); box-shadow: 0 5px 0 #b38f3a; }
-        .dropdown-arrow { position: absolute; right: 18px; top: 50%; transform: translateY(-50%); }
-        .species-dropdown { position: absolute; top: 100%; left: 0; right: 0; background: white; border: 3px solid #fdcd5a;
-            border-radius: 24px; margin-top: 5px; display: none; z-index: 2100; max-height: 380px; overflow-y: auto; box-shadow: 0 15px 30px rgba(0,0,0,0.2); }
-        .species-dropdown.show { display: block; }
-        .species-search { padding: 12px; border-bottom: 1px solid #ddd; background: white; position: sticky; top: 0; }
-        .species-search input { width: 100%; padding: 10px 15px; border-radius: 60px; border: 2px solid #bbcd92; }
-        .species-options { max-height: 280px; overflow-y: auto; }
-        .species-option { padding: 10px 18px; cursor: pointer; font-style: italic; transition: 0.1s; border-bottom: 1px solid #f0efcf; }
-        .species-option:hover { background: #e8f0da; transform: translateX(4px); }
-        .species-option.selected { background: #2a6e2a; color: white; }
-        .location-options { display: flex; gap: 12px; background: #1f5e38; padding: 0.5rem 1.5rem; border-radius: 60px; align-items: center; flex-wrap: wrap; }
-        .location-mode-indicator { background: #4a90e2; padding: 4px 14px; border-radius: 40px; color: white; font-weight: 600; font-size: 0.8rem; }
-        .location-mode-toggle { background: #4a90e2; border: none; padding: 6px 15px; border-radius: 30px; color: white; font-weight: bold; cursor: pointer; }
-        .map-in-use-badge { background: #d16b4b; padding: 2px 12px; border-radius: 30px; font-size: 0.7rem; opacity: 0; transition: 0.2s; color: white; }
-        .map-in-use-badge.show { opacity: 1; }
-        .content { padding: 2.2rem; }
-        .current-conditions { background: #e2efca; border-radius: 32px; padding: 1rem 2rem; display: flex; flex-wrap: wrap; justify-content: space-between; margin-bottom: 2rem; align-items: center; }
-        .stats-panel { background: #efe1b3; border-radius: 60px; padding: 0.4rem 1rem; display: flex; gap: 1rem; }
-        .map-section { background: #e9f2dc; border-radius: 32px; padding: 1.5rem; margin-bottom: 2rem; border: 2px solid #cbb45a; }
-        #map { height: 300px; border-radius: 24px; margin-bottom: 1rem; display: none; border: 3px solid #a7bc6f; }
-        #map.show { display: block; }
-        .coord-display { display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap; background: #fff6e0; padding: 0.8rem; border-radius: 60px; }
-        .split-panel { display: flex; gap: 2rem; flex-wrap: wrap; }
-        .data-card { background: #fffff2; border-radius: 32px; padding: 1.8rem; box-shadow: 0 8px 0 #b2bc81; border: 2px solid #d6c87a; flex: 1; }
-        .checkbox-cluster { background: #eef5e2; border-radius: 32px; padding: 1rem; display: flex; flex-wrap: wrap; gap: 1rem; margin: 1rem 0; }
-        .field-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); gap: 1rem; }
-        .rating-group { display: flex; gap: 1rem; align-items: center; margin: 0.5rem 0; }
-        .star-rating { display: flex; gap: 5px; font-size: 1.5rem; cursor: pointer; }
-        .star { color: #ccc; transition: 0.1s; }
-        .star.active { color: #f5b042; }
-        .btn { background: white; border: 3px solid #3a7733; padding: 10px 22px; border-radius: 60px; font-weight: 700; cursor: pointer; transition: 0.2s; }
-        .btn-save { background: #c47e2e; color: white; border-color: #f5c542; }
-        .btn-csv { background: #3a6b47; color: white; }
-        .btn-email { background: #d16b4b; color: white; }
-        .action-row { display: flex; gap: 1rem; justify-content: flex-end; margin: 1.5rem 0; flex-wrap: wrap; }
-        .records-section { background: #f4efd3; border-radius: 32px; padding: 1.8rem; margin-top: 2rem; }
-        .records-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px,1fr)); gap: 1rem; max-height: 450px; overflow-y: auto; }
-        .record-card { background: white; border-left: 8px solid #469646; border-radius: 24px; padding: 1rem; cursor: pointer; transition: 0.2s; position: relative; }
-        .record-card.selected { border-left-color: #f5b042; background: #fff9e8; }
-        .record-select { position: absolute; top: 12px; right: 12px; width: 20px; height: 20px; cursor: pointer; z-index: 5; }
-        .import-label { background: #4a6b8a; padding: 8px 18px; border-radius: 40px; color: white; cursor: pointer; display: inline-block; }
-        .output-box { background: #1f3b22; color: #e8f0cf; padding: 1.2rem; border-radius: 28px; font-family: monospace; margin-top: 1.5rem; white-space: pre-wrap; }
-        .storage-warning { background: #f5a623; border-radius: 30px; padding: 6px 15px; margin: 10px 0; display: none; }
-        .manual-temp-card { background: #2d6d8a; border-radius: 60px; padding: 1rem 2rem; display: flex; gap: 2rem; justify-content: center; margin: 1rem 0; color: white; }
-        .weather-auto-btn { background: #4a90e2; border: none; padding: 10px 24px; border-radius: 40px; color: white; font-weight: bold; cursor: pointer; }
-        .photo-preview { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
-        .photo-preview-item { position: relative; width: 80px; }
-        .photo-preview-item img { width: 80px; height: 80px; object-fit: cover; border-radius: 12px; border: 2px solid #8ba35e; }
-        .photo-remove { position: absolute; top: -5px; right: -5px; background: #d16b4b; color: white; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; }
-        @media (max-width: 750px) { .species-select-container { min-width: 220px; } .header h1 { font-size: 1.8rem; } }
-    </style>
+    <!-- Main Styles -->
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 <div class="card">
-    <div class="header"><h1>🌱 FUTURE SEEDS PROGRAM <span>v5.0 · SCIENTIFIC EDITION</span></h1></div>
+    <div class="header">
+        <h1>🌱 FUTURE SEEDS PROGRAM <span>v5.0 · SCIENTIFIC EDITION</span></h1>
+    </div>
+    
+    <!-- User Guide Toggle -->
     <div class="guide-toggle prominent" id="guideToggleBtn">📖 USER GUIDE (v5.0)</div>
     <div class="guide-panel" id="guidePanel">
         <div class="guide-grid">
-            <div class="guide-step"><h3>🌿 1. Species & Location</h3><ul><li>Click species box → search 80+ species</li><li>Choose Quick Region OR Map Mode (toggle)</li><li>Click map / "My Location" for exact coordinates → weather auto-loads</li></ul></div>
-            <div class="guide-step"><h3>📊 2. Abundance & Effort <span class="new-badge">NEW</span></h3><ul><li><strong>Plants assessed:</strong> how many plants you observed</li><li><strong>Survey duration (mins):</strong> time spent sampling</li><li><strong>Flower abundance:</strong> 1 (few) → 5 (mass flowering)</li><li><strong>Pollinator abundance:</strong> per type (0–5 scale)</li></ul></div>
-            <div class="guide-step"><h3>🌳 3. Habitat Context <span class="new-badge">NEW</span></h3><ul><li>Canopy cover, soil moisture, recent rainfall (7d)</li><li>Disturbance type (grazing, fire, weeds, roads)</li><li>Helps explain flowering variation</li></ul></div>
-            <div class="guide-step"><h3>📸 4. Photo Voucher <span class="optional-badge">optional but valued</span></h3><ul><li>Take or upload photos of plant & flowers</li><li>Critical for species verification by experts</li><li>Images stored in your browser (private)</li></ul></div>
-            <div class="guide-step"><h3>⭐ 5. Data Confidence</h3><ul><li>Rate your certainty (1–3 stars)</li><li>Add uncertainty notes if unsure</li></ul></div>
-            <div class="guide-step"><h3>💾 6. Save, Export & Share</h3><ul><li><strong>Save Record</strong> → stores in browser</li><li><strong>✅ Export Selected to CSV</strong> → choose records via checkboxes</li><li><strong>📧 Email CSV</strong> → send to researchers</li><li><strong>Import CSV</strong> → reload previous data</li></ul></div>
+            <div class="guide-step">
+                <h3>🌿 1. Species & Location</h3>
+                <ul><li>Click species box → search 80+ species</li><li>Choose Quick Region OR Map Mode (toggle)</li><li>Click map / "My Location" for exact coordinates → weather auto-loads</li></ul>
+            </div>
+            <div class="guide-step">
+                <h3>📊 2. Abundance & Effort <span class="new-badge">NEW</span></h3>
+                <ul><li><strong>Plants assessed:</strong> how many plants you observed</li><li><strong>Survey duration (mins):</strong> time spent sampling</li><li><strong>Flower abundance:</strong> 1 (few) → 5 (mass flowering)</li><li><strong>Pollinator abundance:</strong> per type (0–5 scale)</li></ul>
+            </div>
+            <div class="guide-step">
+                <h3>🌳 3. Habitat Context <span class="new-badge">NEW</span></h3>
+                <ul><li>Canopy cover, soil moisture, recent rainfall (7d)</li><li>Disturbance type (grazing, fire, weeds, roads)</li><li>Helps explain flowering variation</li></ul>
+            </div>
+            <div class="guide-step">
+                <h3>📸 4. Photo Voucher <span class="optional-badge">optional but valued</span></h3>
+                <ul><li>Take or upload photos of plant & flowers</li><li>Critical for species verification by experts</li><li>Images stored in your browser (private)</li></ul>
+            </div>
+            <div class="guide-step">
+                <h3>⭐ 5. Data Confidence</h3>
+                <ul><li>Rate your certainty (1–3 stars)</li><li>Add uncertainty notes if unsure</li></ul>
+            </div>
+            <div class="guide-step">
+                <h3>💾 6. Save, Export & Share</h3>
+                <ul><li><strong>Save Record</strong> → stores in browser</li><li><strong>✅ Export Selected to CSV</strong> → choose records via checkboxes</li><li><strong>📧 Email CSV</strong> → send to researchers</li><li><strong>Import CSV</strong> → reload previous data</li></ul>
+            </div>
         </div>
     </div>
+    
+    <!-- Location Bar -->
     <div class="region-bar">
-        <div class="selector-group"><label>🌿 Species:</label><div class="species-select-container"><div class="species-select-button" id="speciesSelectButton"><span id="selectedSpeciesDisplay"><i>Acacia verticillata</i> (Prickly Moses)</span><span class="dropdown-arrow">▼</span></div><select id="speciesSelect" style="display:none;"></select><div class="species-dropdown" id="speciesDropdown"><div class="species-search"><input type="text" id="speciesSearchInput" placeholder="🔍 Search 80+ species..."></div><div class="species-options" id="speciesOptions"></div></div></div></div>
-        <div class="location-options"><label>📍 Quick Region:</label><select id="regionSelect"><option value="northWest">🌊 North West</option><option value="north">🌲 North (Launceston)</option><option value="south" selected>🏔️ South (Hobart)</option><option value="westCoast">🌧️ West Coast</option><option value="eastCoast">🏖️ East Coast</option></select><span class="map-in-use-badge" id="mapInUseBadge">📍 Map in use</span><span class="location-mode-indicator" id="locationMode">Quick Region</span><button class="location-mode-toggle" id="toggleLocationMode">🔄 Switch to Map Mode</button></div>
-    </div>
-    <div class="content">
-        <div class="current-conditions"><div class="species-info" id="speciesDisplay">🌼 <i>Acacia verticillata</i> — Prickly Moses</div><div class="stats-panel"><span>📊 Total: <span id="totalRecordsStat">0</span></span><span>🌡️ Avg: <span id="avgTempStat">-</span></span><span>💾 <span id="storageMeter">0 MB</span></span></div><div class="month-indicator" id="currentMonthDisplay">📆 Loading...</div></div>
-        <div class="map-section"><div class="map-header"><h3>🗺️ Precise Location <span class="required-badge">map optional</span><span class="info-badge" id="mapModeIndicator">Click map to activate</span></h3><div><button class="map-btn location-btn" id="myLocationBtn">📱 Use My Location</button><button class="map-btn active" id="showMapBtn">Show Map</button><button class="map-btn" id="hideMapBtn">Hide Map</button></div></div><div id="map" class="show"></div><div class="coord-display"><div><label>Latitude:</label><input type="text" id="lat" value="-42.88" readonly></div><div><label>Longitude:</label><input type="text" id="lon" value="147.33" readonly></div><div><label>Source:</label><input type="text" id="coordSource" value="Quick Region (Hobart)" readonly></div></div><div class="location-note" id="locationNote">⚡ Quick Region mode active. Click map or use My Location for precise coordinates.</div></div>
-        <div class="split-panel">
-            <div><div class="data-card"><h2>🌸 Flowering & Pollinators</h2><div class="field-grid"><div><label>Observer <span class="required-badge">persists</span></label><input type="text" id="observer" placeholder="Your name"></div><div><label>Date <span class="required-badge">required</span></label><input type="date" id="obsDate"></div><div><label>Site name</label><input type="text" id="siteName" placeholder="e.g., Hobart Rivulet"></div></div><div><label>🌼 Flowering stage (check all that apply)</label><div class="checkbox-cluster"><div><input type="checkbox" id="bud"> Bud</div><div><input type="checkbox" id="earlyFlower"> Early flower</div><div><input type="checkbox" id="fullFlower"> Full flower</div><div><input type="checkbox" id="petalFall"> Petal fall</div><div><input type="checkbox" id="seedPod"> Seed pod</div><div><input type="checkbox" id="floweringNone"> 🚫 None observed</div></div></div><div class="field-grid"><div><label>📊 Plants assessed <span class="new-badge">scientific</span></label><input type="number" id="plantsAssessed" min="1" max="1000" placeholder="Number of plants observed"></div><div><label>⏱️ Survey duration (minutes)</label><input type="number" id="surveyDuration" min="1" placeholder="Time spent"></div><div><label>🌸 Flower abundance (1–5)</label><select id="flowerAbundance"><option value="">— scale 1–5 —</option><option value="1">1 (very few flowers)</option><option value="2">2 (few)</option><option value="3">3 (moderate)</option><option value="4">4 (many)</option><option value="5">5 (mass flowering)</option></select></div></div><div><label>🐝 Pollinators observed</label><div class="checkbox-cluster"><div><input type="checkbox" id="honeybee"> Honeybee</div><div><input type="checkbox" id="nativeBee"> Native bee</div><div><input type="checkbox" id="fly"> Fly</div><div><input type="checkbox" id="beetle"> Beetle</div><div><input type="checkbox" id="wasp"> Wasp</div><div><input type="checkbox" id="butterfly"> Butterfly/moth</div><div><input type="checkbox" id="birds"> 🐦 Birds</div><div><input type="checkbox" id="pollinatorsNone"> 🚫 None</div></div><textarea id="otherPollinators" rows="1" placeholder="Other pollinators (bats, lizards, etc.)"></textarea><div class="field-grid"><div><label>🐝 Pollinator abundance (1–5)</label><select id="pollinatorAbundance"><option value="">— abundance —</option><option value="1">1 (rare)</option><option value="2">2 (occasional)</option><option value="3">3 (common)</option><option value="4">4 (abundant)</option><option value="5">5 (very abundant)</option></select></div></div></div><div><label>🌱 Seed maturity</label><select id="seedMaturity"><option value="">— select —</option><option value="green">Green/immature</option><option value="early">Early filling</option><option value="mature">Mature/ready</option><option value="dispersed">Already dispersed</option></select></div></div></div>
-            <div><div class="data-card"><h2>🌡️ Weather & Habitat</h2><div class="weather-controls"><button class="weather-auto-btn" id="autoWeatherBtn"><span>🌤️</span> Auto-load Weather</button><span class="weather-source">Open-Meteo (free)</span></div><div class="field-grid"><div><label>Min temp (°C)</label><input type="number" id="actualMinTemp" step="0.1"></div><div><label>Max temp (°C)</label><input type="number" id="actualMaxTemp" step="0.1"></div><div><label>Weather source</label><input type="text" id="bomStation" placeholder="Open-Meteo / BOM"></div></div><div class="manual-temp-card"><div><div class="label">min</div><div class="value" id="displayMin">--°C</div></div><div><div class="label">max</div><div class="value" id="displayMax">--°C</div></div></div><div class="field-grid"><div><label>🌳 Canopy cover</label><select id="canopyCover"><option value="">— select —</option><option value="open">Open (0-30%)</option><option value="partial">Partial (30-70%)</option><option value="dense">Dense (>70%)</option></select></div><div><label>💧 Soil moisture</label><select id="soilMoisture"><option value="">— select —</option><option value="dry">Dry</option><option value="moist">Moist</option><option value="saturated">Saturated</option></select></div><div><label>🌧️ Rainfall last 7 days</label><select id="recentRainfall"><option value="">— select —</option><option value="none">None</option><option value="light">Light (<10mm)</option><option value="moderate">Moderate (10-30mm)</option><option value="heavy">Heavy (>30mm)</option></select></div><div><label>⚠️ Disturbance type</label><select id="disturbance"><option value="">— none / select —</option><option value="grazing">Grazing</option><option value="fire">Recent fire</option><option value="weeds">Weed invasion</option><option value="roadside">Roadside management</option><option value="other">Other</option></select></div></div><div><label>🔥 Fire history</label><select id="fireHistory"><option value="">— select —</option><option value="none">No known fire</option><option value="recent">Recent (<2 yrs)</option><option value="old">Old scar (>5 yrs)</option></select></div><div><label>📝 Site notes</label><textarea id="notes" rows="2" placeholder="Plant health, flowering density, uncertainty..."></textarea></div><div><label>⭐ Data confidence</label><div class="rating-group"><div class="star-rating" id="starRating"><span class="star" data-value="1">☆</span><span class="star" data-value="2">☆</span><span class="star" data-value="3">☆</span></div><span style="font-size:0.8rem;"> (1 = uncertain, 3 = very confident)</span></div><input type="hidden" id="confidenceScore" value=""></div><div><label>📸 Photo voucher (optional)</label><input type="file" id="photoInput" accept="image/*" capture="environment" multiple><div id="photoPreview" class="photo-preview"></div><div class="camera-note" style="font-size:0.75rem; color:#4a6b8a;">📷 Photos stored locally with record</div></div></div></div>
+        <div class="selector-group">
+            <label>🌿 Species:</label>
+            <div class="species-select-container">
+                <div class="species-select-button" id="speciesSelectButton">
+                    <span id="selectedSpeciesDisplay"><i>Acacia verticillata</i> (Prickly Moses)</span>
+                    <span class="dropdown-arrow">▼</span>
+                </div>
+                <select id="speciesSelect" style="display:none;"></select>
+                <div class="species-dropdown" id="speciesDropdown">
+                    <div class="species-search"><input type="text" id="speciesSearchInput" placeholder="🔍 Search 80+ species..."></div>
+                    <div class="species-options" id="speciesOptions"></div>
+                </div>
+            </div>
         </div>
-        <div id="storageWarning" class="storage-warning"></div><div id="warningsPanel" class="warnings-panel" style="display:none;"></div>
-        <div class="action-row"><button class="btn" id="resetBtn">⟲ Reset</button><button class="btn btn-save" id="saveRecordBtn">💾 Save Record</button><button class="btn btn-email" id="emailCsvBtn">📧 Email CSV</button><button class="btn btn-csv" id="exportAllBtn">📄 Export All CSV</button><button class="btn btn-csv" id="exportSelectedBtn">✅ Export Selected CSV</button></div>
-        <div class="records-section"><div class="records-header"><h3>📋 Saved Records</h3><div class="record-count" id="recordCount">0 records</div><div class="import-area"><label class="import-label" for="importFile">📂 Import CSV <input type="file" id="importFile" accept=".csv"></label><button class="btn" id="clearAllBtn">🗑️ Clear All</button></div></div><div class="records-grid" id="recordsGrid"></div></div>
+        <div class="location-options">
+            <label>📍 Quick Region:</label>
+            <select id="regionSelect">
+                <option value="northWest">🌊 North West</option>
+                <option value="north">🌲 North (Launceston)</option>
+                <option value="south" selected>🏔️ South (Hobart)</option>
+                <option value="westCoast">🌧️ West Coast</option>
+                <option value="eastCoast">🏖️ East Coast</option>
+            </select>
+            <span class="map-in-use-badge" id="mapInUseBadge">📍 Map in use</span>
+            <span class="location-mode-indicator" id="locationMode">Quick Region</span>
+            <button class="location-mode-toggle" id="toggleLocationMode">🔄 Switch to Map Mode</button>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="content">
+        <!-- Status Bar -->
+        <div class="current-conditions">
+            <div class="species-info" id="speciesDisplay">🌼 <i>Acacia verticillata</i> — Prickly Moses</div>
+            <div class="stats-panel">
+                <span>📊 Total: <span id="totalRecordsStat">0</span></span>
+                <span>🌡️ Avg: <span id="avgTempStat">-</span></span>
+                <span>💾 <span id="storageMeter">0 MB</span></span>
+            </div>
+            <div class="month-indicator" id="currentMonthDisplay">📆 Loading...</div>
+        </div>
+        
+        <!-- Map Section -->
+        <div class="map-section">
+            <div class="map-header">
+                <h3>🗺️ Precise Location <span class="required-badge">map optional</span><span class="info-badge" id="mapModeIndicator">Click map to activate</span></h3>
+                <div>
+                    <button class="map-btn location-btn" id="myLocationBtn">📱 Use My Location</button>
+                    <button class="map-btn active" id="showMapBtn">Show Map</button>
+                    <button class="map-btn" id="hideMapBtn">Hide Map</button>
+                </div>
+            </div>
+            <div id="map" class="show"></div>
+            <div class="coord-display">
+                <div><label>Latitude:</label><input type="text" id="lat" value="-42.88" readonly></div>
+                <div><label>Longitude:</label><input type="text" id="lon" value="147.33" readonly></div>
+                <div><label>Source:</label><input type="text" id="coordSource" value="Quick Region (Hobart)" readonly></div>
+            </div>
+            <div class="location-note" id="locationNote">⚡ Quick Region mode active. Click map or use My Location for precise coordinates.</div>
+        </div>
+        
+        <!-- Split Panel: Flowering + Habitat -->
+        <div class="split-panel">
+            <!-- LEFT: Flowering & Pollinators -->
+            <div>
+                <div class="data-card">
+                    <h2>🌸 Flowering & Pollinators</h2>
+                    <div class="field-grid">
+                        <div><label>Observer <span class="required-badge">persists</span></label><input type="text" id="observer" placeholder="Your name"></div>
+                        <div><label>Date <span class="required-badge">required</span></label><input type="date" id="obsDate"></div>
+                        <div><label>Site name</label><input type="text" id="siteName" placeholder="e.g., Hobart Rivulet"></div>
+                    </div>
+                    
+                    <div><label>🌼 Flowering stage (check all that apply)</label>
+                        <div class="checkbox-cluster">
+                            <div><input type="checkbox" id="bud"> Bud</div>
+                            <div><input type="checkbox" id="earlyFlower"> Early flower</div>
+                            <div><input type="checkbox" id="fullFlower"> Full flower</div>
+                            <div><input type="checkbox" id="petalFall"> Petal fall</div>
+                            <div><input type="checkbox" id="seedPod"> Seed pod</div>
+                            <div><input type="checkbox" id="floweringNone"> 🚫 None observed</div>
+                        </div>
+                    </div>
+                    
+                    <div class="field-grid">
+                        <div><label>📊 Plants assessed <span class="new-badge">scientific</span></label><input type="number" id="plantsAssessed" min="1" max="1000" placeholder="Number of plants observed"></div>
+                        <div><label>⏱️ Survey duration (minutes)</label><input type="number" id="surveyDuration" min="1" placeholder="Time spent"></div>
+                        <div><label>🌸 Flower abundance (1–5)</label>
+                            <select id="flowerAbundance">
+                                <option value="">— scale 1–5 —</option>
+                                <option value="1">1 (very few flowers)</option>
+                                <option value="2">2 (few)</option>
+                                <option value="3">3 (moderate)</option>
+                                <option value="4">4 (many)</option>
+                                <option value="5">5 (mass flowering)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div><label>🐝 Pollinators observed</label>
+                        <div class="checkbox-cluster">
+                            <div><input type="checkbox" id="honeybee"> Honeybee</div>
+                            <div><input type="checkbox" id="nativeBee"> Native bee</div>
+                            <div><input type="checkbox" id="fly"> Fly</div>
+                            <div><input type="checkbox" id="beetle"> Beetle</div>
+                            <div><input type="checkbox" id="wasp"> Wasp</div>
+                            <div><input type="checkbox" id="butterfly"> Butterfly/moth</div>
+                            <div><input type="checkbox" id="birds"> 🐦 Birds</div>
+                            <div><input type="checkbox" id="pollinatorsNone"> 🚫 None</div>
+                        </div>
+                        <textarea id="otherPollinators" rows="1" placeholder="Other pollinators (bats, lizards, etc.)"></textarea>
+                        <div class="field-grid">
+                            <div><label>🐝 Pollinator abundance (1–5)</label>
+                                <select id="pollinatorAbundance">
+                                    <option value="">— abundance —</option>
+                                    <option value="1">1 (rare)</option>
+                                    <option value="2">2 (occasional)</option>
+                                    <option value="3">3 (common)</option>
+                                    <option value="4">4 (abundant)</option>
+                                    <option value="5">5 (very abundant)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div><label>🌱 Seed maturity</label>
+                        <select id="seedMaturity">
+                            <option value="">— select —</option>
+                            <option value="green">Green/immature</option>
+                            <option value="early">Early filling</option>
+                            <option value="mature">Mature/ready</option>
+                            <option value="dispersed">Already dispersed</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- RIGHT: Weather & Habitat -->
+            <div>
+                <div class="data-card">
+                    <h2>🌡️ Weather & Habitat</h2>
+                    <div class="weather-controls">
+                        <button class="weather-auto-btn" id="autoWeatherBtn"><span>🌤️</span> Auto-load Weather</button>
+                        <span class="weather-source">Open-Meteo (free)</span>
+                    </div>
+                    
+                    <div class="field-grid">
+                        <div><label>Min temp (°C)</label><input type="number" id="actualMinTemp" step="0.1"></div>
+                        <div><label>Max temp (°C)</label><input type="number" id="actualMaxTemp" step="0.1"></div>
+                        <div><label>Weather source</label><input type="text" id="bomStation" placeholder="Open-Meteo / BOM"></div>
+                    </div>
+                    
+                    <div class="manual-temp-card">
+                        <div><div class="label">min</div><div class="value" id="displayMin">--°C</div></div>
+                        <div><div class="label">max</div><div class="value" id="displayMax">--°C</div></div>
+                    </div>
+                    
+                    <div class="field-grid">
+                        <div><label>🌳 Canopy cover</label>
+                            <select id="canopyCover">
+                                <option value="">— select —</option>
+                                <option value="open">Open (0-30%)</option>
+                                <option value="partial">Partial (30-70%)</option>
+                                <option value="dense">Dense (>70%)</option>
+                            </select>
+                        </div>
+                        <div><label>💧 Soil moisture</label>
+                            <select id="soilMoisture">
+                                <option value="">— select —</option>
+                                <option value="dry">Dry</option>
+                                <option value="moist">Moist</option>
+                                <option value="saturated">Saturated</option>
+                            </select>
+                        </div>
+                        <div><label>🌧️ Rainfall last 7 days</label>
+                            <select id="recentRainfall">
+                                <option value="">— select —</option>
+                                <option value="none">None</option>
+                                <option value="light">Light (<10mm)</option>
+                                <option value="moderate">Moderate (10-30mm)</option>
+                                <option value="heavy">Heavy (>30mm)</option>
+                            </select>
+                        </div>
+                        <div><label>⚠️ Disturbance type</label>
+                            <select id="disturbance">
+                                <option value="">— none / select —</option>
+                                <option value="grazing">Grazing</option>
+                                <option value="fire">Recent fire</option>
+                                <option value="weeds">Weed invasion</option>
+                                <option value="roadside">Roadside management</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div><label>🔥 Fire history</label>
+                        <select id="fireHistory">
+                            <option value="">— select —</option>
+                            <option value="none">No known fire</option>
+                            <option value="recent">Recent (<2 yrs)</option>
+                            <option value="old">Old scar (>5 yrs)</option>
+                        </select>
+                    </div>
+                    
+                    <div><label>📝 Site notes</label>
+                        <textarea id="notes" rows="2" placeholder="Plant health, flowering density, uncertainty..."></textarea>
+                    </div>
+                    
+                    <div><label>⭐ Data confidence</label>
+                        <div class="rating-group">
+                            <div class="star-rating" id="starRating">
+                                <span class="star" data-value="1">☆</span>
+                                <span class="star" data-value="2">☆</span>
+                                <span class="star" data-value="3">☆</span>
+                            </div>
+                            <span style="font-size:0.8rem;"> (1 = uncertain, 3 = very confident)</span>
+                        </div>
+                        <input type="hidden" id="confidenceScore" value="">
+                    </div>
+                    
+                    <div><label>📸 Photo voucher (optional)</label>
+                        <input type="file" id="photoInput" accept="image/*" capture="environment" multiple>
+                        <div id="photoPreview" class="photo-preview"></div>
+                        <div class="camera-note" style="font-size:0.75rem; color:#4a6b8a;">📷 Photos stored locally with record</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Warning & Action Panels -->
+        <div id="storageWarning" class="storage-warning"></div>
+        <div id="warningsPanel" class="warnings-panel" style="display:none;"></div>
+        
+        <div class="action-row">
+            <button class="btn" id="resetBtn">⟲ Reset</button>
+            <button class="btn btn-save" id="saveRecordBtn">💾 Save Record</button>
+            <button class="btn btn-email" id="emailCsvBtn">📧 Email CSV</button>
+            <button class="btn btn-csv" id="exportAllBtn">📄 Export All CSV</button>
+            <button class="btn btn-csv" id="exportSelectedBtn">✅ Export Selected CSV</button>
+        </div>
+        
+        <!-- Records Section -->
+        <div class="records-section">
+            <div class="records-header">
+                <h3>📋 Saved Records</h3>
+                <div class="record-count" id="recordCount">0 records</div>
+                <div class="import-area">
+                    <label class="import-label" for="importFile">📂 Import CSV <input type="file" id="importFile" accept=".csv"></label>
+                    <button class="btn" id="clearAllBtn">🗑️ Clear All</button>
+                </div>
+            </div>
+            <div class="records-grid" id="recordsGrid"></div>
+        </div>
+        
         <div class="output-box" id="outputBox">🌿 Future Seeds v5.0 — Scientific edition active. Record abundance, habitat, confidence, and optional photos.</div>
     </div>
 </div>
-<script>
-    (function(){
-        const STORAGE_KEY='futureSeedsRecordsV5', OBSERVER_KEY='futureSeedsObserverV5';
-        let savedRecords=JSON.parse(localStorage.getItem(STORAGE_KEY))||[];
-        let savedObserver=localStorage.getItem(OBSERVER_KEY)||'';
-        let selectedRecordIds=new Set(), map, marker, usingMapMode=false, lastWeatherData=null, photoFiles=[];
-        const monthNames=['January','February','March','April','May','June','July','August','September','October','November','December'];
-        const regionPresets={ northWest:{lat:-41.05,lon:145.9,name:"North West"}, north:{lat:-41.43,lon:147.14,name:"North"}, south:{lat:-42.88,lon:147.33,name:"South"}, westCoast:{lat:-42.15,lon:145.32,name:"West Coast"}, eastCoast:{lat:-41.73,lon:148.25,name:"East Coast"} };
-        const fullSpeciesList=[{value:'Acacia verticillata',display:'<i>Acacia verticillata</i> (Prickly Moses)'},{value:'Acacia dealbata',display:'<i>Acacia dealbata</i> (Silver Wattle)'},{value:'Eucalyptus globulus',display:'<i>Eucalyptus globulus</i> (Blue Gum)'},{value:'Banksia marginata',display:'<i>Banksia marginata</i> (Silver Banksia)'},{value:'Telopea truncata',display:'<i>Telopea truncata</i> (Waratah)'},{value:'Leptospermum scoparium',display:'<i>Leptospermum scoparium</i> (Manuka)'},{value:'Eucalyptus obliqua',display:'<i>Eucalyptus obliqua</i>'},{value:'Pomaderris apetala',display:'<i>Pomaderris apetala</i>'},{value:'Olearia phlogopappa',display:'<i>Olearia phlogopappa</i>'},{value:'Melaleuca ericifolia',display:'<i>Melaleuca ericifolia</i>'}];
-        for(let i=0;i<80;i++) fullSpeciesList.push({value:`Species_${i}`,display:`<i>Priority species ${i}</i> (Tasmania)`});
-        
-        let filteredSpecies=[...fullSpeciesList];
-        function renderSpeciesOpts(){ const container=document.getElementById('speciesOptions'); const curVal=document.getElementById('speciesSelect').value; container.innerHTML=filteredSpecies.map((sp,idx)=>`<div class="species-option ${curVal===sp.value?'selected':''}" data-value="${sp.value}">${sp.display}</div>`).join(''); document.querySelectorAll('.species-option').forEach(el=>el.addEventListener('click',()=>{ updateSelectedSpecies(el.dataset.value); document.getElementById('speciesDropdown').classList.remove('show'); })); }
-        function updateSelectedSpecies(val){ document.getElementById('speciesSelect').value=val; const sp=fullSpeciesList.find(s=>s.value===val); if(sp){ const div=document.createElement('div'); div.innerHTML=sp.display; document.getElementById('selectedSpeciesDisplay').innerText=div.textContent||sp.display; } updateSpeciesInfo(); }
-        function filterSpecies(term){ const lower=term.toLowerCase(); filteredSpecies=fullSpeciesList.filter(s=>s.value.toLowerCase().includes(lower)||s.display.toLowerCase().includes(lower)); renderSpeciesOpts(); }
-        function initSpeciesSelector(){ fullSpeciesList.forEach(sp=>{ let opt=document.createElement('option'); opt.value=sp.value; opt.innerHTML=sp.display; document.getElementById('speciesSelect').appendChild(opt); }); updateSelectedSpecies('Acacia verticillata'); document.getElementById('speciesSelectButton').addEventListener('click',(e)=>{ e.stopPropagation(); document.getElementById('speciesDropdown').classList.toggle('show'); document.getElementById('speciesSearchInput').focus(); }); document.getElementById('speciesSearchInput').addEventListener('input',e=>filterSpecies(e.target.value)); document.addEventListener('click',()=>document.getElementById('speciesDropdown').classList.remove('show')); renderSpeciesOpts(); }
-        function updateSpeciesInfo(){ document.getElementById('speciesDisplay').innerHTML=`🌼 ${document.getElementById('speciesSelect').value}`; }
-        function updateMonthDisplay(){ const date=document.getElementById('obsDate').value; let idx=date?new Date(date+'T12:00:00').getMonth():new Date().getMonth(); document.getElementById('currentMonthDisplay').innerHTML=`📆 ${monthNames[idx]}`; }
-        function updateTempDisplay(){ document.getElementById('displayMin').innerText=document.getElementById('actualMinTemp').value?`${document.getElementById('actualMinTemp').value}°C`:'--°C'; document.getElementById('displayMax').innerText=document.getElementById('actualMaxTemp').value?`${document.getElementById('actualMaxTemp').value}°C`:'--°C'; }
-        async function loadCurrentWeather(){ const lat=document.getElementById('lat').value,lon=document.getElementById('lon').value; try{ const resp=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m&daily=temperature_2m_min,temperature_2m_max&timezone=auto`); const data=await resp.json(); if(data.daily){ document.getElementById('actualMinTemp').value=data.daily.temperature_2m_min[0].toFixed(1); document.getElementById('actualMaxTemp').value=data.daily.temperature_2m_max[0].toFixed(1); updateTempDisplay(); document.getElementById('bomStation').value=`Open-Meteo (auto-loaded)`; } } catch(e){ console.log(e); } }
-        function collectRecord(){ let photosBase64=[]; photoFiles.forEach(file=>{ const reader=new FileReader(); reader.readAsDataURL(file); }); return { id:Date.now(), timestamp:new Date().toISOString(), observer:document.getElementById('observer').value.trim(), collectionDate:document.getElementById('obsDate').value, species:document.getElementById('speciesSelect').value, location:{ region:usingMapMode?"Map Selection":regionPresets[document.getElementById('regionSelect').value].name, latitude:parseFloat(document.getElementById('lat').value), longitude:parseFloat(document.getElementById('lon').value), siteName:document.getElementById('siteName').value||null }, phenology:{ flowering:{ bud:document.getElementById('bud').checked, early:document.getElementById('earlyFlower').checked, full:document.getElementById('fullFlower').checked, petalFall:document.getElementById('petalFall').checked, seedPod:document.getElementById('seedPod').checked, none:document.getElementById('floweringNone').checked }, pollinators:{ honeybee:document.getElementById('honeybee').checked, nativeBee:document.getElementById('nativeBee').checked, fly:document.getElementById('fly').checked, beetle:document.getElementById('beetle').checked, wasp:document.getElementById('wasp').checked, butterfly:document.getElementById('butterfly').checked, birds:document.getElementById('birds').checked, other:document.getElementById('otherPollinators').value, none:document.getElementById('pollinatorsNone').checked }, pollinatorAbundance:document.getElementById('pollinatorAbundance').value, flowerAbundance:document.getElementById('flowerAbundance').value, plantsAssessed:document.getElementById('plantsAssessed').value, surveyDuration:document.getElementById('surveyDuration').value, seedMaturity:document.getElementById('seedMaturity').value }, habitat:{ canopyCover:document.getElementById('canopyCover').value, soilMoisture:document.getElementById('soilMoisture').value, recentRainfall:document.getElementById('recentRainfall').value, disturbance:document.getElementById('disturbance').value, fireHistory:document.getElementById('fireHistory').value, notes:document.getElementById('notes').value }, weather:{ minTemp:parseFloat(document.getElementById('actualMinTemp').value)||null, maxTemp:parseFloat(document.getElementById('actualMaxTemp').value)||null, source:document.getElementById('bomStation').value }, confidence:document.getElementById('confidenceScore').value, photos:[] }; }
-        function validateForm(){ let errs=[]; if(!document.getElementById('observer').value.trim()) errs.push('Observer name required'); if(!document.getElementById('obsDate').value) errs.push('Date required'); const flowNone=document.getElementById('floweringNone').checked; const flowChecked=['bud','earlyFlower','fullFlower','petalFall','seedPod'].some(id=>document.getElementById(id).checked); if(!flowChecked&&!flowNone) errs.push('Select a flowering stage or "None"'); const pollNone=document.getElementById('pollinatorsNone').checked; const pollChecked=['honeybee','nativeBee','fly','beetle','wasp','butterfly','birds'].some(id=>document.getElementById(id).checked); if(!pollChecked&&!document.getElementById('otherPollinators').value.trim()&&!pollNone) errs.push('Select pollinators or "None"'); const panel=document.getElementById('warningsPanel'); if(errs.length){ panel.style.display='block'; panel.innerHTML='❌ '+errs.join('<br>'); return false; } panel.style.display='none'; return true; }
-        function saveRecord(){ if(!validateForm()) return; const rec=collectRecord(); savedRecords.push(rec); localStorage.setItem(STORAGE_KEY,JSON.stringify(savedRecords)); displayRecords(); updateStats(); updateStorageMeter(); document.getElementById('outputBox').innerText=`✅ Saved: ${rec.species} | Plants: ${rec.phenology.plantsAssessed||'?'} | Confidence: ${rec.confidence||'?'}/3`; resetForm(); }
-        function displayRecords(){ const grid=document.getElementById('recordsGrid'),countEl=document.getElementById('recordCount'); if(!savedRecords.length){ grid.innerHTML='<div style="grid-column:1/-1; text-align:center;">No records yet.</div>'; countEl.innerText='0 records'; selectedRecordIds.clear(); return; } countEl.innerText=`${savedRecords.length} records`; const sorted=[...savedRecords].reverse(); grid.innerHTML=sorted.map(rec=>`<div class="record-card" data-id="${rec.id}"><input type="checkbox" class="record-select" ${selectedRecordIds.has(rec.id.toString())?'checked':''} onclick="event.stopPropagation(); window.toggleSelection('${rec.id}',this.checked)"><div class="record-date">📅 ${rec.collectionDate}</div><div class="record-species">🌿 ${rec.species.split(' ').slice(0,2).join(' ')}</div><div class="record-location">📍 ${rec.location.region}</div><div class="record-weather">🌡️ ${rec.weather.minTemp||'?'}/${rec.weather.maxTemp||'?'}°C</div><div>⭐ ${rec.confidence||'?'}/3 · 🌸${rec.phenology.flowerAbundance||'?'}</div><div class="record-actions"><button class="record-btn edit" onclick="event.stopPropagation(); editRecordById('${rec.id}')">✏️ Edit</button><button class="record-btn delete" onclick="event.stopPropagation(); deleteRecordById('${rec.id}')">🗑️ Delete</button></div></div>`).join(''); }
-        window.toggleSelection=(id,ch)=>{ ch?selectedRecordIds.add(id):selectedRecordIds.delete(id); document.getElementById('outputBox').innerText=`${selectedRecordIds.size} record(s) selected for export.`; };
-        window.editRecordById=(id)=>{ const rec=savedRecords.find(r=>r.id==id); if(rec){ alert('Edit mode: delete old record and re-save after changes'); savedRecords=savedRecords.filter(r=>r.id!=id); localStorage.setItem(STORAGE_KEY,JSON.stringify(savedRecords)); displayRecords(); updateStats(); } };
-        window.deleteRecordById=(id)=>{ if(confirm('Delete?')){ savedRecords=savedRecords.filter(r=>r.id!=id); selectedRecordIds.delete(id.toString()); localStorage.setItem(STORAGE_KEY,JSON.stringify(savedRecords)); displayRecords(); updateStats(); updateStorageMeter(); } };
-        function resetForm(){ document.getElementById('obsDate').value=new Date().toISOString().slice(0,10); document.getElementById('siteName').value=''; document.getElementById('plantsAssessed').value=''; document.getElementById('surveyDuration').value=''; document.getElementById('flowerAbundance').value=''; document.getElementById('pollinatorAbundance').value=''; document.getElementById('canopyCover').value=''; document.getElementById('soilMoisture').value=''; document.getElementById('recentRainfall').value=''; document.getElementById('disturbance').value=''; document.getElementById('confidenceScore').value=''; document.querySelectorAll('.star').forEach(s=>s.classList.remove('active')); if(savedObserver) document.getElementById('observer').value=savedObserver; updateFromRegion(); enableQuickRegionMode(); updateMonthDisplay(); }
-        function updateStats(){ const total=savedRecords.length; const temps=savedRecords.filter(r=>r.weather?.minTemp); if(temps.length){ let avgMin=temps.reduce((a,b)=>a+(b.weather.minTemp||0),0)/temps.length; document.getElementById('avgTempStat').innerHTML=`${avgMin.toFixed(1)}°C`; } else document.getElementById('avgTempStat').innerHTML='-'; document.getElementById('totalRecordsStat').innerText=total; }
-        function updateStorageMeter(){ const size=new Blob([localStorage.getItem(STORAGE_KEY)||'']).size/(1024*1024); document.getElementById('storageMeter').innerText=`${size.toFixed(2)} MB`; }
-        function generateCSV(records){ if(!records.length) return ''; const headers=['ID','Observer','Date','Species','Lat','Lng','Region','MinTemp','MaxTemp','PlantsAssessed','FlowerAbundance','PollinatorAbundance','CanopyCover','SoilMoisture','Disturbance','Confidence','Notes']; const rows=records.map(r=>[r.id,r.observer,r.collectionDate,r.species,r.location.latitude,r.location.longitude,r.location.region,r.weather.minTemp||'',r.weather.maxTemp||'',r.phenology.plantsAssessed||'',r.phenology.flowerAbundance||'',r.phenology.pollinatorAbundance||'',r.habitat.canopyCover||'',r.habitat.soilMoisture||'',r.habitat.disturbance||'',r.confidence||'',r.habitat.notes||'']); return [headers.join(','),...rows.map(row=>row.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(','))].join('\n'); }
-        function exportAll(){ const csv=generateCSV(savedRecords); if(csv) downloadCSV(csv,'all_records'); else alert('No records'); }
-        function exportSelected(){ const selected=savedRecords.filter(r=>selectedRecordIds.has(r.id.toString())); if(!selected.length){ alert('Select records using checkboxes first.'); return; } downloadCSV(generateCSV(selected),'selected_records'); }
-        function downloadCSV(csv,prefix){ const blob=new Blob([csv],{type:'text/csv'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`future_seeds_${prefix}_${new Date().toISOString().slice(0,10)}.csv`; a.click(); URL.revokeObjectURL(a.href); }
-        function emailCSV(){ const csv=generateCSV(savedRecords); if(!csv){ alert('No records'); return; } const blob=new Blob([csv],{type:'text/csv'}); const url=URL.createObjectURL(blob); window.location.href=`mailto:?subject=Future%20Seeds%20Data&body=CSV%20export%20from%20Future%20Seeds%20app%3A%20${url}`; setTimeout(()=>URL.revokeObjectURL(url),10000); }
-        function initMap(){ map=L.map('map').setView([-42.88,147.33],7); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap'}).addTo(map); marker=L.marker([-42.88,147.33],{draggable:true}).addTo(map); marker.on('dragend',()=>{ const pos=marker.getLatLng(); document.getElementById('lat').value=pos.lat.toFixed(4); document.getElementById('lon').value=pos.lng.toFixed(4); enableMapMode(); loadCurrentWeather(); }); map.on('click',e=>{ marker.setLatLng(e.latlng); document.getElementById('lat').value=e.latlng.lat.toFixed(4); document.getElementById('lon').value=e.latlng.lng.toFixed(4); enableMapMode(); loadCurrentWeather(); }); }
-        function enableMapMode(){ usingMapMode=true; document.getElementById('regionSelect').disabled=true; document.getElementById('mapInUseBadge').classList.add('show'); document.getElementById('toggleLocationMode').innerHTML='🔄 Switch to Quick Region'; }
-        function enableQuickRegionMode(){ usingMapMode=false; document.getElementById('regionSelect').disabled=false; document.getElementById('mapInUseBadge').classList.remove('show'); document.getElementById('toggleLocationMode').innerHTML='🔄 Switch to Map Mode'; updateFromRegion(); }
-        function updateFromRegion(){ if(!usingMapMode){ const reg=document.getElementById('regionSelect').value; const p=regionPresets[reg]; document.getElementById('lat').value=p.lat.toFixed(4); document.getElementById('lon').value=p.lon.toFixed(4); if(marker) marker.setLatLng([p.lat,p.lon]); } }
-        function getUserLocation(){ if(navigator.geolocation) navigator.geolocation.getCurrentPosition(pos=>{ marker.setLatLng([pos.coords.latitude,pos.coords.longitude]); document.getElementById('lat').value=pos.coords.latitude.toFixed(4); document.getElementById('lon').value=pos.coords.longitude.toFixed(4); enableMapMode(); loadCurrentWeather(); }); }
-        function toggleMap(show){ const mapDiv=document.getElementById('map'); show?mapDiv.classList.add('show'):mapDiv.classList.remove('show'); if(show) setTimeout(()=>map?.invalidateSize(),100); }
-        document.getElementById('guideToggleBtn').addEventListener('click',()=>document.getElementById('guidePanel').classList.toggle('show'));
-        document.getElementById('toggleLocationMode').addEventListener('click',()=>usingMapMode?enableQuickRegionMode():enableMapMode());
-        document.getElementById('myLocationBtn').addEventListener('click',getUserLocation);
-        document.getElementById('showMapBtn').addEventListener('click',()=>toggleMap(true));
-        document.getElementById('hideMapBtn').addEventListener('click',()=>toggleMap(false));
-        document.getElementById('autoWeatherBtn').addEventListener('click',loadCurrentWeather);
-        document.getElementById('saveRecordBtn').addEventListener('click',saveRecord);
-        document.getElementById('resetBtn').addEventListener('click',resetForm);
-        document.getElementById('exportAllBtn').addEventListener('click',exportAll);
-        document.getElementById('exportSelectedBtn').addEventListener('click',exportSelected);
-        document.getElementById('emailCsvBtn').addEventListener('click',emailCSV);
-        document.getElementById('clearAllBtn').addEventListener('click',()=>{ if(confirm('Delete ALL records?')){ savedRecords=[]; selectedRecordIds.clear(); localStorage.setItem(STORAGE_KEY,'[]'); displayRecords(); updateStats(); updateStorageMeter(); } });
-        document.getElementById('regionSelect').addEventListener('change',updateFromRegion);
-        document.getElementById('obsDate').addEventListener('change',updateMonthDisplay);
-        document.getElementById('floweringNone').addEventListener('change',function(){ if(this.checked) ['bud','earlyFlower','fullFlower','petalFall','seedPod'].forEach(id=>document.getElementById(id).checked=false); });
-        document.getElementById('pollinatorsNone').addEventListener('change',function(){ if(this.checked) ['honeybee','nativeBee','fly','beetle','wasp','butterfly','birds'].forEach(id=>document.getElementById(id).checked=false); });
-        document.getElementById('actualMinTemp').addEventListener('input',updateTempDisplay);
-        document.getElementById('actualMaxTemp').addEventListener('input',updateTempDisplay);
-        const stars=document.querySelectorAll('.star'); stars.forEach(star=>{ star.addEventListener('click',()=>{ const val=parseInt(star.dataset.value); stars.forEach((s,i)=>{ if(i<val) s.classList.add('active'); else s.classList.remove('active'); }); document.getElementById('confidenceScore').value=val; }); });
-        document.getElementById('photoInput').addEventListener('change',e=>{ photoFiles=Array.from(e.target.files); const preview=document.getElementById('photoPreview'); preview.innerHTML=''; photoFiles.forEach(f=>{ const reader=new FileReader(); reader.onload=ev=>{ const div=document.createElement('div'); div.className='photo-preview-item'; div.innerHTML=`<img src="${ev.target.result}" style="width:80px;height:80px;object-fit:cover;"><button class="photo-remove">✖</button>`; div.querySelector('.photo-remove').onclick=()=>div.remove(); preview.appendChild(div); }; reader.readAsDataURL(f); }); });
-        initMap(); initSpeciesSelector(); resetForm(); displayRecords(); updateStats(); updateStorageMeter(); if(savedObserver) document.getElementById('observer').value=savedObserver;
-    })();
-</script>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<!-- Main Application Script -->
+<script src="script.js"></script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+css:
+/* ========================================
+   FUTURE SEEDS PROGRAM - STYLESHEET v5.0
+   Nature-inspired design, responsive, accessible
+   ======================================== */
+
+/* ---------- RESET & BASE ---------- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: linear-gradient(145deg, #123d24, #1a4f2e);
+    padding: 2rem 1rem;
+    font-family: 'Segoe UI', Roboto, 'Helvetica Neue', system-ui, sans-serif;
+    min-height: 100vh;
+}
+
+/* ---------- MAIN CARD CONTAINER ---------- */
+.card {
+    max-width: 1600px;
+    margin: 0 auto;
+    background: #fefae6;
+    border-radius: 48px;
+    box-shadow: 0 30px 45px -15px #0b2a18;
+    overflow: hidden;
+    border: 1px solid #e9c87a;
+}
+
+/* ---------- HEADER ---------- */
+.header {
+    background: linear-gradient(135deg, #1b6133, #0f4522);
+    padding: 2rem 2.5rem;
+    border-bottom: 6px solid #f5c542;
+}
+
+.header h1 {
+    color: white;
+    font-size: 2.4rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 18px;
+    letter-spacing: -0.3px;
+}
+
+.header h1 span {
+    background: #f5c542;
+    color: #1b4d1b;
+    font-size: 1.2rem;
+    font-weight: 700;
+    padding: 0.3rem 1.5rem;
+    border-radius: 60px;
+    box-shadow: inset 0 -1px 0 #ac873a;
+}
+
+/* ---------- USER GUIDE ---------- */
+.guide-toggle.prominent {
+    background: #f5c542;
+    color: #1c542c;
+    font-weight: 800;
+    font-size: 1.3rem;
+    padding: 1rem 2rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 3px solid #c49f3a;
+    transition: all 0.2s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.guide-toggle.prominent:hover {
+    background: #ffde8a;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 0 #9c741c;
+}
+
+.guide-toggle.prominent:active {
+    transform: translateY(0);
+}
+
+.guide-panel {
+    background: #fcf9e1;
+    display: none;
+    padding: 2rem;
+    border-bottom: 3px solid #e3bc6a;
+}
+
+.guide-panel.show {
+    display: block;
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.guide-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+    gap: 1.5rem;
+}
+
+.guide-step {
+    background: white;
+    border-radius: 28px;
+    padding: 1.3rem;
+    border-left: 8px solid #419c41;
+    box-shadow: 0 5px 0 #cdb066;
+    transition: transform 0.2s ease;
+}
+
+.guide-step:hover {
+    transform: translateY(-3px);
+}
+
+.guide-step h3 {
+    color: #1f601f;
+    margin-bottom: 0.8rem;
+    font-size: 1.2rem;
+}
+
+.guide-step ul {
+    padding-left: 1.2rem;
+    color: #2d4a2d;
+}
+
+.guide-step li {
+    margin: 0.4rem 0;
+    line-height: 1.4;
+}
+
+/* ---------- BADGES ---------- */
+.required-badge {
+    color: #d16b4b;
+    font-size: 0.7rem;
+    font-weight: 700;
+    margin-left: 6px;
+    text-transform: uppercase;
+}
+
+.optional-badge {
+    color: #5e7842;
+    font-size: 0.7rem;
+    font-weight: 700;
+    margin-left: 6px;
+    text-transform: uppercase;
+}
+
+.new-badge {
+    background: #f0c34a;
+    color: #1f4a1f;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 30px;
+    margin-left: 8px;
+    display: inline-block;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); background: #ffd966; }
+}
+
+.info-badge {
+    background: #4a90e2;
+    color: white;
+    padding: 0.2rem 0.8rem;
+    border-radius: 30px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-left: 10px;
+}
+
+/* ---------- REGION BAR ---------- */
+.region-bar {
+    background: #2b6a41;
+    padding: 1rem 2rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 2rem;
+    border-bottom: 2px solid #f2cd6e;
+}
+
+.selector-group {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.selector-group label {
+    color: #fff5cf;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+}
+
+/* Species Selector Container */
+.species-select-container {
+    position: relative;
+    min-width: 320px;
+}
+
+.species-select-button {
+    background: white;
+    border: 3px solid #fdcd5a;
+    border-radius: 60px;
+    padding: 12px 48px 12px 22px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-style: italic;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+.species-select-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 0 #b38f3a;
+}
+
+.dropdown-arrow {
+    position: absolute;
+    right: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.8rem;
+    color: #666;
+}
+
+.species-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 3px solid #fdcd5a;
+    border-radius: 24px;
+    margin-top: 5px;
+    display: none;
+    z-index: 2100;
+    max-height: 380px;
+    overflow-y: auto;
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+}
+
+.species-dropdown.show {
+    display: block;
+    animation: slideDown 0.2s ease;
+}
+
+.species-search {
+    padding: 12px;
+    border-bottom: 1px solid #ddd;
+    background: white;
+    position: sticky;
+    top: 0;
+}
+
+.species-search input {
+    width: 100%;
+    padding: 10px 15px;
+    border-radius: 60px;
+    border: 2px solid #bbcd92;
+    outline: none;
+    font-size: 0.95rem;
+}
+
+.species-search input:focus {
+    border-color: #479e47;
+    box-shadow: 0 0 0 3px #c6ec9e;
+}
+
+.species-options {
+    max-height: 280px;
+    overflow-y: auto;
+}
+
+.species-option {
+    padding: 10px 18px;
+    cursor: pointer;
+    font-style: italic;
+    transition: all 0.1s ease;
+    border-bottom: 1px solid #f0efcf;
+}
+
+.species-option:hover {
+    background: #e8f0da;
+    transform: translateX(4px);
+}
+
+.species-option.selected {
+    background: #2a6e2a;
+    color: white;
+}
+
+/* Location Options */
+.location-options {
+    display: flex;
+    gap: 12px;
+    background: #1f5e38;
+    padding: 0.5rem 1.5rem;
+    border-radius: 60px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.location-options select {
+    background: #fef7d6;
+    border-radius: 40px;
+    padding: 8px 28px 8px 16px;
+    border: 2px solid #eeb844;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.location-options select:disabled {
+    background: #e0e0e0;
+    border-color: #999;
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.location-mode-indicator {
+    background: #4a90e2;
+    padding: 4px 14px;
+    border-radius: 40px;
+    color: white;
+    font-weight: 600;
+    font-size: 0.8rem;
+}
+
+.location-mode-toggle {
+    background: #4a90e2;
+    border: none;
+    padding: 6px 15px;
+    border-radius: 30px;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.location-mode-toggle:hover {
+    transform: translateY(-2px);
+    background: #5a9ef2;
+}
+
+.map-in-use-badge {
+    background: #d16b4b;
+    padding: 2px 12px;
+    border-radius: 30px;
+    font-size: 0.7rem;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    color: white;
+    font-weight: 600;
+}
+
+.map-in-use-badge.show {
+    opacity: 1;
+}
+
+/* ---------- MAIN CONTENT ---------- */
+.content {
+    padding: 2.2rem;
+}
+
+/* Current Conditions Bar */
+.current-conditions {
+    background: #e2efca;
+    border-radius: 32px;
+    padding: 1rem 2rem;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    gap: 1rem;
+}
+
+.species-info {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #1a4d1a;
+}
+
+.stats-panel {
+    background: #efe1b3;
+    border-radius: 60px;
+    padding: 0.4rem 1rem;
+    display: flex;
+    gap: 1rem;
+    font-weight: 600;
+}
+
+.month-indicator {
+    background: #3e823e;
+    padding: 0.5rem 1.5rem;
+    border-radius: 60px;
+    color: #ffffc7;
+    font-weight: 700;
+}
+
+/* Map Section */
+.map-section {
+    background: #e9f2dc;
+    border-radius: 32px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    border: 2px solid #cbb45a;
+}
+
+.map-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.map-header h3 {
+    color: #1e611e;
+    font-size: 1.3rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.map-btn {
+    background: white;
+    border: 3px solid #5e8f4a;
+    padding: 8px 20px;
+    border-radius: 50px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.map-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 0 #3a5f3a;
+}
+
+.map-btn.active {
+    background: #3d973d;
+    border-color: #f5bc3c;
+    color: white;
+}
+
+.map-btn.location-btn {
+    background: #4a90e2;
+    border-color: #2a5080;
+    color: white;
+}
+
+#map {
+    height: 300px;
+    border-radius: 24px;
+    margin-bottom: 1rem;
+    display: none;
+    border: 3px solid #a7bc6f;
+}
+
+#map.show {
+    display: block;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.coord-display {
+    display: flex;
+    gap: 1.5rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    background: #fff6e0;
+    padding: 0.8rem;
+    border-radius: 60px;
+}
+
+.coord-display label {
+    font-weight: 700;
+    color: #1b581b;
+}
+
+.coord-display input {
+    background: white;
+    border: 2px solid #bcc987;
+    border-radius: 40px;
+    padding: 6px 12px;
+    width: 110px;
+}
+
+.location-note {
+    background: #fdebb3;
+    padding: 0.5rem 1.5rem;
+    border-radius: 60px;
+    text-align: center;
+    margin-top: 1rem;
+    font-size: 0.85rem;
+    color: #1f4f1f;
+}
+
+/* Split Panel */
+.split-panel {
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+}
+
+.split-panel > div {
+    flex: 1;
+    min-width: 320px;
+}
+
+/* Data Cards */
+.data-card {
+    background: #fffff2;
+    border-radius: 32px;
+    padding: 1.8rem;
+    box-shadow: 0 8px 0 #b2bc81;
+    border: 2px solid #d6c87a;
+    margin-bottom: 1.5rem;
+    transition: transform 0.2s ease;
+}
+
+.data-card:hover {
+    transform: translateY(-2px);
+}
+
+.data-card h2 {
+    color: #1f6b1f;
+    font-weight: 700;
+    font-size: 1.6rem;
+    border-bottom: 3px dotted #c2d17e;
+    padding-bottom: 0.8rem;
+    margin-bottom: 1.5rem;
+}
+
+/* Form Elements */
+.field-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.field-grid label {
+    font-weight: 700;
+    color: #1b591b;
+    font-size: 0.85rem;
+    display: block;
+    margin-bottom: 4px;
+}
+
+input, select, textarea {
+    border: 3px solid #a5b77a;
+    border-radius: 50px;
+    padding: 10px 16px;
+    font-size: 0.95rem;
+    width: 100%;
+    transition: all 0.2s ease;
+    background: white;
+}
+
+input:focus, select:focus, textarea:focus {
+    border-color: #479e47;
+    box-shadow: 0 0 0 4px #c6ec9e;
+    outline: none;
+}
+
+textarea {
+    border-radius: 24px;
+    resize: vertical;
+}
+
+.checkbox-cluster {
+    background: #eef5e2;
+    border-radius: 32px;
+    padding: 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin: 0.8rem 0;
+}
+
+.checkbox-cluster div {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.checkbox-cluster input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    accent-color: #3f9643;
+}
+
+/* Weather Section */
+.weather-controls {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 1.2rem;
+}
+
+.weather-auto-btn {
+    background: #4a90e2;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 40px;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.weather-auto-btn:hover {
+    transform: translateY(-2px);
+    background: #5a9ef2;
+}
+
+.weather-source {
+    font-size: 0.8rem;
+    color: #1f5c33;
+    background: white;
+    padding: 5px 12px;
+    border-radius: 30px;
+}
+
+.manual-temp-card {
+    background: #2d6d8a;
+    border-radius: 60px;
+    padding: 1rem 2rem;
+    display: flex;
+    gap: 2rem;
+    justify-content: center;
+    margin: 1rem 0;
+    color: white;
+    text-align: center;
+}
+
+.manual-temp-card .value {
+    font-size: 2rem;
+    font-weight: 800;
+}
+
+/* Rating Stars */
+.rating-group {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    margin: 0.5rem 0;
+}
+
+.star-rating {
+    display: flex;
+    gap: 8px;
+    font-size: 1.8rem;
+    cursor: pointer;
+}
+
+.star {
+    color: #ccc;
+    transition: all 0.1s ease;
+}
+
+.star.active {
+    color: #f5b042;
+    text-shadow: 0 0 2px #b87a1a;
+}
+
+/* Photo Preview */
+.photo-preview {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.photo-preview-item {
+    position: relative;
+    width: 80px;
+}
+
+.photo-preview-item img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 12px;
+    border: 2px solid #8ba35e;
+}
+
+.photo-remove {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: #d16b4b;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 22px;
+    height: 22px;
+    cursor: pointer;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Warning Panels */
+.storage-warning {
+    background: #f5a623;
+    border-radius: 30px;
+    padding: 8px 15px;
+    margin: 10px 0;
+    display: none;
+    color: white;
+    font-weight: 600;
+}
+
+.warnings-panel {
+    background: #ffecb3;
+    border: 3px solid #ffa000;
+    border-radius: 20px;
+    padding: 1rem;
+    margin: 1rem 0;
+    color: #b26500;
+    font-weight: 600;
+    animation: shake 0.4s ease;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+/* Action Buttons */
+.action-row {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    margin: 1.5rem 0;
+    flex-wrap: wrap;
+}
+
+.btn {
+    background: white;
+    border: 3px solid #3a7733;
+    padding: 10px 22px;
+    border-radius: 60px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 0 #2d4f2d;
+}
+
+.btn-save {
+    background: #c47e2e;
+    color: white;
+    border-color: #f5c542;
+}
+
+.btn-csv {
+    background: #3a6b47;
+    color: white;
+}
+
+.btn-email {
+    background: #d16b4b;
+    color: white;
+}
+
+/* Records Section */
+.records-section {
+    background: #f4efd3;
+    border-radius: 32px;
+    padding: 1.8rem;
+    margin-top: 2rem;
+}
+
+.records-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.records-header h3 {
+    color: #2d571d;
+    font-size: 1.5rem;
+}
+
+.record-count {
+    background: #528a44;
+    color: white;
+    padding: 0.3rem 1.2rem;
+    border-radius: 40px;
+    font-weight: 600;
+}
+
+.import-area {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.import-label {
+    background: #4a6b8a;
+    padding: 8px 18px;
+    border-radius: 40px;
+    color: white;
+    cursor: pointer;
+    display: inline-block;
+    transition: all 0.2s ease;
+}
+
+.import-label:hover {
+    transform: translateY(-2px);
+    background: #5a7b9a;
+}
+
+#importFile {
+    display: none;
+}
+
+.records-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+    max-height: 450px;
+    overflow-y: auto;
+    padding: 0.2rem;
+}
+
+.record-card {
+    background: white;
+    border-left: 8px solid #469646;
+    border-radius: 24px;
+    padding: 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+.record-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+}
+
+.record-card.selected {
+    border-left-color: #f5b042;
+    background: #fff9e8;
+}
+
+.record-select {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    z-index: 5;
+}
+
+.record-date {
+    font-weight: 700;
+    color: #2d741d;
+    margin-bottom: 6px;
+}
+
+.record-species {
+    font-style: italic;
+    color: #3f4f2b;
+    margin: 4px 0;
+}
+
+.record-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+    justify-content: flex-end;
+}
+
+.record-btn {
+    background: none;
+    border: 2px solid #8ba35e;
+    padding: 4px 12px;
+    border-radius: 30px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.75rem;
+}
+
+.record-btn.edit {
+    background: #edb84a;
+    border-color: #a57c2b;
+}
+
+.record-btn.delete {
+    background: #d16b4b;
+    border-color: #994f34;
+    color: white;
+}
+
+/* Output Box */
+.output-box {
+    background: #1f3b22;
+    color: #e8f0cf;
+    padding: 1.2rem;
+    border-radius: 28px;
+    font-family: 'Courier New', monospace;
+    margin-top: 1.5rem;
+    white-space: pre-wrap;
+    font-size: 0.9rem;
+    border: 2px solid #d6b556;
+}
+
+/* Footer / Credit */
+.weather-credit {
+    font-size: 0.75rem;
+    text-align: right;
+    color: #4b7137;
+    margin-top: 1rem;
+    font-style: italic;
+}
+
+.camera-note {
+    font-size: 0.7rem;
+    color: #6b8a4a;
+    margin-top: 6px;
+}
+
+/* ---------- RESPONSIVE ---------- */
+@media (max-width: 750px) {
+    .species-select-container {
+        min-width: 220px;
+    }
+    
+    .header h1 {
+        font-size: 1.6rem;
+    }
+    
+    .content {
+        padding: 1.2rem;
+    }
+    
+    .data-card {
+        padding: 1.2rem;
+    }
+    
+    .action-row {
+        justify-content: center;
+    }
+    
+    .manual-temp-card .value {
+        font-size: 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        padding: 1rem 0.5rem;
+    }
+    
+    .stats-panel {
+        font-size: 0.8rem;
+    }
+}
+
+
+
+
+
+
+
+
+
+script:
+// ========================================
+// FUTURE SEEDS PROGRAM - MAIN APPLICATION v5.0
+// Modular, maintainable citizen science data collector
+// ========================================
+
+// ========== CONFIGURATION ==========
+const CONFIG = {
+    STORAGE_KEY: 'futureSeedsRecordsV5',
+    OBSERVER_KEY: 'futureSeedsObserverV5',
+    STORAGE_WARN_MB: 4,
+    STORAGE_LIMIT_MB: 5,
+    APP_VERSION: '5.0',
+    WEATHER_API: 'https://api.open-meteo.com/v1/forecast'
+};
+
+// Month names for display
+const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+// Region presets for Tasmania
+const REGION_PRESETS = {
+    northWest: { lat: -41.05, lon: 145.90, name: "North West (Burnie/Devonport)" },
+    north: { lat: -41.43, lon: 147.14, name: "North (Launceston)" },
+    south: { lat: -42.88, lon: 147.33, name: "South (Hobart)" },
+    westCoast: { lat: -42.15, lon: 145.32, name: "West Coast (Strahan/Queenstown)" },
+    eastCoast: { lat: -41.73, lon: 148.25, name: "East Coast (St Helens/Bicheno)" }
+};
+
+// Complete species list (80+ Tasmanian priority species)
+const FULL_SPECIES_LIST = [
+    { value: 'Acacia verticillata', display: '<i>Acacia verticillata</i> (Prickly Moses)' },
+    { value: 'Acacia dealbata', display: '<i>Acacia dealbata</i> (Silver Wattle)' },
+    { value: 'Acacia melanoxylon', display: '<i>Acacia melanoxylon</i> (Blackwood)' },
+    { value: 'Acacia mearnsii', display: '<i>Acacia mearnsii</i> (Black Wattle)' },
+    { value: 'Acacia mucronata', display: '<i>Acacia mucronata</i>' },
+    { value: 'Acacia riceana', display: '<i>Acacia riceana</i>' },
+    { value: 'Acacia stricta', display: '<i>Acacia stricta</i>' },
+    { value: 'Acacia terminalis', display: '<i>Acacia terminalis</i>' },
+    { value: 'Allocasuarina verticillata', display: '<i>Allocasuarina verticillata</i>' },
+    { value: 'Banksia marginata', display: '<i>Banksia marginata</i> (Silver Banksia)' },
+    { value: 'Bedfordia salicina', display: '<i>Bedfordia salicina</i>' },
+    { value: 'Bursaria spinosa', display: '<i>Bursaria spinosa</i>' },
+    { value: 'Cassinia aculeata', display: '<i>Cassinia aculeata</i>' },
+    { value: 'Coprosma quadrifida', display: '<i>Coprosma quadrifida</i>' },
+    { value: 'Correa reflexa', display: '<i>Correa reflexa</i>' },
+    { value: 'Daviesia latifolia', display: '<i>Daviesia latifolia</i>' },
+    { value: 'Dianella tasmanica', display: '<i>Dianella tasmanica</i>' },
+    { value: 'Dodonaea viscosa', display: '<i>Dodonaea viscosa</i>' },
+    { value: 'Eucalyptus amygdalina', display: '<i>Eucalyptus amygdalina</i>' },
+    { value: 'Eucalyptus coccifera', display: '<i>Eucalyptus coccifera</i>' },
+    { value: 'Eucalyptus cordata', display: '<i>Eucalyptus cordata</i>' },
+    { value: 'Eucalyptus globulus', display: '<i>Eucalyptus globulus</i> (Tasmanian Blue Gum)' },
+    { value: 'Eucalyptus johnstonii', display: '<i>Eucalyptus johnstonii</i>' },
+    { value: 'Eucalyptus nitida', display: '<i>Eucalyptus nitida</i>' },
+    { value: 'Eucalyptus obliqua', display: '<i>Eucalyptus obliqua</i>' },
+    { value: 'Eucalyptus ovata', display: '<i>Eucalyptus ovata</i>' },
+    { value: 'Eucalyptus pauciflora', display: '<i>Eucalyptus pauciflora</i>' },
+    { value: 'Eucalyptus pulchella', display: '<i>Eucalyptus pulchella</i>' },
+    { value: 'Eucalyptus regnans', display: '<i>Eucalyptus regnans</i>' },
+    { value: 'Eucalyptus tenuiramis', display: '<i>Eucalyptus tenuiramis</i>' },
+    { value: 'Eucalyptus urnigera', display: '<i>Eucalyptus urnigera</i>' },
+    { value: 'Eucalyptus viminalis', display: '<i>Eucalyptus viminalis</i>' },
+    { value: 'Eucryphia lucida', display: '<i>Eucryphia lucida</i> (Leatherwood)' },
+    { value: 'Grevillea australis', display: '<i>Grevillea australis</i>' },
+    { value: 'Hakea lissosperma', display: '<i>Hakea lissosperma</i>' },
+    { value: 'Hakea sericea', display: '<i>Hakea sericea</i>' },
+    { value: 'Leptospermum lanigerum', display: '<i>Leptospermum lanigerum</i>' },
+    { value: 'Leptospermum rupestre', display: '<i>Leptospermum rupestre</i>' },
+    { value: 'Leptospermum scoparium', display: '<i>Leptospermum scoparium</i> (Manuka)' },
+    { value: 'Melaleuca ericifolia', display: '<i>Melaleuca ericifolia</i>' },
+    { value: 'Melaleuca squarrosa', display: '<i>Melaleuca squarrosa</i>' },
+    { value: 'Olearia argophylla', display: '<i>Olearia argophylla</i>' },
+    { value: 'Olearia phlogopappa', display: '<i>Olearia phlogopappa</i>' },
+    { value: 'Olearia ramulosa', display: '<i>Olearia ramulosa</i>' },
+    { value: 'Pomaderris apetala', display: '<i>Pomaderris apetala</i>' },
+    { value: 'Pultenaea juniperina', display: '<i>Pultenaea juniperina</i>' },
+    { value: 'Tasmannia lanceolata', display: '<i>Tasmannia lanceolata</i>' },
+    { value: 'Telopea truncata', display: '<i>Telopea truncata</i> (Tasmanian Waratah)' },
+    { value: 'Westringia brevifolia', display: '<i>Westringia brevifolia</i>' }
+];
+
+// ========== APPLICATION STATE ==========
+let savedRecords = [];
+let selectedRecordIds = new Set();
+let usingMapMode = false;
+let map = null;
+let marker = null;
+let lastWeatherData = null;
+let photoFiles = [];
+
+// ========== HELPER FUNCTIONS ==========
+function formatDate(dateStr) {
+    if (!dateStr) return '';
+    const d = new Date(dateStr + 'T12:00:00');
+    return d.toLocaleDateString('en-AU');
+}
+
+function updateStorageMeter() {
+    try {
+        const data = localStorage.getItem(CONFIG.STORAGE_KEY);
+        const size = data ? new Blob([data]).size / (1024 * 1024) : 0;
+        document.getElementById('storageMeter').innerText = `${size.toFixed(2)} MB`;
+        
+        const warningEl = document.getElementById('storageWarning');
+        if (size > CONFIG.STORAGE_WARN_MB) {
+            warningEl.style.display = 'block';
+            warningEl.innerHTML = `⚠️ Storage: ${size.toFixed(2)} MB used (near ${CONFIG.STORAGE_LIMIT_MB} MB limit). Export and clear old records.`;
+        } else {
+            warningEl.style.display = 'none';
+        }
+        return size;
+    } catch (e) {
+        return 0;
+    }
+}
+
+function updateStats() {
+    const total = savedRecords.length;
+    document.getElementById('totalRecordsStat').innerText = total;
+    
+    const temps = savedRecords.filter(r => r.weather?.minTemp && r.weather?.maxTemp);
+    if (temps.length > 0) {
+        const avgMin = temps.reduce((sum, r) => sum + (r.weather.minTemp || 0), 0) / temps.length;
+        const avgMax = temps.reduce((sum, r) => sum + (r.weather.maxTemp || 0), 0) / temps.length;
+        document.getElementById('avgTempStat').innerHTML = `${avgMin.toFixed(1)}/${avgMax.toFixed(1)}°C`;
+    } else {
+        document.getElementById('avgTempStat').innerHTML = 'No temps';
+    }
+}
+
+function updateMonthDisplay() {
+    const dateStr = document.getElementById('obsDate').value;
+    let monthIndex = new Date().getMonth();
+    if (dateStr) {
+        monthIndex = new Date(dateStr + 'T12:00:00').getMonth();
+    }
+    document.getElementById('currentMonthDisplay').innerHTML = `📆 ${MONTH_NAMES[monthIndex]}`;
+}
+
+function updateTempDisplay() {
+    const minTemp = document.getElementById('actualMinTemp').value;
+    const maxTemp = document.getElementById('actualMaxTemp').value;
+    document.getElementById('displayMin').innerText = minTemp ? `${minTemp}°C` : '--°C';
+    document.getElementById('displayMax').innerText = maxTemp ? `${maxTemp}°C` : '--°C';
+}
+
+function updateSpeciesInfo() {
+    const select = document.getElementById('speciesSelect');
+    const species = select.value;
+    const speciesObj = FULL_SPECIES_LIST.find(s => s.value === species);
+    if (speciesObj) {
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = speciesObj.display;
+        document.getElementById('speciesDisplay').innerHTML = `🌼 ${tempDiv.textContent || species}`;
+    } else {
+        document.getElementById('speciesDisplay').innerHTML = `🌱 ${species}`;
+    }
+}
+
+// ========== SPECIES SELECTOR (Enhanced) ==========
+let filteredSpecies = [...FULL_SPECIES_LIST];
+let selectedSpeciesIndex = 0;
+
+function renderSpeciesOptions() {
+    const container = document.getElementById('speciesOptions');
+    const currentVal = document.getElementById('speciesSelect').value;
+    
+    if (filteredSpecies.length === 0) {
+        container.innerHTML = '<div class="no-results">No matching species found</div>';
+        return;
+    }
+    
+    container.innerHTML = filteredSpecies.map((sp, idx) => `
+        <div class="species-option ${currentVal === sp.value ? 'selected' : ''}" data-value="${sp.value}">
+            ${sp.display}
+        </div>
+    `).join('');
+    
+    document.querySelectorAll('.species-option').forEach(el => {
+        el.addEventListener('click', (e) => {
+            e.stopPropagation();
+            updateSelectedSpecies(el.dataset.value);
+            document.getElementById('speciesDropdown').classList.remove('show');
+        });
+    });
+}
+
+function updateSelectedSpecies(value) {
+    const select = document.getElementById('speciesSelect');
+    select.value = value;
+    
+    const species = FULL_SPECIES_LIST.find(s => s.value === value);
+    if (species) {
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = species.display;
+        document.getElementById('selectedSpeciesDisplay').innerText = tempDiv.textContent || species.display;
+    }
+    
+    updateSpeciesInfo();
+}
+
+function filterSpeciesList(searchTerm) {
+    const lower = searchTerm.toLowerCase();
+    filteredSpecies = FULL_SPECIES_LIST.filter(s => 
+        s.value.toLowerCase().includes(lower) || 
+        s.display.toLowerCase().includes(lower)
+    );
+    renderSpeciesOptions();
+}
+
+function initSpeciesSelector() {
+    const selectEl = document.getElementById('speciesSelect');
+    FULL_SPECIES_LIST.forEach(sp => {
+        const opt = document.createElement('option');
+        opt.value = sp.value;
+        opt.innerHTML = sp.display;
+        selectEl.appendChild(opt);
+    });
+    
+    updateSelectedSpecies('Acacia verticillata');
+    
+    document.getElementById('speciesSelectButton').addEventListener('click', (e) => {
+        e.stopPropagation();
+        const dropdown = document.getElementById('speciesDropdown');
+        dropdown.classList.toggle('show');
+        if (dropdown.classList.contains('show')) {
+            document.getElementById('speciesSearchInput').focus();
+        }
+    });
+    
+    document.getElementById('speciesSearchInput').addEventListener('input', (e) => {
+        filterSpeciesList(e.target.value);
+    });
+    
+    document.addEventListener('click', () => {
+        document.getElementById('speciesDropdown').classList.remove('show');
+    });
+    
+    renderSpeciesOptions();
+}
+
+// ========== MAP FUNCTIONS ==========
+function initMap() {
+    const mapContainer = document.getElementById('map');
+    if (!mapContainer) return;
+    
+    map = L.map('map').setView([-42.88, 147.33], 7);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors',
+        maxZoom: 19
+    }).addTo(map);
+    
+    marker = L.marker([-42.88, 147.33], { draggable: true }).addTo(map);
+    
+    marker.on('dragend', () => {
+        const pos = marker.getLatLng();
+        updateCoordinates(pos.lat, pos.lng, true);
+        enableMapMode();
+    });
+    
+    map.on('click', (e) => {
+        marker.setLatLng(e.latlng);
+        updateCoordinates(e.latlng.lat, e.latlng.lng, true);
+        enableMapMode();
+    });
+    
+    setTimeout(() => map.invalidateSize(), 200);
+}
+
+function updateCoordinates(lat, lng, fromMap = false) {
+    document.getElementById('lat').value = lat.toFixed(4);
+    document.getElementById('lon').value = lng.toFixed(4);
+    if (fromMap) {
+        document.getElementById('coordSource').value = 'Map selection';
+        loadCurrentWeather(false);
+    }
+}
+
+function updateFromRegion() {
+    if (usingMapMode) return;
+    const region = document.getElementById('regionSelect').value;
+    const preset = REGION_PRESETS[region];
+    document.getElementById('lat').value = preset.lat.toFixed(4);
+    document.getElementById('lon').value = preset.lon.toFixed(4);
+    document.getElementById('coordSource').value = `Quick Region (${preset.name})`;
+    if (marker) {
+        marker.setLatLng([preset.lat, preset.lon]);
+        map.setView([preset.lat, preset.lon], 8);
+    }
+}
+
+function enableMapMode() {
+    usingMapMode = true;
+    document.getElementById('locationMode').innerText = '📍 Map Mode';
+    document.getElementById('regionSelect').disabled = true;
+    document.getElementById('mapInUseBadge').classList.add('show');
+    document.getElementById('toggleLocationMode').innerHTML = '🔄 Switch to Quick Region';
+    document.getElementById('mapModeIndicator').innerHTML = '✅ Map active';
+    document.getElementById('locationNote').innerHTML = '📍 Using precise map coordinates.';
+}
+
+function enableQuickRegionMode() {
+    usingMapMode = false;
+    document.getElementById('locationMode').innerText = '⚡ Quick Region';
+    document.getElementById('regionSelect').disabled = false;
+    document.getElementById('mapInUseBadge').classList.remove('show');
+    document.getElementById('toggleLocationMode').innerHTML = '🔄 Switch to Map Mode';
+    document.getElementById('mapModeIndicator').innerHTML = 'Click map to activate';
+    document.getElementById('locationNote').innerHTML = '⚡ Using Quick Region mode. Click map for precise coordinates.';
+    updateFromRegion();
+}
+
+function toggleMap(show) {
+    const mapEl = document.getElementById('map');
+    const showBtn = document.getElementById('showMapBtn');
+    const hideBtn = document.getElementById('hideMapBtn');
+    if (show) {
+        mapEl.classList.add('show');
+        showBtn.classList.add('active');
+        hideBtn.classList.remove('active');
+        setTimeout(() => map && map.invalidateSize(), 100);
+    } else {
+        mapEl.classList.remove('show');
+        showBtn.classList.remove('active');
+        hideBtn.classList.add('active');
+    }
+}
+
+function getUserLocation() {
+    if (!navigator.geolocation) {
+        alert('Geolocation not supported');
+        return;
+    }
+    document.getElementById('outputBox').innerText = '📍 Getting your location...';
+    navigator.geolocation.getCurrentPosition(
+        (position) => {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            if (marker) {
+                marker.setLatLng([lat, lng]);
+                map.setView([lat, lng], 12);
+            }
+            updateCoordinates(lat, lng, true);
+            enableMapMode();
+            document.getElementById('outputBox').innerText = `📍 Location: ${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+            loadCurrentWeather(false);
+        },
+        (error) => {
+            let msg = 'Location error: ';
+            switch(error.code) {
+                case error.PERMISSION_DENIED: msg += 'Please allow location access'; break;
+                case error.POSITION_UNAVAILABLE: msg += 'Location unavailable'; break;
+                default: msg += 'Unknown error';
+            }
+            alert(msg);
+        },
+        { enableHighAccuracy: true, timeout: 10000 }
+    );
+}
+
+// ========== WEATHER FUNCTIONS ==========
+async function loadCurrentWeather(showFeedback = true) {
+    const lat = document.getElementById('lat').value;
+    const lon = document.getElementById('lon').value;
+    const btn = document.getElementById('autoWeatherBtn');
+    const originalHTML = '<span>🌤️</span> Auto-load Weather';
+    
+    try {
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<span>⏳</span> Loading...';
+        }
+        
+        const response = await fetch(
+            `${CONFIG.WEATHER_API}?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&daily=temperature_2m_min,temperature_2m_max,precipitation_sum&timezone=auto`
+        );
+        
+        if (!response.ok) throw new Error('Weather service error');
+        
+        const data = await response.json();
+        
+        if (data.daily) {
+            const minTemp = data.daily.temperature_2m_min[0];
+            const maxTemp = data.daily.temperature_2m_max[0];
+            
+            document.getElementById('actualMinTemp').value = minTemp.toFixed(1);
+            document.getElementById('actualMaxTemp').value = maxTemp.toFixed(1);
+            document.getElementById('bomStation').value = `Open-Meteo · ${data.current.temperature_2m}°C, ${data.current.relative_humidity_2m}% RH`;
+            
+            updateTempDisplay();
+            
+            lastWeatherData = {
+                latitude: parseFloat(lat),
+                longitude: parseFloat(lon),
+                current: {
+                    temperature: data.current.temperature_2m,
+                    humidity: data.current.relative_humidity_2m,
+                    weatherCode: data.current.weather_code,
+                    windSpeed: data.current.wind_speed_10m
+                },
+                daily: {
+                    minTemp: minTemp,
+                    maxTemp: maxTemp,
+                    precipitation: data.daily.precipitation_sum[0]
+                }
+            };
+            
+            document.getElementById('outputBox').innerText = 
+                `✅ Weather loaded!\n` +
+                `🌡️ Today: ${minTemp.toFixed(1)}°C - ${maxTemp.toFixed(1)}°C\n` +
+                `💧 Current: ${data.current.temperature_2m}°C, ${data.current.relative_humidity_2m}% humidity\n` +
+                `💨 Wind: ${data.current.wind_speed_10m} km/h`;
+        } else {
+            throw new Error('Invalid data');
+        }
+    } catch (error) {
+        console.error('Weather fetch failed:', error);
+        if (showFeedback) {
+            document.getElementById('outputBox').innerText = '❌ Failed to load weather. Please enter manually.';
+        }
+    } finally {
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = originalHTML;
+        }
+    }
+}
+
+// ========== VALIDATION ==========
+function validateForm() {
+    const errors = [];
+    
+    const observer = document.getElementById('observer').value.trim();
+    if (!observer) errors.push('Observer name is required');
+    
+    const date = document.getElementById('obsDate').value;
+    if (!date) errors.push('Date is required');
+    
+    const floweringChecked = ['bud', 'earlyFlower', 'fullFlower', 'petalFall', 'seedPod'].some(id => document.getElementById(id).checked);
+    const floweringNone = document.getElementById('floweringNone').checked;
+    if (!floweringChecked && !floweringNone) errors.push('Select a flowering stage or check "None"');
+    
+    const pollinatorsChecked = ['honeybee', 'nativeBee', 'fly', 'beetle', 'wasp', 'butterfly', 'birds'].some(id => document.getElementById(id).checked);
+    const otherPollinators = document.getElementById('otherPollinators').value.trim();
+    const pollinatorsNone = document.getElementById('pollinatorsNone').checked;
+    if (!pollinatorsChecked && !otherPollinators && !pollinatorsNone) errors.push('Select pollinators, describe others, or check "None"');
+    
+    const panel = document.getElementById('warningsPanel');
+    if (errors.length > 0) {
+        panel.style.display = 'block';
+        panel.innerHTML = '❌ ' + errors.join('<br>');
+        return false;
+    }
+    panel.style.display = 'none';
+    return true;
+}
+
+// ========== RECORD COLLECTION & SAVING ==========
+function collectFormData() {
+    const observer = document.getElementById('observer').value.trim();
+    if (observer) localStorage.setItem(CONFIG.OBSERVER_KEY, observer);
+    
+    const region = document.getElementById('regionSelect').value;
+    
+    return {
+        id: Date.now(),
+        timestamp: new Date().toISOString(),
+        program: "Future Seeds Program",
+        version: CONFIG.APP_VERSION,
+        observer: observer,
+        collectionDate: document.getElementById('obsDate').value,
+        species: document.getElementById('speciesSelect').value,
+        location: {
+            mode: usingMapMode ? "precise_map" : "quick_region",
+            region: usingMapMode ? "Map Selection" : REGION_PRESETS[region].name,
+            regionCode: usingMapMode ? "map" : region,
+            siteName: document.getElementById('siteName').value || null,
+            latitude: parseFloat(document.getElementById('lat').value),
+            longitude: parseFloat(document.getElementById('lon').value),
+            source: document.getElementById('coordSource').value
+        },
+        phenology: {
+            flowering: {
+                bud: document.getElementById('bud').checked,
+                earlyFlower: document.getElementById('earlyFlower').checked,
+                fullFlower: document.getElementById('fullFlower').checked,
+                petalFall: document.getElementById('petalFall').checked,
+                seedPod: document.getElementById('seedPod').checked,
+                none: document.getElementById('floweringNone').checked
+            },
+            pollinators: {
+                honeybee: document.getElementById('honeybee').checked,
+                nativeBee: document.getElementById('nativeBee').checked,
+                fly: document.getElementById('fly').checked,
+                beetle: document.getElementById('beetle').checked,
+                wasp: document.getElementById('wasp').checked,
+                butterfly: document.getElementById('butterfly').checked,
+                birds: document.getElementById('birds').checked,
+                other: document.getElementById('otherPollinators').value || null,
+                none: document.getElementById('pollinatorsNone').checked
+            },
+            pollinatorAbundance: document.getElementById('pollinatorAbundance').value || null,
+            flowerAbundance: document.getElementById('flowerAbundance').value || null,
+            plantsAssessed: document.getElementById('plantsAssessed').value || null,
+            surveyDuration: document.getElementById('surveyDuration').value || null,
+            seedMaturity: document.getElementById('seedMaturity').value || null
+        },
+        habitat: {
+            canopyCover: document.getElementById('canopyCover').value || null,
+            soilMoisture: document.getElementById('soilMoisture').value || null,
+            recentRainfall: document.getElementById('recentRainfall').value || null,
+            disturbance: document.getElementById('disturbance').value || null,
+            fireHistory: document.getElementById('fireHistory').value || null,
+            notes: document.getElementById('notes').value || null
+        },
+        weather: {
+            minTemp: parseFloat(document.getElementById('actualMinTemp').value) || null,
+            maxTemp: parseFloat(document.getElementById('actualMaxTemp').value) || null,
+            source: document.getElementById('bomStation').value || null,
+            dataType: lastWeatherData ? "Open-Meteo Auto" : "Manual"
+        },
+        confidence: document.getElementById('confidenceScore').value || null
+    };
+}
+
+function saveRecord() {
+    const observer = document.getElementById('observer').value.trim();
+    if (observer) localStorage.setItem(CONFIG.OBSERVER_KEY, observer);
+    
+    if (!validateForm()) return;
+    
+    const record = collectFormData();
+    
+    // Estimate storage
+    const estimatedSize = new Blob([JSON.stringify(record)]).size;
+    const currentUsage = updateStorageMeter();
+    const projected = currentUsage + (estimatedSize / (1024 * 1024));
+    
+    if (projected > CONFIG.STORAGE_LIMIT_MB) {
+        if (!confirm(`⚠️ This may exceed storage limit (${projected.toFixed(2)} MB). Continue?`)) {
+            return;
+        }
+    }
+    
+    savedRecords.push(record);
+    localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify(savedRecords));
+    
+    displayRecords();
+    updateStats();
+    updateStorageMeter();
+    
+    document.getElementById('outputBox').innerText = 
+        `✅ Record saved!\n` +
+        `🌿 ${record.species}\n` +
+        `📍 ${record.location.region}\n` +
+        `📅 ${record.collectionDate}\n` +
+        `⭐ Confidence: ${record.confidence || '?'}/3\n` +
+        `Total records: ${savedRecords.length}`;
+    
+    resetForm();
+}
+
+// ========== CSV GENERATION & EXPORT ==========
+function generateCSVString(records) {
+    if (records.length === 0) return '';
+    
+    const headers = [
+        'ID', 'Timestamp', 'Observer', 'Collection Date', 'Species',
+        'Region', 'Latitude', 'Longitude', 'Site Name',
+        'Bud', 'Early Flower', 'Full Flower', 'Petal Fall', 'Seed Pod', 'Flowering None',
+        'Honeybee', 'Native Bee', 'Fly', 'Beetle', 'Wasp', 'Butterfly', 'Birds', 'Other Pollinators', 'Pollinators None',
+        'Plants Assessed', 'Survey Duration (min)', 'Flower Abundance (1-5)', 'Pollinator Abundance (1-5)', 'Seed Maturity',
+        'Canopy Cover', 'Soil Moisture', 'Recent Rainfall', 'Disturbance', 'Fire History',
+        'Min Temp (°C)', 'Max Temp (°C)', 'Weather Source',
+        'Confidence (1-3)', 'Notes'
+    ];
+    
+    const rows = records.map(r => [
+        r.id, r.timestamp, r.observer, r.collectionDate, r.species,
+        r.location.region, r.location.latitude, r.location.longitude, r.location.siteName || '',
+        r.phenology.flowering.bud, r.phenology.flowering.earlyFlower, r.phenology.flowering.fullFlower,
+        r.phenology.flowering.petalFall, r.phenology.flowering.seedPod, r.phenology.flowering.none,
+        r.phenology.pollinators.honeybee, r.phenology.pollinators.nativeBee, r.phenology.pollinators.fly,
+        r.phenology.pollinators.beetle, r.phenology.pollinators.wasp, r.phenology.pollinators.butterfly,
+        r.phenology.pollinators.birds, r.phenology.pollinators.other || '', r.phenology.pollinators.none,
+        r.phenology.plantsAssessed || '', r.phenology.surveyDuration || '', r.phenology.flowerAbundance || '',
+        r.phenology.pollinatorAbundance || '', r.phenology.seedMaturity || '',
+        r.habitat.canopyCover || '', r.habitat.soilMoisture || '', r.habitat.recentRainfall || '',
+        r.habitat.disturbance || '', r.habitat.fireHistory || '',
+        r.weather.minTemp || '', r.weather.maxTemp || '', r.weather.source || '',
+        r.confidence || '', r.habitat.notes || ''
+    ]);
+    
+    const escapeCSV = (cell) => {
+        const str = String(cell);
+        if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+            return `"${str.replace(/"/g, '""')}"`;
+        }
+        return str;
+    };
+    
+    return [headers.join(','), ...rows.map(row => row.map(escapeCSV).join(','))].join('\n');
+}
+
+function downloadCSV(csvString, prefix) {
+    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `future_seeds_${prefix}_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+function exportAllCSV() {
+    if (savedRecords.length === 0) {
+        alert('No records to export');
+        return;
+    }
+    const csv = generateCSVString(savedRecords);
+    downloadCSV(csv, 'all_records');
+}
+
+function exportSelectedCSV() {
+    if (selectedRecordIds.size === 0) {
+        alert('Select records using checkboxes first');
+        return;
+    }
+    const selected = savedRecords.filter(r => selectedRecordIds.has(r.id.toString()));
+    const csv = generateCSVString(selected);
+    downloadCSV(csv, 'selected_records');
+    document.getElementById('outputBox').innerText = `✅ Exported ${selected.length} selected record(s)`;
+}
+
+function emailCSV() {
+    if (savedRecords.length === 0) {
+        alert('No records to email');
+        return;
+    }
+    const csv = generateCSVString(savedRecords);
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const subject = encodeURIComponent('Future Seeds Program Data Export');
+    const body = encodeURIComponent(`Future Seeds Data Export\nTotal Records: ${savedRecords.length}\nDate: ${new Date().toLocaleDateString()}\n\nCSV data available at: ${url}`);
+    window.location.href = `mailto:?subject=${subject}&body=${body}`;
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
+}
+
+// ========== RECORD DISPLAY & MANAGEMENT ==========
+function displayRecords() {
+    const grid = document.getElementById('recordsGrid');
+    const countEl = document.getElementById('recordCount');
+    
+    if (!savedRecords.length) {
+        grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:2rem;">No saved records yet. Complete and save your first observation!</div>';
+        countEl.innerText = '0 records';
+        selectedRecordIds.clear();
+        return;
+    }
+    
+    countEl.innerText = `${savedRecords.length} record${savedRecords.length !== 1 ? 's' : ''}`;
+    const sorted = [...savedRecords].reverse();
+    
+    grid.innerHTML = sorted.map(record => `
+        <div class="record-card" data-id="${record.id}">
+            <input type="checkbox" class="record-select" ${selectedRecordIds.has(record.id.toString()) ? 'checked' : ''} 
+                   onclick="event.stopPropagation(); window.toggleRecordSelection('${record.id}', this.checked)">
+            <div class="record-date">📅 ${record.collectionDate}</div>
+            <div class="record-species">🌿 ${record.species.split(' ').slice(0, 2).join(' ')}</div>
+            <div class="record-location">📍 ${record.location.region}</div>
+            <div>🌡️ ${record.weather.minTemp || '?'}/${record.weather.maxTemp || '?'}°C</div>
+            <div>⭐ ${record.confidence || '?'}/3 · 🌸 ${record.phenology.flowerAbundance || '?'}/5</div>
+            <div class="record-actions">
+                <button class="record-btn edit" onclick="event.stopPropagation(); window.editRecord('${record.id}')">✏️ Edit</button>
+                <button class="record-btn delete" onclick="event.stopPropagation(); window.deleteRecord('${record.id}')">🗑️ Delete</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+window.toggleRecordSelection = function(id, checked) {
+    if (checked) {
+        selectedRecordIds.add(id.toString());
+    } else {
+        selectedRecordIds.delete(id.toString());
+    }
+    document.getElementById('outputBox').innerText = `${selectedRecordIds.size} record(s) selected for export`;
+};
+
+window.editRecord = function(id) {
+    const record = savedRecords.find(r => r.id == id);
+    if (!record) return;
+    
+    alert('Edit mode: Please delete the old record and save a new one with your changes.');
+    // For simplicity in this version, we just select it in output
+    document.getElementById('outputBox').innerText = JSON.stringify(record, null, 2);
+};
+
+window.deleteRecord = function(id) {
+    if (!confirm('Delete this record?')) return;
+    savedRecords = savedRecords.filter(r => r.id != id);
+    selectedRecordIds.delete(id.toString());
+    localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify(savedRecords));
+    displayRecords();
+    updateStats();
+    updateStorageMeter();
+    document.getElementById('outputBox').innerText = '🗑️ Record deleted.';
+};
+
+function clearAllRecords() {
+    if (confirm('Delete ALL saved records? This cannot be undone.')) {
+        savedRecords = [];
+        selectedRecordIds.clear();
+        localStorage.removeItem(CONFIG.STORAGE_KEY);
+        displayRecords();
+        updateStats();
+        updateStorageMeter();
+        document.getElementById('outputBox').innerText = '🗑️ All records cleared.';
+    }
+}
+
+// ========== IMPORT CSV ==========
+function importCSV(file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const text = e.target.result;
+            const lines = text.split('\n');
+            if (lines.length < 2) throw new Error('Invalid CSV');
+            
+            let imported = 0;
+            for (let i = 1; i < lines.length; i++) {
+                if (!lines[i].trim()) continue;
+                const values = lines[i].split(',').map(v => v.replace(/^"|"$/g, ''));
+                if (values.length >= 5) {
+                    const record = {
+                        id: Date.now() + i + Math.random(),
+                        timestamp: new Date().toISOString(),
+                        observer: values[2] || '',
+                        collectionDate: values[3] || '',
+                        species: values[4] || 'Unknown',
+                        location: {
+                            region: values[5] || 'Imported',
+                            latitude: parseFloat(values[6]) || -42.88,
+                            longitude: parseFloat(values[7]) || 147.33
+                        },
+                        phenology: { flowering: {}, pollinators: {} },
+                        habitat: {},
+                        weather: { minTemp: parseFloat(values[31]) || null, maxTemp: parseFloat(values[32]) || null },
+                        confidence: values[34] || null
+                    };
+                    savedRecords.push(record);
+                    imported++;
+                }
+            }
+            
+            if (imported > 0) {
+                localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify(savedRecords));
+                displayRecords();
+                updateStats();
+                updateStorageMeter();
+                document.getElementById('outputBox').innerText = `✅ Imported ${imported} records from CSV`;
+            } else {
+                alert('No valid records found');
+            }
+        } catch (error) {
+            alert('Error importing CSV: ' + error.message);
+        }
+    };
+    reader.readAsText(file);
+}
+
+// ========== RESET FORM ==========
+function resetForm() {
+    const savedObserver = localStorage.getItem(CONFIG.OBSERVER_KEY) || '';
+    
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    
+    document.getElementById('obsDate').value = `${year}-${month}-${day}`;
+    document.getElementById('siteName').value = '';
+    document.getElementById('plantsAssessed').value = '';
+    document.getElementById('surveyDuration').value = '';
+    document.getElementById('flowerAbundance').value = '';
+    document.getElementById('pollinatorAbundance').value = '';
+    document.getElementById('canopyCover').value = '';
+    document.getElementById('soilMoisture').value = '';
+    document.getElementById('recentRainfall').value = '';
+    document.getElementById('disturbance').value = '';
+    document.getElementById('otherPollinators').value = '';
+    document.getElementById('notes').value = '';
+    document.getElementById('seedMaturity').value = '';
+    document.getElementById('fireHistory').value = '';
+    document.getElementById('actualMinTemp').value = '';
+    document.getElementById('actualMaxTemp').value = '';
+    document.getElementById('bomStation').value = '';
+    document.getElementById('confidenceScore').value = '';
+    
+    // Clear checkboxes
+    document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+    
+    // Clear stars
+    document.querySelectorAll('.star').forEach(s => s.classList.remove('active'));
+    
+    if (savedObserver) {
+        document.getElementById('observer').value = savedObserver;
+    }
+    
+    document.getElementById('regionSelect').value = 'south';
+    updateFromRegion();
+    enableQuickRegionMode();
+    updateMonthDisplay();
+    updateTempDisplay();
+    lastWeatherData = null;
+    document.getElementById('warningsPanel').style.display = 'none';
+}
+
+// ========== PHOTO HANDLING ==========
+function setupPhotoInput() {
+    const photoInput = document.getElementById('photoInput');
+    const preview = document.getElementById('photoPreview');
+    
+    photoInput.addEventListener('change', (e) => {
+        photoFiles = Array.from(e.target.files);
+        preview.innerHTML = '';
+        photoFiles.forEach(file => {
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                const div = document.createElement('div');
+                div.className = 'photo-preview-item';
+                div.innerHTML = `
+                    <img src="${ev.target.result}" style="width:80px;height:80px;object-fit:cover;border-radius:12px;">
+                    <button class="photo-remove" type="button">✖</button>
+                `;
+                div.querySelector('.photo-remove').onclick = () => div.remove();
+                preview.appendChild(div);
+            };
+            reader.readAsDataURL(file);
+        });
+    });
+}
+
+// ========== STAR RATING ==========
+function setupStarRating() {
+    const stars = document.querySelectorAll('.star');
+    stars.forEach(star => {
+        star.addEventListener('click', () => {
+            const value = parseInt(star.dataset.value);
+            stars.forEach((s, i) => {
+                if (i < value) {
+                    s.classList.add('active');
+                    s.textContent = '★';
+                } else {
+                    s.classList.remove('active');
+                    s.textContent = '☆';
+                }
+            });
+            document.getElementById('confidenceScore').value = value;
+        });
+    });
+}
+
+// ========== CHECKBOX LOGIC ==========
+function setupCheckboxLogic() {
+    // Flowering "None" clears others
+    document.getElementById('floweringNone').addEventListener('change', function() {
+        if (this.checked) {
+            ['bud', 'earlyFlower', 'fullFlower', 'petalFall', 'seedPod'].forEach(id => {
+                document.getElementById(id).checked = false;
+            });
+        }
+    });
+    
+    // Pollinators "None" clears others
+    document.getElementById('pollinatorsNone').addEventListener('change', function() {
+        if (this.checked) {
+            ['honeybee', 'nativeBee', 'fly', 'beetle', 'wasp', 'butterfly', 'birds'].forEach(id => {
+                document.getElementById(id).checked = false;
+            });
+            document.getElementById('otherPollinators').value = '';
+        }
+    });
+    
+    // Individual flowering checkboxes uncheck "None"
+    ['bud', 'earlyFlower', 'fullFlower', 'petalFall', 'seedPod'].forEach(id => {
+        document.getElementById(id).addEventListener('change', function() {
+            if (this.checked) document.getElementById('floweringNone').checked = false;
+        });
+    });
+    
+    // Individual pollinator checkboxes uncheck "None"
+    ['honeybee', 'nativeBee', 'fly', 'beetle', 'wasp', 'butterfly', 'birds'].forEach(id => {
+        document.getElementById(id).addEventListener('change', function() {
+            if (this.checked) document.getElementById('pollinatorsNone').checked = false;
+        });
+    });
+    
+    document.getElementById('otherPollinators').addEventListener('input', function() {
+        if (this.value.trim()) document.getElementById('pollinatorsNone').checked = false;
+    });
+}
+
+// ========== INITIALIZATION ==========
+function init() {
+    // Load saved data
+    savedRecords = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEY)) || [];
+    const savedObserver = localStorage.getItem(CONFIG.OBSERVER_KEY) || '';
+    
+    // Initialize UI components
+    initSpeciesSelector();
+    initMap();
+    setupStarRating();
+    setupPhotoInput();
+    setupCheckboxLogic();
+    
+    // Set today's date
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    document.getElementById('obsDate').value = `${year}-${month}-${day}`;
+    
+    if (savedObserver) document.getElementById('observer').value = savedObserver;
+    
+    // Display saved records
+    displayRecords();
+    updateStats();
+    updateStorageMeter();
+    updateMonthDisplay();
+    updateTempDisplay();
+    updateSpeciesInfo();
+    
+    // Set initial location
+    enableQuickRegionMode();
+    
+    // Welcome message
+    if (savedRecords.length > 0) {
+        document.getElementById('outputBox').innerText = `🌿 Welcome back! You have ${savedRecords.length} saved record(s).`;
+    }
+}
+
+// ========== EVENT LISTENERS ==========
+document.addEventListener('DOMContentLoaded', () => {
+    init();
+    
+    // Guide toggle
+    document.getElementById('guideToggleBtn').addEventListener('click', () => {
+        document.getElementById('guidePanel').classList.toggle('show');
+    });
+    
+    // Location mode
+    document.getElementById('toggleLocationMode').addEventListener('click', () => {
+        if (usingMapMode) enableQuickRegionMode();
+        else enableMapMode();
+    });
+    
+    // Map controls
+    document.getElementById('myLocationBtn').addEventListener('click', getUserLocation);
+    document.getElementById('showMapBtn').addEventListener('click', () => toggleMap(true));
+    document.getElementById('hideMapBtn').addEventListener('click', () => toggleMap(false));
+    
+    // Weather
+    document.getElementById('autoWeatherBtn').addEventListener('click', () => loadCurrentWeather(true));
+    
+    // Form actions
+    document.getElementById('saveRecordBtn').addEventListener('click', saveRecord);
+    document.getElementById('resetBtn').addEventListener('click', resetForm);
+    document.getElementById('exportAllBtn').addEventListener('click', exportAllCSV);
+    document.getElementById('exportSelectedBtn').addEventListener('click', exportSelectedCSV);
+    document.getElementById('emailCsvBtn').addEventListener('click', emailCSV);
+    document.getElementById('clearAllBtn').addEventListener('click', clearAllRecords);
+    
+    // Region change
+    document.getElementById('regionSelect').addEventListener('change', updateFromRegion);
+    
+    // Date change
+    document.getElementById('obsDate').addEventListener('change', updateMonthDisplay);
+    
+    // Temp inputs
+    document.getElementById('actualMinTemp').addEventListener('input', updateTempDisplay);
+    document.getElementById('actualMaxTemp').addEventListener('input', updateTempDisplay);
+    
+    // CSV Import
+    document.getElementById('importFile').addEventListener('change', (e) => {
+        if (e.target.files.length) importCSV(e.target.files[0]);
+    });
+});
+
+// Make global functions available for inline handlers
+window.toggleRecordSelection = toggleRecordSelection;
+window.editRecord = editRecord;
+window.deleteRecord = deleteRecord;
+
+
+
